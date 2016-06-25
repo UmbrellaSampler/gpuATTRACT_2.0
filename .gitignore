@@ -1,0 +1,14 @@
+*~
+*.o
+*.d
+**/build
+./bin
+.cproject
+.project
+*/.cproject
+*/.project
+**/.settings/
+*.bak
+*.old
+AttractServer*
+
