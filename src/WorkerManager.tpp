@@ -13,7 +13,7 @@
 #include "Service.h"
 
 
-using namespace as;
+namespace as {
 
 template<typename InputType, typename CommonType, typename ResultType>
 WorkerManager<InputType, CommonType, ResultType>::WorkerManager() :
@@ -53,6 +53,6 @@ void WorkerManager<InputType, CommonType, ResultType>::createWorkers(unsigned nu
 	}
 }
 
-
+} // namespace as
 
 #endif /* SRC_WORKERMANAGER_TPP_ */

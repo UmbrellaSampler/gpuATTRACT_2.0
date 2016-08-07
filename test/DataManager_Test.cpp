@@ -7,30 +7,52 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include "DataManager.tpp"
+#include <vector>
 #include "Protein.tpp"
+#include "DataItem.h"
+#include "DataManager.h"
 
 
-TEST(DataManager, addProtein) {
+TEST(DataManager, add) {
 	using namespace as;
-	DataManager<float> dataMng;
+	DataManager dataMng;
 	std::shared_ptr<Protein<float>> protein;
-	dataMng.addProtein(protein);
+
+	/*
+	 * TEST: nullptr
+	 */
 	try {
-		dataMng.addProtein(protein);
+		dataMng.add(protein);
 		FAIL();
 	} catch (std::invalid_argument& e) {
-
-		EXPECT_TRUE(true);
+		ASSERT_STREQ( "Invalid DataItem (nullptr).", e.what() );
 	} catch (std::exception& e) {
 		// invalid_argument exception expected
 		FAIL();
 	}
 
-	for (int i = 0; i < 10; ++i) {
-		std::shared_ptr<Protein<float>> protein = std::make_shared<Protein<float>>();
-		proteinId_t id = dataMng.addProtein(protein);
+	/*
+	 * TEST: add individual valid items
+	 */
+	int size = 10;
+	std::vector<std::shared_ptr<DataItem>> vec;
+	for (int i = 0; i < size; ++i) {
+		std::shared_ptr<DataItem> protein = std::make_shared<Protein<float>>();
+		vec.push_back(protein);
+	}
+
+	for (int i = 0; i < size; ++i) {
+		id_t id = dataMng.add(vec[i]);
 		EXPECT_EQ(id, i);
 	}
+
+	/*
+	 * TEST: add valid collection
+	 */
+	auto ids = dataMng.add(vec);
+	for (int i = 0; i < size; ++i) {
+		EXPECT_EQ(ids[i], size + i);
+	}
+
 }
 

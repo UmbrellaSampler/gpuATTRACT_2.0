@@ -2,20 +2,24 @@
 #define PARAMTABLE_H_
 
 #include <stdexcept>
+#include <type_traits>
+
+#include "DataItem.h"
 
 namespace as {
 
 template<typename REAL>
-class AttrParamTable {
+class ParamTable : public DataItem {
+	// Check if REAL is of floating-point type
+	using real_t = typename std::enable_if<std::is_floating_point<REAL>::value, REAL>::type;
 public:
 
-	template<typename _REAL>
 	struct attractFFParams_t {
-		_REAL rc; // A = rc
-		_REAL ac; // B = ac
+		real_t rc; // A = rc
+		real_t ac; // B = ac
 		int ipon;
-		_REAL rmin2;
-		_REAL emin;
+		real_t rmin2;
+		real_t emin;
 	};
 
 	/* Potential shape type of the ATTRACT force field */
@@ -25,16 +29,16 @@ public:
 		undefined
 	};
 
-	using type = attractFFParams_t<REAL>;
+	using type_t = attractFFParams_t;
 
 	/* Constructor */
-	AttrParamTable() : _paramTable(nullptr), _numTypes(0),
+	ParamTable() : _paramTable(nullptr), _numTypes(0),
 			_shape(undefined), _swiOn(0), _swiOff(0) {}
 
 
 
 	/* Destructor */
-	~AttrParamTable() {
+	~ParamTable() {
 		delete[] _paramTable;
 	}
 
@@ -46,7 +50,7 @@ public:
 	}
 
 	/* read only access */
-	const type* table() const noexcept {
+	const type_t* table() const noexcept {
 		return _paramTable;
 	}
 
@@ -54,11 +58,11 @@ public:
 		return _shape;
 	}
 
-	REAL swiOn() const noexcept {
+	real_t swiOn() const noexcept {
 		return _swiOn;
 	}
 
-	REAL swiOff() const noexcept {
+	real_t swiOff() const noexcept {
 		return _swiOff;
 	}
 
@@ -70,18 +74,18 @@ public:
 		_shape = shape;
 	}
 
-	void setSwiOn(REAL swiOn) noexcept {
+	void setSwiOn(real_t swiOn) noexcept {
 		_swiOn = swiOn;
 	}
 
-	void setSwiOff(REAL swiOff) noexcept {
+	void setSwiOff(real_t swiOff) noexcept {
 		_swiOff = swiOff;
 	}
 
 	/****************************
 	 * public member functions
 	 ****************************/
-	inline const type& getParams(const int& typeA, const int& typeB) const noexcept {
+	inline const type_t& getParams(const int& typeA, const int& typeB) const noexcept {
 		return _paramTable[_numTypes*typeA + typeB];
 	}
 
@@ -89,25 +93,25 @@ public:
 	 * Read and write access.
 	 * Should be used for initialization
 	 */
-	type* getOrCreateTable() {
+	type_t* getOrCreateTable() {
 		if (_paramTable == nullptr) {
 			if (_numTypes == 0) {
 				throw std::runtime_error("Error: getOrCreateTypePtr(): the number of types must be set before");
 			}
-			_paramTable = new AttrParamTable::type[_numTypes * _numTypes];
+			_paramTable = new ParamTable::type_t[_numTypes * _numTypes];
 		}
 		return _paramTable;
 	}
 
 private:
 
-	type* _paramTable;
+	type_t* _paramTable;
 	unsigned _numTypes; /** number of particle/atom types */
 
 	PotShape _shape; /** potential shape 12:6 or 8:6 or undefined */
 
-	REAL _swiOn;	/** switching potential parameter. Not used at the moment */
-	REAL _swiOff;
+	real_t _swiOn;	/** switching potential parameter. Not used at the moment */
+	real_t _swiOff;
 };
 
 }

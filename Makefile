@@ -46,15 +46,22 @@ else ifeq ($(TARGET), DEBUG)
 else
 	OFLAGS =
 endif
-	
+
 CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
-INCLUDES = -I$(CUDADIR)/include -I$(CURDIR)/src
+INCLUDES = -I$(CUDADIR)/include -I$(CURDIR)/src -I$(CURDIR)/src/asDB
 LDFLAGS = #-L...
-LIBS = -lpthread $(LIBS_TEST)
+LIBS = -lpthread -lrt $(LIBS_TEST)
+
+ifeq ($(CUDA), ON)
+	OFLAGS += -DCUDA
+	LDFLAGS += -L$(CUDADIR)/lib64
+	LIBS += -lcudart
+endif
 
 # search directories for source files
-#VPATH = $(shell find ../src/ -type d)
-#VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR)
+#VPATH = $(shell find  src/ -type d)
+#VPATH += $(shell find test/ -type d)
+VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR):$(SOURCE_DIR)/asDB
 
 $(BINARY): $(OBJECTS)
 	@echo 'Building target: $@'

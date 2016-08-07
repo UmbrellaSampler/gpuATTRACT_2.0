@@ -12,6 +12,7 @@
 #include <memory>
 
 #include <Worker.h>
+#include "publicTypes.h"
 
 namespace as {
 
@@ -38,7 +39,7 @@ public:
 		return &_workerPool[id];
 	}
 
-	ThreadSafeQueue<workItem_t*>* queue(unsigned id) noexcept {
+	ThreadSafeQueue<workItem_t*>* queue(workerId_t id) noexcept {
 		return &_workerQueues[id];
 	}
 
@@ -46,12 +47,12 @@ public:
 		return _workerPool.size();
 	}
 
-	size_t queueSize(unsigned id) {
+	size_t queueSize(workerId_t id) {
 		return _workerQueues[id].size();
 	}
 
 
-	void pushItemToQueue(workItem_t* item, unsigned id) {
+	void pushItemToQueue(workItem_t* item, workerId_t id) {
 		_workerQueues[id].push(item);
 	}
 

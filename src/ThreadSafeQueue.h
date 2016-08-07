@@ -29,7 +29,7 @@
 namespace as {
 
 
-template <class T>
+template <typename T>
 class ThreadSafeQueue {
 public:
 	ThreadSafeQueue() :
@@ -40,8 +40,8 @@ public:
 
 	T waitAndPop () {
 		std::unique_lock < std::mutex > uniqueLock(_mutex);
-		while( (_queue.size() == 0) ) {
-			if (_terminate.load()) {
+		while(_queue.size() == 0) {
+			if (_terminate) {
 				return T();
 			}
 			_condVar.wait(uniqueLock);
@@ -68,12 +68,13 @@ public:
 	}
 
 	void signalTerminate() {
+		std::lock_guard<std::mutex> guard(_mutex);
 		_terminate = true;
 		_condVar.notify_one();
 	}
 
 	bool terminates() const {
-		return _terminate.load();
+		return _terminate;
 	}
 
 	unsigned size() const {
@@ -91,7 +92,7 @@ private:
 	mutable std::mutex _mutex;
 	std::condition_variable _condVar;
 
-	std::atomic<bool> _terminate;
+	bool _terminate;
 };
 
 } // namespace

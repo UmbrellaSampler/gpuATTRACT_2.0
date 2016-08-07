@@ -13,7 +13,7 @@
 #include <cassert>
 #include "Allocator.h"
 
-using namespace as;
+namespace as {
 
 template<typename BufferType>
 SingleBufferManager<BufferType>::SingleBufferManager() :
@@ -72,6 +72,8 @@ void SingleBufferManager<BufferType>::returnBuffer(BufferType* buffer) {
 	assert(isOwned(buffer));
 	_bufferQueue.push(buffer);
 }
+
+} // namespace as
 
 #endif /* SRC_BUFFERMANAGER_TPP_ */
 

@@ -26,6 +26,7 @@
 #ifndef __CUDACC__
 
 #include <cmath>
+#include <ostream>
 using std::max;
 using std::abs;
 using std::sqrt;
@@ -37,7 +38,6 @@ namespace as{
 
 #ifndef __CUDACC__
 
-#include <ostream>
 
 template<typename type> class Vec3;
 /** Global operators */

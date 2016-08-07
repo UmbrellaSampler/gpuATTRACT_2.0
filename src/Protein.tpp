@@ -25,7 +25,7 @@
 
 #include "Protein.h"
 
-using namespace as;
+namespace as {
 
 template<typename REAL>
 Protein<REAL>::Protein() :
@@ -71,7 +71,7 @@ unsigned* Protein<REAL>::getOrCreateTypePtr() {
 
 template<typename REAL>
 auto Protein<REAL>::getOrCreateMappedPtr() -> type_t* {
-	if (_type == nullptr) {
+	if (_mappedTypes == nullptr) {
 		if (_numAtoms == 0) {
 			throw std::runtime_error("getOrCreateTypePtr(): the number of atoms must be set before");
 		}
@@ -80,6 +80,7 @@ auto Protein<REAL>::getOrCreateMappedPtr() -> type_t* {
 		}
 		_mappedTypes = new type_t[_numAtoms*_numMappedTypes];
 	}
+	return _mappedTypes;
 }
 
 template<typename REAL>
@@ -116,9 +117,9 @@ void Protein<REAL>::pivotize(vec3_t pivot) {
 	_pivot = pivot;
 	if (_pivot != vec3_t(0,0,0)) {
 		for (unsigned i = 0; i < _numAtoms; ++i) {
-			xPos()[i] -= _pivot[0];
-			yPos()[i] -= _pivot[1];
-			zPos()[i] -= _pivot[2];
+			xPos()[i] -= _pivot.x;
+			yPos()[i] -= _pivot.y;
+			zPos()[i] -= _pivot.z;
 		}
 	}
 }
@@ -130,9 +131,9 @@ void Protein<REAL>::auto_pivotize() {
 	}
 	vec3_t pivot(0,0,0);
 	for (unsigned i = 0; i < _numAtoms; ++i) {
-		pivot[0] += xPos()[i];
-		pivot[1] += yPos()[i];
-		pivot[2] += zPos()[i];
+		pivot.x += xPos()[i];
+		pivot.y += yPos()[i];
+		pivot.z += zPos()[i];
 	}
 	pivot /= static_cast<double>(_numAtoms);
 	pivotize(pivot);
@@ -141,12 +142,14 @@ void Protein<REAL>::auto_pivotize() {
 template<typename REAL>
 void Protein<REAL>::undoPivoting() {
 	for (unsigned i = 0; i < _numAtoms; ++i) {
-		xPos()[i] += _pivot[0];
-		yPos()[i] += _pivot[1];
-		zPos()[i] += _pivot[2];
+		xPos()[i] += _pivot.x;
+		yPos()[i] += _pivot.y;
+		zPos()[i] += _pivot.z;
 	}
 	_pivot = vec3_t(0,0,0);
 }
+
+} // namespace as
 
 #endif
 

@@ -12,9 +12,9 @@
 #include <algorithm>
 #include "macros.h"
 #include "Dispatcher.h"
-#include "Service.h"
+#include "WorkerManager.h"
 
-using namespace as;
+namespace as {
 
 template<typename InputType, typename CommonType, typename ResultType>
 void Dispatcher<InputType, CommonType, ResultType>::run() {
@@ -28,11 +28,10 @@ void Dispatcher<InputType, CommonType, ResultType>::run() {
 		assert(items->size() > 0);
 
 		dispatch(items);
-
 	}
 }
 
-struct as::FillLevel {
+struct FillLevel {
 	unsigned id;
 	unsigned level;
 
@@ -40,13 +39,13 @@ struct as::FillLevel {
 		return level < rhs.level;
 	}
 
-	/* pre-increment */
+	/** pre-increment */
 	FillLevel& operator++ () {
 		++level;
 		return *this;
 	}
 
-	/* post-increment */
+	/** post-increment */
 	FillLevel operator++ (int) {
 		auto tmp = *this;
 		++level;
@@ -54,16 +53,24 @@ struct as::FillLevel {
 	}
 };
 
+/**
+ * Distributes each item in items s.t. the fill levels remain at equal height.
+ * Precondition: each item must be fully distributalbe to at least one worker.
+ * The getWorkerIds function object returns the a set of worker ids to which the workItems a distributed.
+ * This function object is passed externally and may have different behavior depending on the application.
+ */
+
 template<typename InputType, typename CommonType, typename ResultType>
 void Dispatcher<InputType, CommonType, ResultType>::dispatch(std::vector<workItem_t>* items) {
 
-	if (_workerMng->poolSize() == 1) {
+	CommonType const* common = (*items)[0].common();
+	std::vector<as::workerId_t> workerIds = _getWorkerIds(common, _workerMng->poolSize());
+	assert(workerIds.size() > 0 && workerIds.size());
+	if (workerIds.size() == 1) {
 		for (auto& item : *items) {
-			_workerMng->pushItemToQueue(&item, 0);
+			_workerMng->pushItemToQueue(&item, workerIds[0]);
 		}
 	} else {
-		CommonType const* common = (*items)[0].common();
-		std::set<unsigned> workerIds = getWorkerIds(common);
 		auto fillLevels = getFillLevelsSorted(workerIds);
 		assert(fillLevels.size() > 1);
 		for (auto& item : *items) {
@@ -73,21 +80,7 @@ void Dispatcher<InputType, CommonType, ResultType>::dispatch(std::vector<workIte
 }
 
 template<typename InputType, typename CommonType, typename ResultType>
-std::set<unsigned> Dispatcher<InputType, CommonType, ResultType>::getWorkerIds(CommonType const* common) const noexcept{
-	// TODO: Note: this is a temporary solution
-	//
-	/* compiler dummy */ ASSERT(common);
-	std::set<unsigned> workerIds;
-	size_t size = _workerMng->poolSize();
-	for (unsigned i = 0; i < size; ++i) {
-		workerIds.insert(i);
-	}
-	// Now get Ids with dataMng!
-	return workerIds;
-}
-
-template<typename InputType, typename CommonType, typename ResultType>
-std::vector<as::FillLevel> Dispatcher<InputType, CommonType, ResultType>::getFillLevelsSorted(std::set<unsigned> const& workerIds) const noexcept {
+std::vector<as::FillLevel> Dispatcher<InputType, CommonType, ResultType>::getFillLevelsSorted(std::vector<workerId_t> const& workerIds) const noexcept {
 	const auto size = workerIds.size();
 	std::vector<FillLevel> levels(size);
 	unsigned count = 0;
@@ -118,5 +111,7 @@ void Dispatcher<InputType, CommonType, ResultType>::distributeItem(workItem_t& i
 		}
 	}
 }
+
+} // namespace as
 
 #endif /* SRC_DISPATCHER_TPP_ */

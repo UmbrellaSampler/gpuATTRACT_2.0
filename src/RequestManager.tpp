@@ -17,7 +17,7 @@
 #include "RequestMembers.h"
 
 
-using namespace as;
+namespace as {
 
 template<typename InputType, typename CommonType, typename ResultType>
 void RequestManager<InputType, CommonType, ResultType>::registerRequest(request_t const* request) {
@@ -76,6 +76,8 @@ template<typename InputType, typename CommonType, typename ResultType>
 CommonType* RequestManager<InputType, CommonType, ResultType>::common(request_t const* request) {
 	auto& requestMembers = _requestContainer.at(request);
 	return requestMembers.common();
+}
+
 }
 
 #endif /* SRC_REQUESTMANAGER_TPP_ */

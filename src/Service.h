@@ -9,6 +9,9 @@
 #define SERVICE_H_
 
 #include <memory>
+#include <vector>
+#include <functional>
+#include "publicTypes.h"
 
 namespace as {
 
@@ -20,6 +23,7 @@ class Allocator;
 
 template<typename InputType, typename CommonType, typename ResultType>
 class Service {
+
 public:
 	virtual ~Service() {}
 
@@ -28,6 +32,9 @@ public:
 	using result_t = ResultType;
 
 	using workItem_t = WorkItem<input_t, common_t, result_t>;
+	using itemProcessor_t = std::function<bool(workItem_t*)>;
+	using distributor_t = std::function<std::vector<workerId_t>(common_t const*, size_t)>;
+
 
 	void setInputAllocator(std::shared_ptr<Allocator<input_t>> allocator) {
 		_inputAllocator = allocator;
@@ -45,7 +52,8 @@ public:
 		return _resultAllocator.get();
 	}
 
-	virtual std::function<bool(workItem_t*)> createItemProcessor() = 0;
+	virtual itemProcessor_t createItemProcessor() = 0;
+	virtual distributor_t createDistributor() = 0;
 	virtual void initAllocators() = 0;
 
 private:

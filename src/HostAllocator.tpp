@@ -10,7 +10,7 @@
 
 #include "Allocator.h"
 
-using namespace as;
+namespace as {
 
 template<typename BufferType>
 BufferType* HostAllocator<BufferType>::allocateBuffer(size_t size) {
@@ -22,6 +22,8 @@ template<typename BufferType>
 void HostAllocator<BufferType>::freeBuffer(BufferType* buffer) {
 	delete[] buffer;
 }
+
+} // namespace as
 
 #endif /* SRC_HOSTALLOCATOR_TPP_ */
 

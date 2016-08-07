@@ -9,20 +9,16 @@
 #define TEST_TEST_SERVICE_H_
 
 #include <gmock/gmock.h>
-#include <functional>
-
-#include "../src/Service.h"
+#include "CPUService.h"
 
 namespace test {
 
-class Service_Mock : public as::Service<int, int, int> {
+class Service_Mock : public as::CPUService<int, int, int> {
 public:
 
 	MOCK_METHOD0(createItemProcessor, std::function<bool(workItem_t*)> () );
 
-	void initAllocators() override;
-
-	std::function<bool(workItem_t* item)> createItemProcessor_fake();
+	itemProcessor_t createItemProcessor_fake();
 
 };
 

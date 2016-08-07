@@ -20,7 +20,9 @@
 
 #ifndef GRID_H_
 #define GRID_H_
- 
+
+
+#include <type_traits>
 #include "nativeTypes.h"
 #include "nativeTypesFunctions.h"
 
@@ -30,11 +32,11 @@ template<typename REAL>
 class Grid {
 public:
 	// Check if REAL is of floating-point type
-	using real_t = typename std::enable_if<std::is_floating_point<REAL>, REAL>::type;
+	using real_t = typename std::enable_if<std::is_floating_point<REAL>::value, REAL>::type;
 
-	using real3_t = typename std::conditional<std::is_same<real_t, float>, float3, double3>::type;
+	using real3_t = typename std::conditional<std::is_same<real_t, float>::value, float3, double3>::type;
 	using size3_t = uint3;
-	using grid_t = Grid<REAL>;
+	using grid_t = Grid<real_t>;
 
 	Grid(size3_t dimN,
 			real3_t pos, real_t dVox) :
@@ -51,6 +53,10 @@ public:
 
 	real3_t pos() const noexcept {
 		return _pos;
+	}
+
+	size3_t dimN() const noexcept {
+		return _dimN;
 	}
 
 	void setPos(real3_t pos) noexcept {

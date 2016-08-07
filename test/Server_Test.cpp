@@ -8,9 +8,9 @@
 #include <gtest/gtest.h>
 #include <numeric>
 
-#include "../src/Server.h"
-#include "../src/Request.h"
-#include "../src/Allocator.h"
+#include "Server.h"
+#include "Request.h"
+#include "Allocator.h"
 
 #include "Service_Mock.h"
 #include "Service_TimeOut.h"

@@ -10,16 +10,14 @@
 
 #include <functional>
 
-#include "../src/Service.h"
+#include "CPUService.h"
 
 namespace test {
 
-class Service_TimeOut : public as::Service<int, int, int> {
+class Service_TimeOut : public as::CPUService<int, int, int> {
 public:
 
-	void initAllocators() override;
-
-	std::function<bool(workItem_t* item)> createItemProcessor () override;
+	itemProcessor_t createItemProcessor () override;
 
 };
 

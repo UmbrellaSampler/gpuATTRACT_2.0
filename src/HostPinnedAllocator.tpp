@@ -14,7 +14,7 @@
 #include "cuda_runtime.h"
 #include "macros.h"
 
-using namespace as;
+namespace as {
 
 template<typename BufferType>
 BufferType* HostPinnedAllocator<BufferType>::allocateBuffer(size_t size) {
@@ -28,6 +28,7 @@ void HostPinnedAllocator<BufferType>::freeBuffer(BufferType* buffer) {
 	CUDA_CHECK(cudaFreeHost(buffer));
 }
 
+} // namespace as
 #endif
 
 #endif /* SRC_HOSTPINNEDALLOCATOR_TPP_ */

@@ -25,13 +25,11 @@
 
 #include "NLGrid.h"
 
-using namespace as;
+namespace as {
 
 template<typename REAL>
-NLGrid<REAL>::NLGrid(desc_t desc):
-		Grid<REAL>::Grid(desc.width, desc.height, desc.depth,
-				real3_t(desc.posMin[0], desc.posMin[1], desc.posMin[2]),
-				desc.gridSpacing),
+NLGrid<REAL>::NLGrid(Desc desc):
+		Grid<REAL>::Grid(desc.dimN, desc.posMin, desc.gridSpacing),
 		_grid(desc.grid),
 		_numElInLists(desc.numEl),
 		_neighborList(desc.neighborArray),
@@ -39,9 +37,9 @@ NLGrid<REAL>::NLGrid(desc_t desc):
 		_dPlateau2_inv(1/_dPlateau2),
 		_dVox_inv(1/_dVox)
 {
-	_maxDim.x = _pos.x + (_dim.x - 1) * _dVox;
-	_maxDim.y = _pos.y + (_dim.y - 1) * _dVox;
-	_maxDim.z = _pos.z + (_dim.z - 1) * _dVox;
+	_maxDim.x = _pos.x + (_dimN.x - 1) * _dVox;
+	_maxDim.y = _pos.y + (_dimN.y - 1) * _dVox;
+	_maxDim.z = _pos.z + (_dimN.z - 1) * _dVox;
 
 	/* init ratios (taken from the original attract code) */
 	int size  = int(10000*_dPlateau2);
@@ -64,6 +62,8 @@ void NLGrid<REAL>::freeHost() noexcept {
 	delete[] _grid;
 	delete[] _ratio;
 }
+
+} // namespace as
 
 #endif
 

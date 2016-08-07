@@ -25,23 +25,27 @@
 #include <map>
 #include <algorithm>
 #include <cassert>
+#include <type_traits>
 
 #include "Vec3.h"
 #include "TypeMap.h"
+#include "DataItem.h"
 
 
 namespace as {
 
 template<typename REAL>
-class Protein {
-	using vec3_t = Vec3<REAL>;
+class Protein : public DataItem {
+	// Check if REAL is of floating-point type
+	using real_t = typename std::enable_if<std::is_floating_point<REAL>::value, REAL>::type;
+	using vec3_t = Vec3<real_t>;
 
 public:
 	using type_t = unsigned;
 	using tag_t = std::string;
 
 	Protein();
-	~Protein();
+	virtual ~Protein();
 
 	unsigned numAtoms() const{
 		return _numAtoms;

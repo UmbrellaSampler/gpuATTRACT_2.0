@@ -8,7 +8,7 @@
 #ifndef SRC_NATIVETYPES_H_
 #define SRC_NATIVETYPES_H_
 
-#if defined(__CUDACC__)
+#ifdef CUDA
 // from cuda toolkit
 #include "vector_functions.h" // CUDA vector_types + functions (e.g. make_float4(...))
 
@@ -86,5 +86,6 @@ struct __device_builtin__ __builtin_align__(16) double4
     double x, y, z, w;
 };
 
+#endif
 
 #endif /* SRC_NATIVETYPES_H_ */

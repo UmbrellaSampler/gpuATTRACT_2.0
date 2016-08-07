@@ -20,38 +20,26 @@
 
 #include "Thread.h"
 
-/* Constructor */
-as::Thread::Thread() {}
+using namespace as;
 
-/* Destructor */
-as::Thread::~Thread() {}
+Thread::Thread() {}
+
+Thread::~Thread() {}
 
 
-/****************************
- * public member functions
- ****************************/
-std::thread::id as::Thread::id() {
+std::thread::id Thread::id() {
 	return _thread.get_id();
 }
-void as::Thread::start() {
+void Thread::start() {
 	_thread = std::thread(&Thread::run, this);
 }
-void as::Thread::join() {
+void Thread::join() {
 	_thread.join();
 }
-void as::Thread::detach() {
+void Thread::detach() {
 	_thread.detach();
 }
-void as::Thread::joinable() {
+void Thread::joinable() {
 	_thread.joinable();
 }
-
-/****************************
- * protected member functions
- ****************************/
-
-/****************************
- * private member functions
- ****************************/
-
 

@@ -5,7 +5,7 @@
  *      Author: uwe
  */
 
-#include "../src/ServerIncludes.h"
+#include "ServerIncludes.h"
 
 #include "Service_Mock.h"
 #include "Service_TimeOut.h"

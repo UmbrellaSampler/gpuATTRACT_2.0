@@ -56,14 +56,16 @@
 	} while(0)
 #endif
 
-#define CUDA_CHECK(x) do {                                                  \
-	cudaError_t __cu_result = x;                                            \
-	if (__cu_result!=cudaSuccess) { 										\
-		fprintf(stderr, "%s:%i: Error: cuda function call failed:\n" 		\
-				"%s;\nmessage: %s\n", 										\
-				__FILE__, __LINE__, #x, cudaGetErrorString(__cu_result));	\
-		exit(1);															\
-	} 																		\
+#define CUDA_CHECK(x) do {                                                        \
+	cudaError_t __cu_result = x;                                                  \
+	if (__cu_result!=cudaSuccess) { 										      \
+		char buffer[1000];                                                        \
+		sprintf(buffer, "%s:%i: Error: cuda function call failed:\n" 		      \
+				"%s;\nmessage: %s\n", 										      \
+				__FILE__, __LINE__, #x, cudaGetErrorString(__cu_result));         \
+		throw std::runtime_error(std::string(buffer));                            \
+		exit(1);															      \
+	} 																		      \
 } while(0)
 
 #endif

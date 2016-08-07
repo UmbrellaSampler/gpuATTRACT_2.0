@@ -8,11 +8,11 @@
 #ifndef SRC_NATIVETYPESFUNCTIONS_H_
 #define SRC_NATIVETYPESFUNCTIONS_H_
 
-#if defined(__CUDACC__)
+#ifdef CUDA
 
 #include "vector_functions.h"
 
-#elif defined(__GNUC__)
+#else
 
 #include "nativeTypes.h"
 

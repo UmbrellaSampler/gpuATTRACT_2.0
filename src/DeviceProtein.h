@@ -8,65 +8,45 @@
 #ifndef SRC_DEVICEPROTEIN_H_
 #define SRC_DEVICEPROTEIN_H_
 
+#ifdef CUDA
+#include "DeviceItem.h"
 /**
  * DeviceProtein represents a Protein on a device.
  */
 namespace as {
 
 template <typename REAL>
-class DeviceProtein;
-
-
-template <typename REAL>
-class DeviceProtein {
+class DeviceProtein : public DeviceItem {
 public:
-	template <typename _REAL>
+
 	struct Desc {
 		unsigned numAtoms; 	/** number of atoms/particles */
 
-		_REAL *xPos;	/** Cartesian coordinates in cm-frame*/
-		_REAL *yPos;
-		_REAL *zPos;
+		REAL *xPos = nullptr;	/** Cartesian coordinates in cm-frame*/
+		REAL *yPos = nullptr;
+		REAL *zPos = nullptr;
 
-		unsigned* type; 	/** atom type */
+		unsigned* type = nullptr; 	/** atom type */
 		unsigned numMappedTypes;
-		unsigned* mappedType;
+		unsigned* mappedType = nullptr;
 
-		_REAL* charge;	/** charge of the atoms/particle */
+		REAL* charge;	/** charge of the atoms/particle */
 
 		unsigned numModes; /** number of modes */
-		_REAL* xModes; /** normal mode deformation vectors */
-		_REAL* yModes;
-		_REAL* zModes;
+		REAL* xModes = nullptr; /** normal mode deformation vectors */
+		REAL* yModes = nullptr;
+		REAL* zModes = nullptr;
 	};
 
-	using HostResc = Desc<REAL>;
+	using HostResc = Desc;
 
-	Desc<REAL> desc;
+	Desc desc;
 	HostResc hostResc;
 };
 
-//template <typename REAL>
-//template <typename _REAL>
-//struct DeviceProtein<REAL>::Desc<_REAL> {
-//	unsigned numAtoms; 	/** number of atoms/particles */
-//
-//	_REAL *xPos;	/** Cartesian coordinates in cm-frame*/
-//	_REAL *yPos;
-//	_REAL *zPos;
-//
-//	unsigned* type; 	/** atom type */
-//	unsigned numMappedTypes;
-//	unsigned* mappedType;
-//
-//	_REAL* charge;	/** charge of the atoms/particle */
-//
-//	unsigned numModes; /** number of modes */
-//	_REAL* xModes; /** normal mode deformation vectors */
-//	_REAL* yModes;
-//	_REAL* zModes;
-//};
-
 
 }
+
+#endif // CUDA
+
 #endif /* SRC_DEVICEPROTEIN_H_ */

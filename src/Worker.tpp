@@ -8,7 +8,7 @@
 #ifndef SRC_WORKER_TPP_
 #define SRC_WORKER_TPP_
 
-using namespace as;
+namespace as {
 
 template<typename InputType, typename CommonType, typename ResultType>
 void Worker<InputType, CommonType, ResultType>::run() {
@@ -33,6 +33,6 @@ void Worker<InputType, CommonType, ResultType>::run() {
 	}
 }
 
-
+} // namespace as
 
 #endif /* SRC_WORKER_TPP_ */

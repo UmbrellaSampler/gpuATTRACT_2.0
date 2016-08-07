@@ -7,13 +7,12 @@
 #include <memory>
 
 #include "Service_Mock.h"
-#include "../src/Allocator.h"
 
-#include "../src/WorkItem.h"
+#include "WorkItem.h"
 
-std::function<bool(test::Service_Mock::workItem_t* item)> test::Service_Mock::createItemProcessor_fake() {
+auto test::Service_Mock::createItemProcessor_fake() -> itemProcessor_t{
 
-	std::function<bool(workItem_t* item)> fncObj = [] (workItem_t* item) {
+	itemProcessor_t fncObj = [] (workItem_t* item) {
 		using namespace std;
 		auto size = item->size();
 		auto input = item->inputBuffer();
@@ -33,11 +32,6 @@ std::function<bool(test::Service_Mock::workItem_t* item)> test::Service_Mock::cr
 	};
 
 	return fncObj;
-}
-
-void test::Service_Mock::initAllocators() {
-	setInputAllocator(std::make_shared<as::HostAllocator<input_t>>());
-	setResultAllocator(std::make_shared<as::HostAllocator<result_t>>());
 }
 
 

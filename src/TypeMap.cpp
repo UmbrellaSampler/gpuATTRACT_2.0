@@ -21,13 +21,14 @@
 #include "TypeMap.h"
 #include "defaultTypeInitializerList.h"
 
-using as::TypeMap;
+using namespace as;
+
 using std::initializer_list;
 using std::pair;
 
-const as::TypeMap as::TypeMap::defaultTypeMap = DEFAULT_TYPEMAP_INITIALIZERLIST;
+const TypeMap TypeMap::defaultTypeMap = DEFAULT_TYPEMAP_INITIALIZERLIST;
 
-as::TypeMap::TypeMap(std::initializer_list<std::pair<keyType const, valueType>> initList):
+TypeMap::TypeMap(std::initializer_list<std::pair<keyType const, valueType>> initList):
 	_map(initList) {}
 
 void as::applyMapping(const TypeMap& map, unsigned numAtoms, TypeMap::keyType const * typesIn, TypeMap::keyType* typesOut) {

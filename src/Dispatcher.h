@@ -8,13 +8,9 @@
 #ifndef SRC_DISPATCHER_H_
 #define SRC_DISPATCHER_H_
 
-#include <mutex>
-#include <condition_variable>
-#include <atomic>
-#include <vector>
-#include <set>
-
+#include "Service.h"
 #include "Thread.h"
+#include "publicTypes.h"
 
 namespace as {
 
@@ -40,11 +36,13 @@ class Dispatcher : public Thread {
 	using workItem_t = WorkItem<InputType, CommonType, ResultType>;
 	using requestManager_t = RequestManager<InputType, CommonType, ResultType>;
 	using workerManager_t = WorkerManager<InputType, CommonType, ResultType>;
+	using distributor_t = typename Service<InputType, CommonType, ResultType>::distributor_t;
 public:
 
 	Dispatcher() :
 		_workerMng(nullptr),
-		_requestQueue(nullptr)
+		_requestQueue(nullptr),
+		_getWorkerIds(nullptr)
 	{};
 
 	~Dispatcher() {};
@@ -53,8 +51,12 @@ public:
 		_workerMng = workerMng;
 	}
 
-	void setQueue(ThreadSafeQueue<std::vector<workItem_t>*>* queue) {
+	void setQueue(ThreadSafeQueue<std::vector<workItem_t>*>* queue) noexcept {
 		_requestQueue = queue;
+	}
+
+	void setDistributor(std::function<std::vector<as::workerId_t>(CommonType const*, size_t numWorkers)> distributor) {
+		_getWorkerIds = distributor;
 	}
 
 	void signalTerminate() noexcept {
@@ -65,13 +67,14 @@ public:
 private:
 	void run() override;
 	void dispatch(std::vector<workItem_t>* items);
-	//ToDo:: integrate DataManager
 	std::set<unsigned> getWorkerIds(CommonType const* common) const noexcept;
-	std::vector<FillLevel> getFillLevelsSorted(const std::set<unsigned>& workers) const noexcept;
+	std::vector<FillLevel> getFillLevelsSorted(const std::vector<unsigned>& workers) const noexcept;
 	void distributeItem(workItem_t&, std::vector<FillLevel>&);
 
 	workerManager_t* _workerMng;
 	ThreadSafeQueue<std::vector<workItem_t>*>* _requestQueue;
+
+	distributor_t _getWorkerIds;
 
 };
 

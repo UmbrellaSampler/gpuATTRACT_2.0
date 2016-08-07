@@ -22,7 +22,7 @@
 #define INTRPLGRID_H_
 
 #include <cassert>
-#include <cmath>
+#include <algorithm>
 
 #include "Grid.h"
 #include "VoxelOctet.h"
@@ -31,20 +31,19 @@
 namespace as {
 
 template<typename REAL>
-class IntrplGrid;
-
-/* Forward declaration of nested class template */
-template<typename REAL>
-template<typename _REAL>
-struct IntrplGrid<REAL>::Desc<_REAL>;
-
-template<typename REAL>
 class IntrplGrid : public Grid<REAL> {
-	using grid_t = Grid<real_t>;
+	using grid_t = Grid<REAL>;
+	using typename grid_t::real_t;
+	using typename grid_t::real3_t;
+	using grid_t::_pos;
+	using grid_t::_dVox;
+	using grid_t::_dimN;
+	using typename grid_t::size3_t;
 public:
-	using desc_t = Desc<real_t>;
 
-	IntrplGrid(desc_t desc);
+	struct Desc;
+
+	IntrplGrid(Desc desc);
 	virtual ~IntrplGrid();
 
 	real_t voxelVol() const noexcept {
@@ -80,9 +79,9 @@ public:
 
 	void setPos(real3_t pos) noexcept {
 		grid_t::setPos(pos);
-		_maxDim[0] = _pos.x + (_dimN.x - 1) * _dVox;
-		_maxDim[1] = _pos.y + (_dimN.y - 1) * _dVox;
-		_maxDim[2] = _pos.z + (_dimN.z - 1) * _dVox;
+		_maxDim.x = _pos.x + (_dimN.x - 1) * _dVox;
+		_maxDim.y = _pos.y + (_dimN.y - 1) * _dVox;
+		_maxDim.z = _pos.z + (_dimN.z - 1) * _dVox;
 	}
 
 	/*
@@ -91,9 +90,9 @@ public:
 	void getIndex(const real_t &x, const real_t &y, const real_t &z, int &idxX, int &idxY, int &idxZ) const noexcept {
 		/* in cases where x is place exactly at the boundary floor does not evaluate to "dimSize" - 2
 		 * --> MIN (...)*/
-		idxX = std::min(floor((x - _pos.x)*_dVox_inv), _dimN.x - 2);
-		idxY = std::min(floor((y - _pos.y)*_dVox_inv), _dimN.y - 2);
-		idxZ = std::min(floor((z - _pos.z)*_dVox_inv), _dimN.z - 2);
+		idxX = std::min(static_cast<unsigned>(floor((x - _pos.x)*_dVox_inv)), _dimN.x - 2);
+		idxY = std::min(static_cast<unsigned>(floor((y - _pos.y)*_dVox_inv)), _dimN.y - 2);
+		idxZ = std::min(static_cast<unsigned>(floor((z - _pos.z)*_dVox_inv)), _dimN.z - 2);
 	}
 
 	/*
@@ -171,18 +170,14 @@ public:
 	 ** @brief: Descriptions of a gradient-energy-grid
 	 */
 
-	template<typename _REAL>
 	struct Desc {
-		using real_t = typename Grid<_REAL>::real_t; // performs floating point type check
 
 		bool typemask[99]; /** mask of atom types which are supported in that grid */
 		unsigned numGrids;	/** number of grids. The last Grid is the charge grid */
-		unsigned width;		/** number of elements along x */
-		unsigned height;	/** number of elements along y */
-		unsigned depth;		/** number of elements along z */
+		size3_t dimN;		/** number of grid points in each dimensions */
 
 		real_t gridSpacing; 	/** grid spacing */
-		real_t posMin[3];		/** lower coordinate bounds == position of grid[0] */
+		real3_t posMin;		/** lower coordinate bounds == position of grid[0] */
 
 
 		/*

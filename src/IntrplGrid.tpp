@@ -23,13 +23,11 @@
 
 #include "IntrplGrid.h"
 
-using namespace as;
+namespace as {
 
 template<typename REAL>
-IntrplGrid<REAL>::IntrplGrid(desc_t desc):
-		Grid<REAL>::Grid(desc.width, desc.height,	desc.depth,
-				real3_t(desc.posMin[0], desc.posMin[1], desc.posMin[2]),
-				desc.gridSpacing),
+IntrplGrid<REAL>::IntrplGrid(Desc desc):
+		Grid<REAL>::Grid(desc.dimN, desc.posMin, desc.gridSpacing),
 		_grid(desc.grid),
 		_numGrids(desc.numGrids),
 		_voxelVol(_dVox * _dVox * _dVox),
@@ -37,9 +35,9 @@ IntrplGrid<REAL>::IntrplGrid(desc_t desc):
 		_dVox_inv(1.f/_dVox)
 
 {
-	_maxDim[0] = _pos.x + (_dimN.x - 1) * _dVox;;
-	_maxDim[1] = _pos.y + (_dimN.y - 1) * _dVox;;
-	_maxDim[2] = _pos.z + (_dimN.z - 1) * _dVox;;
+	_maxDim.x = _pos.x + (_dimN.x - 1) * _dVox;
+	_maxDim.y = _pos.y + (_dimN.y - 1) * _dVox;
+	_maxDim.z = _pos.z + (_dimN.z - 1) * _dVox;
 }
 
 template<typename REAL>
@@ -50,7 +48,11 @@ IntrplGrid<REAL>::~IntrplGrid() {
 template<typename REAL>
 void IntrplGrid<REAL>::freeHost() noexcept {
 	delete[] _grid;
+	_grid = nullptr;
+
 }
+
+} // namespace as
 
 #endif
 

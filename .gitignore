@@ -11,4 +11,5 @@
 *.bak
 *.old
 AttractServer*
+**/resources
 

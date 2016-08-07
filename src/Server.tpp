@@ -29,7 +29,7 @@
 #include "macros.h"
 #include "helper.h"
 
-using namespace as;
+namespace as {
 
 template<typename Service>
 Server<Service>::Server(std::shared_ptr<Service> service):
@@ -67,6 +67,7 @@ Server<Service>::~Server()
 {
 	_dispatcher->signalTerminate();
 	_dispatcher->join();
+
 };
 
 template<typename Service>
@@ -81,6 +82,7 @@ void Server<Service>::setService(std::shared_ptr<Service> const& service) {
 		throw;
 	}
 	_workerMng->setService(_service.get());
+	_dispatcher->setDistributor(_service->createDistributor());
 
 }
 
@@ -216,6 +218,8 @@ void Server<Service>::configureBufferAllocators() {
 	_bufferMng->setInputAllocator(_service->getInputAllocator());
 	_bufferMng->setResultAllocator(_service->getResultAllocator());
 }
+
+} // namespace as
 
 #endif /* SRC_SERVER_TPP_ */
 

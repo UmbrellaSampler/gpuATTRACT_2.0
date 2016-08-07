@@ -34,19 +34,19 @@ struct NeighbourDesc {
 };
 
 template<typename REAL>
-class NLGrid;
-
-template<typename REAL>
-template<typename _REAL>
-struct NLGrid<REAL>::Desc<_REAL>;
-
-template<typename REAL>
 class NLGrid : public Grid<REAL> {
-	using grid_t = Grid<real_t>;
+	using grid_t = Grid<REAL>;
+	using typename grid_t::real_t;
+	using typename grid_t::real3_t;
+	using grid_t::_pos;
+	using grid_t::_dVox;
+	using grid_t::_dimN;
+	using typename grid_t::size3_t;
 public:
-	using desc_t = Desc<REAL>;
 
-	NLGrid(desc_t desc);
+	struct Desc;
+
+	NLGrid(Desc desc);
 
 	virtual ~NLGrid();
 
@@ -84,9 +84,9 @@ public:
 
 	virtual void setPos(real3_t pos) noexcept {
 		grid_t::setPos(pos);
-		_maxDim[0] = _pos.x + (_dimN.x - 1) * _dVox;
-		_maxDim[1] = _pos.y + (_dimN.y - 1) * _dVox;
-		_maxDim[2] = _pos.z + (_dimN.z - 1) * _dVox;
+		_maxDim.x = _pos.x + (_dimN.x - 1) * _dVox;
+		_maxDim.y = _pos.y + (_dimN.y - 1) * _dVox;
+		_maxDim.z = _pos.z + (_dimN.z - 1) * _dVox;
 	}
 
 	/*
@@ -160,17 +160,12 @@ public:
 	/*
 	 ** @brief: Descriptions of a neighbour list grid
 	 */
-	template<typename _REAL>
 	struct Desc {
-		using real_t = typename Grid<_REAL>::real_t; // performs floating point type check
 
-		unsigned width;		/** number of elements along x */
-		unsigned height;	/** number of elements along y */
-		unsigned depth;		/** number of elements along z */
-
+		size3_t dimN;		/** number of grid points in each dimensions */
 		real_t gridSpacing; 	/** grid spacing */
 		real_t dPlateau; 	/** Plateau distance: cutOff */
-		real_t posMin[3];	/** lower coordinate bounds == position of grid[0] */
+		real3_t posMin;		/** lower coordinate bounds == position of grid[0] */
 
 		/*
 		 ** @data layout:
