@@ -7,6 +7,8 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <algorithm>
+#include <cassert>
 #include "DataManager.h"
 #include "DataItem.h"
 
@@ -90,6 +92,27 @@ void DataManager::releaseDevice(deviceId_t deviceId) {
 }
 void DataManager::releaseAllDevices() {
 	_deviceManager.detachAll();
+}
+
+std::vector<deviceId_t> DataManager::getCommonDeviceIds(std::vector<id_t> const& ids) {
+	std::vector<std::vector<deviceId_t>> idVecs;
+	for (size_t i = 0; i < ids.size(); ++i) {
+		auto idsOfItem = _deviceManager.getDeviceIds(ids[i]);
+		assert(std::is_sorted(idsOfItem.begin(), idsOfItem.end()));
+		idVecs.push_back(std::move(idsOfItem));
+	}
+	/* build intersection */
+	/* initialize with deviceIds of first item and build intersection with remaining */
+	std::set<deviceId_t> intersect(idVecs[0].begin(), idVecs[0].end());
+	for (size_t i = 1; i < idVecs.size(); ++i) {
+		auto const& idVec = idVecs[i];
+		std::set<deviceId_t> tmp;
+		std::set_intersection(intersect.begin(), intersect.end(), idVec.begin(), idVec.end(),
+				std::insert_iterator<std::set<deviceId_t>>(tmp, tmp.begin()));
+		intersect = std::move(tmp);
+	}
+
+	return std::vector<deviceId_t>(intersect.begin(), intersect.end());
 }
 
 #endif //CUDA

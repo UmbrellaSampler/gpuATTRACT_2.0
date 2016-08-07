@@ -31,10 +31,11 @@ class Protein;
 template<typename REAL>
 class GridUnion;
 
+template<typename REAL>
+class ParamTable;
+
 /*
  ** @brief: Creates Protein object, reads pdb and assignes values.
- ** Supports old and new recduced format. Memory management needs to
- ** handled outside (e.g. by using a shared_ptr or manual deletion).
  */
 template<typename REAL>
 std::shared_ptr<Protein<REAL>> createProteinFromPDB (std::string filename);
@@ -47,8 +48,7 @@ void readProteinFromPDB(std::shared_ptr<Protein<REAL>>, std::string filename);
 
 /*
  ** @brief: Creates GridUnion from ATTRACT grid file (original
- ** format). Memory management needs to handled outside
- ** (e.g. by using a shared_ptr or manual deletion)
+ ** format).
  */
 template<typename REAL>
 std::shared_ptr<GridUnion<REAL>> createGridFromGridFile(std::string filename);
@@ -58,6 +58,20 @@ std::shared_ptr<GridUnion<REAL>> createGridFromGridFile(std::string filename);
  */
 template<typename REAL>
 void readGridFromGridFile(std::shared_ptr<GridUnion<REAL>>, std::string filename);
+
+/*
+ ** @brief: reads an ATTRACT forcefield parameter file and creates an
+ ** ATTRACT parameter table object.
+ */
+template<typename REAL>
+std::shared_ptr<ParamTable<REAL>> createParamTableFromFile(std::string filename);
+
+/*
+ ** @brief: as above but user provides AttrParamTable pointer.
+ */
+template<typename REAL>
+void readParamTableFromFile(std::shared_ptr<ParamTable<REAL>>, std::string filename);
+
 
 ///*
 // ** @brief: read the number of atoms of a protein from a pdb-file.
@@ -84,16 +98,7 @@ void readGridFromGridFile(std::shared_ptr<GridUnion<REAL>>, std::string filename
 //as::GridUnion* createGridUnionFromDumpFile (std::string filename);
 //
 ///*
-// ** @brief: reads an ATTRACT forcefield parameter file and creates an
-// ** ATTRACT parameter table object. Memory management needs to handled outside
-// ** (e.g. by using a shared_ptr or manual deletion)
-// */
-//as::AttrParamTable* createParamTableFromFile(std::string filename);
-//
-///*
-// ** @brief: as above but user provides AttrParamTable pointer.
-// */
-//void readParamTableFromFile(as::AttrParamTable* table, std::string filename);
+
 //
 //
 ///*

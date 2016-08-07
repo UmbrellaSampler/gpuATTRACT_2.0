@@ -89,18 +89,18 @@ void DeviceDataConfigurator::detach(const std::shared_ptr<DeviceProtein<REAL>> p
 	ASSERT(deviceId >= 0);
 	checkDeviceIdAndSetCurrent(deviceId);
 
-	auto& resc = protein->hostResc;
+	auto& hostResc = protein->hostResc;
 
-	CUDA_CHECK(cudaFree(resc.xPos));
-	CUDA_CHECK(cudaFree(resc.yPos));
-	CUDA_CHECK(cudaFree(resc.zPos));
-	CUDA_CHECK(cudaFree(resc.charge));
-	CUDA_CHECK(cudaFree(resc.type));
-	CUDA_CHECK(cudaFree(resc.mappedType));
-	if (resc.numModes != 0) {
-		CUDA_CHECK(cudaFree(resc.xModes));
-		CUDA_CHECK(cudaFree(resc.yModes));
-		CUDA_CHECK(cudaFree(resc.zModes));
+	CUDA_CHECK(cudaFree(hostResc.xPos));
+	CUDA_CHECK(cudaFree(hostResc.yPos));
+	CUDA_CHECK(cudaFree(hostResc.zPos));
+	CUDA_CHECK(cudaFree(hostResc.charge));
+	CUDA_CHECK(cudaFree(hostResc.type));
+	CUDA_CHECK(cudaFree(hostResc.mappedType));
+	if (hostResc.numModes != 0) {
+		CUDA_CHECK(cudaFree(hostResc.xModes));
+		CUDA_CHECK(cudaFree(hostResc.yModes));
+		CUDA_CHECK(cudaFree(hostResc.zModes));
 	}
 }
 
@@ -316,7 +316,7 @@ std::shared_ptr<DeviceNLGrid<REAL>> DeviceDataConfigurator::attach(const std::sh
 
 template<typename REAL>
 void DeviceDataConfigurator::detach(const std::shared_ptr<DeviceNLGrid<REAL>> grid) {
-	auto hostResc = grid->hostResc;
+	auto& hostResc = grid->hostResc;
 	/* Free NL grid resources */
 	cudaVerify(cudaFreeArray(hostResc.cuArray));
 	cudaVerify(cudaDestroyTextureObject(hostResc.tex));
@@ -329,9 +329,9 @@ std::shared_ptr<DeviceParamTable<REAL>> DeviceDataConfigurator::attach(const std
 
 	const unsigned numTypes = paramTable->numTypes();
 
-	typename ParamTable<REAL>::type* d_table;
-	CUDA_CHECK(cudaMalloc((void**)&d_table, numTypes*numTypes*sizeof(ParamTable<REAL>::type)));
-	CUDA_CHECK(cudaMemcpy(d_table, paramTable->table(), numTypes*numTypes*sizeof(ParamTable<REAL>::type), cudaMemcpyHostToDevice));
+	typename ParamTable<REAL>::type_t* d_table;
+	CUDA_CHECK(cudaMalloc((void**)&d_table, numTypes*numTypes*sizeof(typename ParamTable<REAL>::type_t)));
+	CUDA_CHECK(cudaMemcpy(d_table, paramTable->table(), numTypes*numTypes*sizeof(typename ParamTable<REAL>::type_t), cudaMemcpyHostToDevice));
 
 
 	typename DeviceParamTable<REAL>::Desc desc;
@@ -342,16 +342,20 @@ std::shared_ptr<DeviceParamTable<REAL>> DeviceDataConfigurator::attach(const std
 	typename DeviceParamTable<REAL>::HostResc hostResc;
 	hostResc = desc;
 
-	auto cudaDesc = std::make_shared<DeviceParamTable<REAL>>();
-	cudaDesc->deviceDesc = desc;
-	cudaDesc->hostResc = hostResc;
+	auto deviceParamTable = std::make_shared<DeviceParamTable<REAL>>();
+	deviceParamTable->desc = desc;
+	deviceParamTable->hostResc = hostResc;
 
-	return cudaDesc;
+	return deviceParamTable;
 }
 
 template<typename REAL>
-void DeviceDataConfigurator::detach(const std::shared_ptr<DeviceParamTable<REAL>>, deviceId_t) {
+void DeviceDataConfigurator::detach(const std::shared_ptr<DeviceParamTable<REAL>> d_table, deviceId_t deviceId) {
+	ASSERT(deviceId >= 0);
+	checkDeviceIdAndSetCurrent(deviceId);
+	auto& hostResc = d_table->hostResc;
 
+	CUDA_CHECK(cudaFree(hostResc.paramTable));
 }
 
 

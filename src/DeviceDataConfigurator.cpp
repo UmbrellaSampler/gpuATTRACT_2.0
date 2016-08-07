@@ -15,14 +15,18 @@
 namespace as {
 
 void DeviceDataConfigurator::checkDeviceIdAndSetCurrent(deviceId_t deviceId) {
-	cudaError_t err = cudaSetDevice(deviceId);
-	if(err!=cudaSuccess) {
-		std::stringstream stream;
-		stream << deviceId;
-		std::string(cudaGetErrorString(err));
-		throw std::invalid_argument("CUDA error: Invalid deviceId (" + stream.str() + ").");
+	if (enableDeviceCheck) {
+		cudaError_t err = cudaSetDevice(deviceId);
+		if(err!=cudaSuccess) {
+			std::stringstream stream;
+			stream << deviceId;
+			std::string(cudaGetErrorString(err));
+			throw std::invalid_argument("CUDA error: Invalid deviceId (" + stream.str() + ").");
+		}
 	}
 }
+
+bool DeviceDataConfigurator::enableDeviceCheck = true;
 
 }
 
@@ -53,6 +57,18 @@ void DeviceDataConfigurator::detach(const std::shared_ptr<DeviceGridUnion<float>
 
 template
 void DeviceDataConfigurator::detach(const std::shared_ptr<DeviceGridUnion<double>>, deviceId_t);
+
+template
+std::shared_ptr<DeviceParamTable<float>> DeviceDataConfigurator::attach(const std::shared_ptr<ParamTable<float>>, deviceId_t);
+
+template
+void DeviceDataConfigurator::detach(const std::shared_ptr<DeviceParamTable<float>>, deviceId_t);
+
+template
+std::shared_ptr<DeviceParamTable<double>> DeviceDataConfigurator::attach(const std::shared_ptr<ParamTable<double>>, deviceId_t);
+
+template
+void DeviceDataConfigurator::detach(const std::shared_ptr<DeviceParamTable<double>>, deviceId_t);
 
 }
 

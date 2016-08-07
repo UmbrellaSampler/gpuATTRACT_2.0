@@ -21,6 +21,8 @@
 #ifndef SIMPARAM_H_
 #define SIMPARAM_H_
 
+#include "DataItem.h"
+
 namespace as {
 /*
  * The felec constant is the electrostatic energy, in kcal/mol,
@@ -42,13 +44,13 @@ enum dielec_t{
 };
 
 template<typename REAL>
-struct SimParam {
-	using simParam_t = SimParam<REAL>;
+class SimParam : public DataItem {
+	// Check if REAL is of floating-point type
+	using real_t = typename std::enable_if<std::is_floating_point<REAL>::value, REAL>::type;
+public:
 	dielec_t dielec = variable;		/** type of dielectric constant */
-	REAL epsilon = 15;				/** dielectric constant */
-	REAL ffelec = FELEC/epsilon;	/** precomputed factor felec/epsilon */
-	bool useRecGrad = false;		/** using Receptor gradients */
-	bool usePot = true;				/** use Potential grid */
+	real_t epsilon = 15;			/** dielectric constant */
+	real_t ffelec = FELEC/epsilon;	/** precomputed factor felec/epsilon */
 };
 
 }  // namespace

@@ -48,29 +48,18 @@ private:
  */
 class DeviceLocationMap {
 public:
-	void addIdToDevice(id_t id, deviceId_t dId) {
+	void addIdToDevice(id_t id, deviceId_t dId) noexcept {
 		auto& set = _deviceMap[id]; // create set if not there
-
-//		if (set.find(dId) != set.end()) {
-//			std::stringstream what;
-//			what << "Cannot attach DataItem. DataItem with id " << id << " is already attached to device " << dId << "\n";
-//			throw std::invalid_argument(what.str());
-//		}
 		set.insert(dId);
 	}
 
-	void removeIdFromDevice(id_t id, deviceId_t dId) {
+	void removeIdFromDevice(id_t id, deviceId_t dId) noexcept {
 		auto& set = _deviceMap.at(id);
-//		if (set.find(dId) == set.end()) {
-//			std::stringstream what;
-//			what << "Cannot detach DataItem. DataItem with id " << id << " is not attached to device " << dId << "\n";
-//			throw std::invalid_argument(what.str());
-//		}
 		set.erase(set.find(dId));
 	}
 
-	std::set<deviceId_t> deviceIds(id_t id) const {
-		return _deviceMap.at(id);
+	std::set<deviceId_t> deviceIds(id_t id) noexcept {
+		return _deviceMap[id];
 	}
 
 

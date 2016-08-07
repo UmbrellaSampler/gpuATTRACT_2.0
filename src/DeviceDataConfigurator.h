@@ -67,6 +67,10 @@ public:
 	template<typename REAL>
 	static void detach(const std::shared_ptr<DeviceParamTable<REAL>>, deviceId_t);
 
+	static void setEnableDeviceCheck(bool status) {
+		enableDeviceCheck = status;
+	}
+
 private:
 	template<typename REAL>
 	static std::shared_ptr<DeviceIntrplGrid<REAL>> attach(const std::shared_ptr<IntrplGrid<REAL>> protein);
@@ -85,6 +89,10 @@ private:
 	 * set to the current device. Otherwise, an exception is thrown.
 	 */
 	static void checkDeviceIdAndSetCurrent(deviceId_t deviceId);
+
+
+	/** For testing purposes. Must be set to true under release conditions, which is the default **/
+	static bool enableDeviceCheck;
 };
 
 #endif

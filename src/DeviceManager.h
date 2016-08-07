@@ -11,6 +11,7 @@
 #ifdef CUDA
 #include <memory>
 #include <map>
+#include <vector>
 
 #include "publicTypes.h"
 #include "DeviceManagerHelpers.h"
@@ -35,11 +36,19 @@ public:
 	void detachAllFromDevice(deviceId_t deviceId);
 	void detachAll();
 
+	/** returns all deviceIds the item with id is attached to */
+	std::vector<deviceId_t> getDeviceIds(id_t id) noexcept;
+
+	/** returns all ids of items that are attached to the device with deviceId */
+	std::vector<id_t> getIds(deviceId_t deviceId) noexcept;
+
+	std::shared_ptr<DeviceItem> getItem(id_t id, deviceId_t deviceId) const;
+
 private:
-	/** Maps deviceId to a set of DataItems (id_t) */
+	/** maps deviceId to a set of DataItems (id_t) */
 	std::map<deviceId_t, DeviceOccupancy> _deviceOccupancyMap;
 
-	/** Maps an id to a set of devices (deviceId_t) the DataItem is attached to */
+	/** maps an id to a set of devices (deviceId_t) the DataItem is attached to */
 	DeviceLocationMap _deviceLocationMap;
 
 	std::map<DeviceItemKey, std::shared_ptr<DeviceItem>> _deviceItems;

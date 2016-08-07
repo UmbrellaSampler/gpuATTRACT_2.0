@@ -40,6 +40,7 @@
 #include "Vec3.h"
 #include "Protein.h"
 #include "GridUnion.h"
+#include "ParamTable.h"
 
 
 namespace as {
@@ -56,7 +57,7 @@ namespace as {
 //}
 
 
-static std::vector<std::string> line2Strings(std::string line) {
+static std::vector<std::string> pdbLine2Strings(std::string line) {
 	using namespace std;
 	istringstream iss(line);
 	/* char offset in file: X, Y, Z, type, charge */
@@ -105,7 +106,7 @@ void readProteinFromPDB(std::shared_ptr<Protein<REAL>> prot, std::string filenam
 			}
 
 			/* split line to vector of strings */
-			vector<string> tokens = line2Strings(line);
+			vector<string> tokens = pdbLine2Strings(line);
 
 //			for(auto str : tokens) {
 //				cout << str << " ";
@@ -327,6 +328,111 @@ void readGridFromGridFile(std::shared_ptr<GridUnion<REAL>> gridUnion, std::strin
 	gridUnion->setTag(filename);
 }
 
+/*
+ ** @brief: reads an ATTRACT forcefield parameter file and creates an
+ ** ATTRACT parameter table object.
+ */
+template<typename REAL>
+std::shared_ptr<ParamTable<REAL>> createParamTableFromFile(std::string filename) {
+	// Check if REAL is of floating-point type
+	auto table = std::make_shared<ParamTable<REAL>>();
+	readParamTableFromFile(table, filename);
+	return table;
+}
+
+/*
+ ** @brief: as above but user provides AttrParamTable pointer.
+ */
+template<typename REAL>
+void readParamTableFromFile(std::shared_ptr<ParamTable<REAL>> table, std::string filename) {
+	using namespace std;
+
+	ifstream infile(filename, ios::in);
+
+	if (!infile.fail()) {
+		unsigned potshape, numTypes;
+		REAL swiOn, swiOff;
+		infile >> potshape >> numTypes >> swiOn >> swiOff;
+
+
+		table->setNumTypes(numTypes);
+		table->setSwiOn(swiOn);
+		table->setSwiOff(swiOff);
+
+		typename ParamTable<REAL>::type_t* paramTable = table->getOrCreateTable();
+
+		for (unsigned i = 0; i < numTypes; ++i) {
+			for (unsigned j = 0; j < numTypes; ++j) {
+				typename ParamTable<REAL>::type_t &params =paramTable[numTypes * i + j];
+				infile >> params.rc;
+			}
+		}
+		for (unsigned i = 0; i < numTypes; ++i) {
+			for (unsigned j = 0; j < numTypes; ++j) {
+				typename ParamTable<REAL>::type_t &params =paramTable[numTypes * i + j];
+				infile >> params.ac;
+			}
+		}
+		for (unsigned i = 0; i < numTypes; ++i) {
+			for (unsigned j = 0; j < numTypes; ++j) {
+				typename ParamTable<REAL>::type_t &params =paramTable[numTypes * i + j];
+				infile >> params.ipon;
+			}
+		}
+
+		infile.close();
+		/* calculate rc, ac and other parameters */
+
+		if (potshape == 8) {
+			table->setPotShape(ParamTable<REAL>::PotShape::_8_6);
+			for (unsigned i = 0; i < numTypes; ++i) {
+				for (unsigned j = 0; j < numTypes; ++j) {
+					typename ParamTable<REAL>::type_t &params =paramTable[numTypes * i + j];
+					REAL rbc = params.rc;
+					REAL abc = params.ac;
+					params.rc = abc * std::pow(rbc, potshape);
+
+					params.ac = abc * std::pow(rbc, unsigned(6));
+					if (params.ac > 0 && params.rc > 0) {
+						params.emin = -27.0f * std::pow(params.ac, unsigned(4))
+								/ (256.0f * std::pow(params.rc, unsigned(3)));
+						params.rmin2 = 4.0f * params.rc
+								/ (3.0f * params.ac);
+					} else {
+						params.emin = 0;
+						params.rmin2 = 0;
+					}
+				}
+			}
+//
+		} else if (potshape == 12) {
+			table->setPotShape(ParamTable<REAL>::PotShape::_12_6);
+			for (unsigned i = 0; i < numTypes; ++i) {
+				for (unsigned j = 0; j < numTypes; ++j) {
+					typename ParamTable<REAL>::type_t &params =paramTable[numTypes * i + j];
+					REAL rbc = params.rc;
+					REAL abc = params.ac;
+					params.rc = abc * pow(rbc, potshape);
+					params.ac = abc * pow(rbc, unsigned(6));
+					params.emin = -0.25 * abc;
+					params.rmin2 = 1.25992105f * rbc * rbc;
+				}
+			}
+		} else {
+			infile.close();
+			std::cerr << "Unknown potential shape " << potshape
+					<< " in file: "<< filename << std::endl;
+			exit(EXIT_FAILURE);
+		}
+
+	} else {
+		infile.close();
+		cerr << "Error: Failed to open file: " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+}
+
 
 template
 std::shared_ptr<Protein<float>> createProteinFromPDB(std::string filename);
@@ -352,8 +458,20 @@ std::shared_ptr<GridUnion<double>> createGridFromGridFile(std::string filename);
 template
 void readGridFromGridFile(std::shared_ptr<GridUnion<double>>, std::string filename);
 
+template
+std::shared_ptr<ParamTable<float>> createParamTableFromFile(std::string filename);
 
-}
+template
+void readParamTableFromFile(std::shared_ptr<ParamTable<float>>, std::string filename);
+
+template
+std::shared_ptr<ParamTable<double>> createParamTableFromFile(std::string filename);
+
+template
+void readParamTableFromFile(std::shared_ptr<ParamTable<double>>, std::string filename);
+
+
+} // namespace as
 
 
 
