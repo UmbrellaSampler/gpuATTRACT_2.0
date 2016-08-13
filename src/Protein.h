@@ -27,6 +27,7 @@
 #include <cassert>
 #include <type_traits>
 
+#include "nativeTypesWrapper.h"
 #include "Vec3.h"
 #include "TypeMap.h"
 #include "DataItem.h"
@@ -37,7 +38,7 @@ namespace as {
 template<typename REAL>
 class Protein : public DataItem {
 	// Check if REAL is of floating-point type
-	using real_t = typename std::enable_if<std::is_floating_point<REAL>::value, REAL>::type;
+	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 
 public:

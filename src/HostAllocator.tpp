@@ -13,13 +13,13 @@
 namespace as {
 
 template<typename BufferType>
-BufferType* HostAllocator<BufferType>::allocateBuffer(size_t size) {
+BufferType* HostAllocator<BufferType>::allocate(size_t size) {
 	return new BufferType[size];
 }
 
 
 template<typename BufferType>
-void HostAllocator<BufferType>::freeBuffer(BufferType* buffer) {
+void HostAllocator<BufferType>::deallocate(BufferType* buffer) {
 	delete[] buffer;
 }
 

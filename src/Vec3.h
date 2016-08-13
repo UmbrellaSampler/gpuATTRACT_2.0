@@ -63,7 +63,7 @@ public:
 	Vec3() {
 	}
 
-	Vec3(type arg) {
+	explicit Vec3(type arg) {
 		x = arg;
 		y = arg;
 		z = arg;

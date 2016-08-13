@@ -384,7 +384,7 @@ void readParamTableFromFile(std::shared_ptr<ParamTable<REAL>> table, std::string
 		/* calculate rc, ac and other parameters */
 
 		if (potshape == 8) {
-			table->setPotShape(ParamTable<REAL>::PotShape::_8_6);
+			table->setPotShape(PotShape::_8_6);
 			for (unsigned i = 0; i < numTypes; ++i) {
 				for (unsigned j = 0; j < numTypes; ++j) {
 					typename ParamTable<REAL>::type_t &params =paramTable[numTypes * i + j];
@@ -406,7 +406,7 @@ void readParamTableFromFile(std::shared_ptr<ParamTable<REAL>> table, std::string
 			}
 //
 		} else if (potshape == 12) {
-			table->setPotShape(ParamTable<REAL>::PotShape::_12_6);
+			table->setPotShape(PotShape::_12_6);
 			for (unsigned i = 0; i < numTypes; ++i) {
 				for (unsigned j = 0; j < numTypes; ++j) {
 					typename ParamTable<REAL>::type_t &params =paramTable[numTypes * i + j];

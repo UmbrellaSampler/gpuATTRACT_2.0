@@ -20,7 +20,7 @@ class DeviceParamTable : public DeviceItem {
 public:
 	struct Desc {
 		unsigned numTypes;  								/** number of particle/atom types */
-		typename ParamTable<REAL>::PotShape shape;			/** potential shape that is supported by the table */
+		PotShape shape;			/** potential shape that is supported by the table */
 		typename ParamTable<REAL>::type_t* paramTable;
 	};
 

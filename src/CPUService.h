@@ -18,7 +18,7 @@ protected:
 	using service_t = Service<InputType,CommonType,ResultType>;
 public:
 
-	using typename service_t::input_t ;
+	using typename service_t::input_t;
 	using typename service_t::common_t;
 	using typename service_t::result_t;
 

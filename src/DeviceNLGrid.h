@@ -46,6 +46,7 @@ public:
 		/** Host pointers / objects*/
 		cudaTextureObject_t tex;
 		cudaArray* cuArray; /** cudaArray */
+		unsigned* d_neighborList = nullptr;
 	};
 
 	Desc desc;

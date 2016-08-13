@@ -306,6 +306,7 @@ std::shared_ptr<DeviceNLGrid<REAL>> DeviceDataConfigurator::attach(const std::sh
 	typename DeviceNLGrid<REAL>::HostResc hostResc;
 	hostResc.tex = texObj;
 	hostResc.cuArray = cuArray;
+	hostResc.d_neighborList = d_neighborList;
 
 	auto d_grid = std::make_shared<DeviceNLGrid<REAL>>();
     d_grid->desc = desc;
@@ -318,8 +319,9 @@ template<typename REAL>
 void DeviceDataConfigurator::detach(const std::shared_ptr<DeviceNLGrid<REAL>> grid) {
 	auto& hostResc = grid->hostResc;
 	/* Free NL grid resources */
-	cudaVerify(cudaFreeArray(hostResc.cuArray));
-	cudaVerify(cudaDestroyTextureObject(hostResc.tex));
+	CUDA_CHECK(cudaFreeArray(hostResc.cuArray));
+	CUDA_CHECK(cudaDestroyTextureObject(hostResc.tex));
+	CUDA_CHECK(cudaFree(hostResc.d_neighborList));
 }
 
 template<typename REAL>

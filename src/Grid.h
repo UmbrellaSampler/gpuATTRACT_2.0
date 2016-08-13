@@ -23,8 +23,7 @@
 
 
 #include <type_traits>
-#include "nativeTypes.h"
-#include "nativeTypesFunctions.h"
+#include "nativeTypesWrapper.h"
 
 namespace as{
 
@@ -32,9 +31,8 @@ template<typename REAL>
 class Grid {
 public:
 	// Check if REAL is of floating-point type
-	using real_t = typename std::enable_if<std::is_floating_point<REAL>::value, REAL>::type;
-
-	using real3_t = typename std::conditional<std::is_same<real_t, float>::value, float3, double3>::type;
+	using real_t = typename TypeWrapper<REAL>::real_t;
+	using real3_t = typename TypeWrapper<REAL>::real3_t;
 	using size3_t = uint3;
 	using grid_t = Grid<real_t>;
 

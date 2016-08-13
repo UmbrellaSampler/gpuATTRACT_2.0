@@ -2,16 +2,23 @@
 #define PARAMTABLE_H_
 
 #include <stdexcept>
-#include <type_traits>
+#include "nativeTypesWrapper.h"
 
 #include "DataItem.h"
 
 namespace as {
 
+/* Potential shape type of the ATTRACT force field */
+enum class PotShape {
+	_12_6,
+	_8_6,
+	undefined
+};
+
 template<typename REAL>
 class ParamTable : public DataItem {
 	// Check if REAL is of floating-point type
-	using real_t = typename std::enable_if<std::is_floating_point<REAL>::value, REAL>::type;
+	using real_t = typename TypeWrapper<REAL>::real_t;
 public:
 
 	struct attractFFParams_t {
@@ -22,20 +29,11 @@ public:
 		real_t emin;
 	};
 
-	/* Potential shape type of the ATTRACT force field */
-	enum PotShape {
-		_12_6,
-		_8_6,
-		undefined
-	};
-
 	using type_t = attractFFParams_t;
 
 	/* Constructor */
 	ParamTable() : _paramTable(nullptr), _numTypes(0),
-			_shape(undefined), _swiOn(0), _swiOff(0) {}
-
-
+			_shape(PotShape::undefined), _swiOn(0), _swiOff(0) {}
 
 	/* Destructor */
 	~ParamTable() {

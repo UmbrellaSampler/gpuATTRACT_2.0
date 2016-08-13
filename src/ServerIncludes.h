@@ -10,8 +10,6 @@
 
 
 #include "BufferManager.tpp"
-#include "HostAllocator.tpp"
-#include "HostPinnedAllocator.tpp"
 #include "RequestManager.tpp"
 #include "Dispatcher.tpp"
 #include "Server.tpp"

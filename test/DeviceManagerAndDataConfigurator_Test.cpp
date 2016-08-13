@@ -12,9 +12,9 @@
 #include "DeviceManager.h"
 #include "Protein.h"
 #include "GridUnion.h"
+#include "ParamTable.h"
 #include "readFile.h"
 #include "DeviceDataConfigurator.h"
-#include "TypeMap.h"
 
 using namespace as;
 
@@ -25,12 +25,12 @@ protected: // could also be public according to gtest Primer.md
 				getTestProtein<float>(),
 				getTestProtein<double>(),
 				getTestGrid<float>(),
-				getTestGrid<double>()
+				getTestGrid<double>(),
+				getTestTable<float>(),
+				getTestTable<double>()
 			};
-		_ids = {0, 1, 2, 3};
-
-		auto prot = _items[0];
-
+		_ids = std::vector<id_t>(_items.size());
+		std::iota(_ids.begin(), _ids.end(), 0);
 	}
 
 	virtual void TearDown() {}
@@ -49,6 +49,11 @@ protected: // could also be public according to gtest Primer.md
 		return createGridFromGridFile<REAL>(gridName);
 	}
 
+	template<typename REAL>
+	std::shared_ptr<ParamTable<REAL>> getTestTable() {
+		return createParamTableFromFile<REAL>(tableName);
+	}
+
 	std::vector<std::shared_ptr<DataItem>>& getItems_ref() {
 		return _items;
 	}
@@ -62,6 +67,7 @@ private:
 	std::vector<id_t> _ids;
 	const std::string pdbName = "/home/uwe/eclipse/gpuATTRACT/gpuATTRACT_2.0/test/resources/ligandr.pdb";
 	const std::string gridName = "/home/uwe/eclipse/gpuATTRACT/gpuATTRACT_2.0/test/resources/receptorgrid.grid";
+	const std::string tableName = "/home/uwe/eclipse/gpuATTRACT/gpuATTRACT_2.0/test/resources/attract.par";
 
 
 };
@@ -83,9 +89,7 @@ TEST_F(DeviceManagerAndDataConfig_TEST, DeviceDataConfigurator_attach_detach) {
 	} catch (std::exception& e) {
 		FAIL() << e.what();
 	}
-
 	SUCCEED();
-
 }
 
 
@@ -140,6 +144,48 @@ TEST_F(DeviceManagerAndDataConfig_TEST, DeviceManager_attach_detach) {
 		FAIL() << e.what();
 	}
 
+}
+
+TEST_F(DeviceManagerAndDataConfig_TEST, DeviceManager_getIds) {
+	DeviceManager mng;
+	auto& items = getItems_ref();
+	auto& ids = getIds_ref();
+
+	DeviceDataConfigurator::setEnableDeviceCheck(false);
+
+	const std::vector<std::vector<deviceId_t>> deviceIds = {
+			{0,1,2}, // item 0 goes to device 0,1,2
+			{2,3,4}, // item 1 goes to device 2,3,4 ...
+			{3,4},
+			{0,1}
+	};
+
+	const std::vector<std::vector<id_t>> commonIds = {
+			{ids[0],ids[3]}, // device 0 gets item 0,3
+			{ids[0],ids[3]}, // device 1 gets itme 0,3 ...
+			{ids[0],ids[1]},
+			{ids[1],ids[2]},
+			{ids[1],ids[2]}
+	};
+
+	for (id_t id = 0; id < deviceIds.size(); ++id) {
+		for (auto deviceId : deviceIds[id]) {
+			mng.attachToDevice(items[id], ids[id], deviceId);
+		}
+	}
+
+	for (id_t id = 0; id < deviceIds.size(); ++id) {
+		auto deviceIds_ = mng.getDeviceIds(id);
+		EXPECT_EQ(deviceIds[id],deviceIds_);
+	}
+
+	for (deviceId_t deviceId = 0; deviceId < commonIds.size(); ++deviceId) {
+		auto ids = mng.getIds(deviceId); // get all item ids on device with deviceId
+		EXPECT_EQ(commonIds[deviceId],ids);
+	}
+
+	mng.detachAll();
+	DeviceDataConfigurator::setEnableDeviceCheck(true);
 }
 
 #endif

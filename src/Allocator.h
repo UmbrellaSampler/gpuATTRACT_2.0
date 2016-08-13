@@ -16,22 +16,22 @@ template<typename BufferType>
 class Allocator {
 public:
 	virtual ~Allocator() {}
-	virtual BufferType* allocateBuffer(size_t) = 0;
-	virtual void freeBuffer(BufferType*) = 0;
+	virtual BufferType* allocate(size_t) = 0;
+	virtual void deallocate(BufferType*) = 0;
 };
 
 template<typename BufferType>
 class HostAllocator : public Allocator<BufferType> {
 public:
-	BufferType* allocateBuffer(size_t);
-	void freeBuffer(BufferType*);
+	BufferType* allocate(size_t);
+	void deallocate(BufferType*);
 };
 
 template<typename BufferType>
 class HostPinnedAllocator : public Allocator<BufferType> {
 public:
-	BufferType* allocateBuffer(size_t);
-	void freeBuffer(BufferType*);
+	BufferType* allocate(size_t);
+	void deallocate(BufferType*);
 };
 
 

@@ -15,6 +15,8 @@
 #include "Service_Mock.h"
 #include "Service_TimeOut.h"
 
+#include "HostAllocator.tpp"
+
 //#include <iostream>
 //using std::cout;
 //using std::endl;

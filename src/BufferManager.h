@@ -35,8 +35,8 @@ public:
 
 private:
 
-	BufferType* allocateBuffer(size_t bufferSize);
-	void freeBuffer(BufferType*);
+	BufferType* allocate(size_t bufferSize);
+	void deallocate(BufferType*);
 
 	bool bufferAvailable() noexcept {
 		return _bufferQueue.size() > 0;

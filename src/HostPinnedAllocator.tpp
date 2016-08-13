@@ -17,14 +17,14 @@
 namespace as {
 
 template<typename BufferType>
-BufferType* HostPinnedAllocator<BufferType>::allocateBuffer(size_t size) {
+BufferType* HostPinnedAllocator<BufferType>::allocate(size_t size) {
 	BufferType* buffer;
 	CUDA_CHECK(cudaMallocHost((void**)&buffer, size*sizeof(BufferType)));
 	return buffer;
 }
 
 template<typename BufferType>
-void HostPinnedAllocator<BufferType>::freeBuffer(BufferType* buffer) {
+void HostPinnedAllocator<BufferType>::deallocate(BufferType* buffer) {
 	CUDA_CHECK(cudaFreeHost(buffer));
 }
 

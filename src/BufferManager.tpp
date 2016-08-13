@@ -31,9 +31,9 @@ SingleBufferManager<BufferType>::~SingleBufferManager() {
 }
 
 template<typename BufferType>
-inline BufferType* SingleBufferManager<BufferType>::allocateBuffer(size_t bufferSize) {
+inline BufferType* SingleBufferManager<BufferType>::allocate(size_t bufferSize) {
 	assert(_allocator != nullptr);
-	BufferType* buffer = _allocator->allocateBuffer(bufferSize);
+	BufferType* buffer = _allocator->allocate(bufferSize);
 	assert(!isOwned(buffer));
 	_bufferSizeMap[buffer] = bufferSize;
 	return buffer;
@@ -41,10 +41,10 @@ inline BufferType* SingleBufferManager<BufferType>::allocateBuffer(size_t buffer
 }
 
 template<typename BufferType>
-inline void SingleBufferManager<BufferType>::freeBuffer(BufferType* buffer) {
+inline void SingleBufferManager<BufferType>::deallocate(BufferType* buffer) {
 	assert(isOwned(buffer));
 	_bufferSizeMap.erase(buffer);
-	_allocator->freeBuffer(buffer);
+	_allocator->deallocate(buffer);
 
 }
 
@@ -53,13 +53,13 @@ template<typename BufferType>
 BufferType* SingleBufferManager<BufferType>::getBuffer(size_t bufferSize) {
 	assert(bufferSize > 0);
 	if (!bufferAvailable()) {
-		return allocateBuffer(bufferSize);
+		return allocate(bufferSize);
 	} else {
 		BufferType* buffer = _bufferQueue.front();
 		_bufferQueue.pop();
 		if(getBufferSize(buffer) < bufferSize) {
-			freeBuffer(buffer);
-			return allocateBuffer(bufferSize);
+			deallocate(buffer);
+			return allocate(bufferSize);
 		} else {
 			return buffer;
 		}

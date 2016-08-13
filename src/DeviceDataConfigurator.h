@@ -95,10 +95,9 @@ private:
 	static bool enableDeviceCheck;
 };
 
-#endif
-
 
 }  // namespace as
 
+#endif
 
 #endif /* SRC_CUDADATACONFIGURATOR_CPP_ */

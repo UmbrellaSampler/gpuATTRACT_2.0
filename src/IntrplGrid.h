@@ -87,31 +87,33 @@ public:
 	/*
 	 ** @brief: return the min grid indices according to the position
 	 */
-	void getIndex(const real_t &x, const real_t &y, const real_t &z, int &idxX, int &idxY, int &idxZ) const noexcept {
-		/* in cases where x is place exactly at the boundary floor does not evaluate to "dimSize" - 2
+	int3 getIndex(real3_t const& idx) const noexcept {
+		/* in cases where x is placed exactly at the boundary floor does not evaluate to "dimSize" - 2
 		 * --> MIN (...)*/
-		idxX = std::min(static_cast<unsigned>(floor((x - _pos.x)*_dVox_inv)), _dimN.x - 2);
-		idxY = std::min(static_cast<unsigned>(floor((y - _pos.y)*_dVox_inv)), _dimN.y - 2);
-		idxZ = std::min(static_cast<unsigned>(floor((z - _pos.z)*_dVox_inv)), _dimN.z - 2);
+		int3 idxOut;
+		idxOut.x = std::min(static_cast<unsigned>(floor((idx.x - _pos.x)*_dVox_inv)), _dimN.x - 2);
+		idxOut.y = std::min(static_cast<unsigned>(floor((idx.y - _pos.y)*_dVox_inv)), _dimN.y - 2);
+		idxOut.z = std::min(static_cast<unsigned>(floor((idx.z - _pos.z)*_dVox_inv)), _dimN.z - 2);
+		return idxOut;
 	}
 
 	/*
 	 ** @brief: check out of bounds indexing
 	 */
-	bool outOfBounds_byIndex(const int &idxX, const int &idxY, const int &idxZ) const noexcept {
-		return ((idxX < 0 || (idxX >= static_cast<int>(_dimN.x)-1)) || (idxY < 0 || (idxY >= static_cast<int>(_dimN.y)-1)) || (idxZ < 0 || (idxZ >= static_cast<int>(_dimN.z)-1)));
+	bool outOfBounds_byIndex(int3 const& idx) const noexcept {
+		return ((idx.x < 0 || (idx.x >= static_cast<int>(_dimN.x)-1)) || (idx.y < 0 || (idx.y >= static_cast<int>(_dimN.y)-1)) || (idx.z < 0 || (idx.z >= static_cast<int>(_dimN.z)-1)));
 	}
 	
-	bool outOfBounds_byPos(const real_t &x, const real_t &y, const real_t &z) const noexcept {
-		return (( (x < minDim().x) || (x > maxDim().x) ) ||
-				( (y < minDim().y) || (y > maxDim().y) ) ||
-				( (z < minDim().z) || (z > maxDim().z) ) );
+	bool outOfBounds_byPos(real3_t const& pos) const noexcept {
+		return (( (pos.x < minDim().x) || (pos.x > maxDim().x) ) ||
+				( (pos.y < minDim().y) || (pos.y > maxDim().y) ) ||
+				( (pos.z < minDim().z) || (pos.z > maxDim().z) ) );
 	}
 
-	bool notOutOfBounds_byPos(const real_t &x, const real_t &y, const real_t &z) const noexcept {
-		return (( (x >= minDim().x) && (x <= maxDim().x) ) &&
-				( (y >= minDim().y) && (y <= maxDim().y) ) &&
-				( (z >= minDim().z) && (z <= maxDim().z) ) );
+	bool notOutOfBounds_byPos(real3_t const& pos) const noexcept {
+		return (( (pos.x >= minDim().x) && (pos.x <= maxDim().x) ) &&
+				( (pos.y >= minDim().y) && (pos.y <= maxDim().y) ) &&
+				( (pos.z >= minDim().z) && (pos.z <= maxDim().z) ) );
 	}
 
 	/*
@@ -119,36 +121,39 @@ public:
 	 ** This method depends highly on the implementation of the Grid. Therefore this
 	 ** method is part of the Grid.
 	 */
-	void host_getVoxelByIndex(const int &idxX, const int &idxY, const int &idxZ, const uint &type, VoxelOctet<real_t> &voxelOct) const noexcept {
+	VoxelOctet<real_t> getVoxelByIndex(int3 const& idx, uint const& type) const noexcept {
 
-		assert(idxX >= 0 && idxX < static_cast<int>(_dimN.x)-1);
-		assert(idxY >= 0 && idxY < static_cast<int>(_dimN.y)-1);
-		assert(idxZ >= 0 && idxZ < static_cast<int>(_dimN.z)-1);
+		assert(idx.x >= 0 && idx.x < static_cast<int>(_dimN.x)-1);
+		assert(idx.y >= 0 && idx.y < static_cast<int>(_dimN.y)-1);
+		assert(idx.z >= 0 && idx.z < static_cast<int>(_dimN.z)-1);
 
+		VoxelOctet<real_t> voxelOct;
 		// compute absolute position of vertices
-		voxelOct.min.x = idxX * _dVox + _pos.x;
-		voxelOct.min.y = idxY * _dVox + _pos.y;
-		voxelOct.min.z = idxZ * _dVox + _pos.z;
+		voxelOct.min.x = idx.x * _dVox + _pos.x;
+		voxelOct.min.y = idx.y * _dVox + _pos.y;
+		voxelOct.min.z = idx.z * _dVox + _pos.z;
 		voxelOct.max.x = voxelOct.min.x + _dVox;
 		voxelOct.max.y = voxelOct.min.y + _dVox;
 		voxelOct.max.z = voxelOct.min.z + _dVox;
 
 		// fetch data from the grid
 		assert(type < 99);
-		uint idx = type*_dimN.z*_dimN.y*_dimN.x;
+		uint idxGrid = type*_dimN.z*_dimN.y*_dimN.x;
 
-		idx += _dimN.x*(idxZ*_dimN.y + idxY) + idxX;
-		voxelOct.data[0][0][0] = _grid[idx];
-		voxelOct.data[1][0][0] = _grid[idx + 1];
-		voxelOct.data[0][1][0] = _grid[idx + _dimN.x];
-		voxelOct.data[1][1][0] = _grid[idx + _dimN.x + 1];
+		idxGrid += _dimN.x*(idx.z*_dimN.y + idx.y) + idx.x;
+		voxelOct.data[0][0][0] = _grid[idxGrid];
+		voxelOct.data[1][0][0] = _grid[idxGrid + 1];
+		voxelOct.data[0][1][0] = _grid[idxGrid + _dimN.x];
+		voxelOct.data[1][1][0] = _grid[idxGrid + _dimN.x + 1];
 
-		idx += _dimN.x*_dimN.y;
+		idxGrid += _dimN.x*_dimN.y;
 
-		voxelOct.data[0][0][1] = _grid[idx];
-		voxelOct.data[1][0][1] = _grid[idx + 1];
-		voxelOct.data[0][1][1] = _grid[idx + _dimN.x];
-		voxelOct.data[1][1][1] = _grid[idx + _dimN.x + 1];
+		voxelOct.data[0][0][1] = _grid[idxGrid];
+		voxelOct.data[1][0][1] = _grid[idxGrid + 1];
+		voxelOct.data[0][1][1] = _grid[idxGrid + _dimN.x];
+		voxelOct.data[1][1][1] = _grid[idxGrid + _dimN.x + 1];
+
+		return voxelOct;
 
 	}
 

@@ -8,6 +8,8 @@
 #ifndef SRC_NATIVETYPESFUNCTIONS_H_
 #define SRC_NATIVETYPESFUNCTIONS_H_
 
+#include "nativeTypesWrapper.h"
+
 #ifdef CUDA
 
 #include "vector_functions.h"
@@ -81,5 +83,40 @@ __VECTOR_FUNCTIONS_DECL__ double4 make_double4(double x, double y, double z, dou
 }
 
 #endif
+
+//template<typename REAL>
+//typename TypeWrapper<REAL>::real2_t make_real2(REAL x, REAL y) {};
+//
+//template<typename REAL>
+//typename TypeWrapper<REAL>::real3_t make_real3(REAL x, REAL y, REAL z);
+//
+//template<typename REAL>
+//typename TypeWrapper<REAL>::real4_t make_real4(REAL x, REAL y, REAL z, REAL w);
+
+float2 make_real2(float x, float y) {
+	return make_float2(x, y);
+}
+
+float3 make_real3(float x, float y, float z) {
+	return make_float3(x, y, z);
+}
+
+float4 make_real4(float x, float y, float z, float w) {
+	return make_float4(x, y, z, w);
+}
+
+double2 make_real2(double x, double y) {
+	return make_double2(x, y);
+}
+
+double3 make_real3(double x, double y, double z) {
+	return make_double3(x, y, z);
+}
+
+double4 make_real4(double x, double y, double z, double w) {
+	return make_double4(x, y, z, w);
+}
+
+
 
 #endif /* SRC_NATIVETYPESFUNCTIONS_H_ */

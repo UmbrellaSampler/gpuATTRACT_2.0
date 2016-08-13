@@ -38,7 +38,7 @@ namespace as {
  */
 constexpr double FELEC = 332.053986;
 
-enum dielec_t{
+enum class Dielec {
 	constant,
 	variable
 };
@@ -48,7 +48,7 @@ class SimParam : public DataItem {
 	// Check if REAL is of floating-point type
 	using real_t = typename std::enable_if<std::is_floating_point<REAL>::value, REAL>::type;
 public:
-	dielec_t dielec = variable;		/** type of dielectric constant */
+	Dielec  dielec = Dielec::variable;		/** type of dielectric constant */
 	real_t epsilon = 15;			/** dielectric constant */
 	real_t ffelec = FELEC/epsilon;	/** precomputed factor felec/epsilon */
 };
