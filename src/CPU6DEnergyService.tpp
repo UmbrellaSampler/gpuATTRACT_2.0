@@ -5,11 +5,12 @@
  *      Author: uwe
  */
 
-#ifndef SRC_CPUENERGYSERVICE_TPP_
-#define SRC_CPUENERGYSERVICE_TPP_
+#ifndef SRC_CPU6DENERGYSERVICE_TPP_
+#define SRC_CPU6DENERGYSERVICE_TPP_
+
+#include "CPU6DEnergyService.h"
 
 #include <cassert>
-#include "CPUEnergyService.h"
 #include "WorkerBuffer.h"
 #include "DataManager.h"
 #include "DataItem.h"
@@ -27,18 +28,18 @@
 namespace as {
 
 template<typename REAL>
-CPUEnergyService<REAL>::CPUEnergyService() {
+CPU_6D_EnergyService<REAL>::CPU_6D_EnergyService() {
 	_d = new Private();
 }
 
 template<typename REAL>
-CPUEnergyService<REAL>::~CPUEnergyService() {
+CPU_6D_EnergyService<REAL>::~CPU_6D_EnergyService() {
 	delete _d;
 }
 
 
 template<typename REAL>
-class CPUEnergyService<REAL>::Private {
+class CPU_6D_EnergyService<REAL>::Private {
 public:
 
 	/**
@@ -55,7 +56,7 @@ public:
 
 
 template<typename REAL>
-auto CPUEnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
+auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 	itemProcessor_t fncObj = [this] (workItem_t* item) -> bool {
@@ -171,4 +172,4 @@ auto CPUEnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 
-#endif /* SRC_CPUENERGYSERVICE_TPP_ */
+#endif /* SRC_CPU6DENERGYSERVICE_TPP_ */

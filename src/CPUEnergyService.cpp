@@ -5,13 +5,13 @@
  *      Author: uwe
  */
 
-#include "CPUEnergyService.tpp"
+#include "CPU6DEnergyService.tpp"
 #include "HostAllocator.tpp"
 
 namespace as {
 
 template
-class CPUEnergyService<float>;
+class CPU_6D_EnergyService<float>;
 
 //template
 //class CPUEnergyService<double>;

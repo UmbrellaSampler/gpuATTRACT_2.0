@@ -22,6 +22,10 @@
 #define ASDB_READ_FILE_H_
 
 #include <string>
+#include <memory>
+#include <vector>
+#include "nativeTypesWrapper.h"
+#include "DOF.h"
 
 namespace as {
 
@@ -72,54 +76,40 @@ std::shared_ptr<ParamTable<REAL>> createParamTableFromFile(std::string filename)
 template<typename REAL>
 void readParamTableFromFile(std::shared_ptr<ParamTable<REAL>>, std::string filename);
 
+struct AttractEnGrad {
+	double E;
+	double E_VdW;
+	double E_El;
+	double3 pos;
+	double3 ang;
+};
 
-///*
-// ** @brief: read the number of atoms of a protein from a pdb-file.
-// */
-//unsigned readProteinSizeFromPDB(std::string filename);
-//
-///*
-// ** @brief: deprecated
-// ** Reads binary file according to ProteinDesc.
-// ** Memory management needs to handled outside
-// ** (e.g. by using a shared_ptr or manual deletion).
-// */
-//as::Protein* createProteinFromDumpFile(std::string filename);
-//
-//
-//
-//
-///*
-// ** @brief: deprecated
-// ** Reads binary file according to GridDesc.
-// ** Memory management needs to handled outside
-// ** (e.g. by using a shared_ptr or manual deletion).
-// */
-//as::GridUnion* createGridUnionFromDumpFile (std::string filename);
-//
-///*
+std::vector<AttractEnGrad> readEnGradFromFile(std::string filename);
 
-//
-//
-///*
-// ** @brief: reads a (ATTRACT-) .dat containing DOFs. The number of elements read
-// ** is returned by the parameter numEl. Normal modes are not yet supported.
-// ** Memory needs to deleted by the caller. (e.g. by using a shared_ptr or manual deletion)
-// ** ToDo: Read normal modes
-// */
-//void readDOFFromFile(std::string filename, std::vector<std::vector<as::DOF>>& DOF_molecules);
-//
-//void readEnsembleDOFFromFile(std::string filename, std::vector<std::vector<as::DOF>>& DOF_molecules);
-//
-///*
-// ** @brief: reads the header of a (ATTRACT-) .dat containing DOFs.
-// */
-//void readDOFHeader(std::string filename, std::vector<asUtils::Vec3f>& pivots,
-//		bool& auto_pivot, bool& centered_receptor, bool& centered_ligands);
-//
-//std::vector<std::string> readFileNamesFromEnsembleList(std::string filename);
-//
-//std::vector<unsigned> readGridAlphabetFromFile(std::string filename);
+
+/**
+ * reads and returns a vector of dofs for each molecule
+ */
+template<typename REAL>
+std::vector<std::vector<DOF<REAL>>> readDOFFromFile(std::string filename);
+
+template<typename REAL>
+class DOFHeader {
+	using real_t = typename TypeWrapper<REAL>::real_t;
+	using vec3_t = Vec3<real_t>;
+public:
+	std::vector<vec3_t> pivots;
+	bool auto_pivot;
+	bool centered_receptor;
+	bool centered_ligands;
+};
+
+template<typename REAL>
+DOFHeader<REAL> readDOFHeader(std::string filename);
+
+std::vector<std::string> readFileNamesFromEnsembleList(std::string filename);
+
+std::vector<unsigned> readGridAlphabetFromFile(std::string filename);
 
 } // namespace as
 

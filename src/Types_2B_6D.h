@@ -14,7 +14,7 @@
 namespace as {
 
 template<typename REAL>
-struct Types_2B_6D {
+struct Types_6D {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 

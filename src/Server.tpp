@@ -110,7 +110,6 @@ void Server<Service>::submit(request_t& request) {
 		} else if (request.data() == nullptr) {
 			throw std::invalid_argument("Invalid input buffer (nullptr).");
 		}
-		// TODO: check if grids and proteins are well configured
 
 		_requestMng->registerRequest(&request);
 

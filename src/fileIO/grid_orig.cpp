@@ -17,9 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-#include "grid_orig.h"
-//#include "nonbon.h"
-//#include "state.h"
+#include "../fileIO/grid_orig.h"
+
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>

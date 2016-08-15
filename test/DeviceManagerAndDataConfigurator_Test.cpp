@@ -13,7 +13,7 @@
 #include "Protein.h"
 #include "GridUnion.h"
 #include "ParamTable.h"
-#include "readFile.h"
+#include "../src/fileIO/readFile.h"
 #include "DeviceDataConfigurator.h"
 
 using namespace as;

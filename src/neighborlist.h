@@ -29,7 +29,7 @@ void NLPotForce(
 		REAL* outLig_fx,
 		REAL* outLig_fy,
 		REAL* outLig_fz,
-		REAL* outLig_eVdW)
+		REAL* outLig_E)
 {
 
 	using real3_t = typename TypeWrapper<REAL>::real3_t;
@@ -58,7 +58,7 @@ void NLPotForce(
 
 
 			real3_t fAcc = {0.0,0.0,0.0};
-			REAL eVdWAcc = 0;
+			REAL eAcc = 0.0;
 
 			for (unsigned j = 0; j < nDesc.numEl; ++j) {
 				const unsigned nIdx = grid->getNeighbor(nDesc.idx + j);
@@ -108,7 +108,7 @@ void NLPotForce(
 				fAcc.x  += fVdW.x;
 				fAcc.y  += fVdW.y;
 				fAcc.z  += fVdW.z;
-				eVdWAcc += eVdW;
+				eAcc += eVdW;
 
 				const REAL chargeLig = lig->charge()[i];
 				const REAL chargeRec = rec->charge()[nIdx];
@@ -132,7 +132,7 @@ void NLPotForce(
 				fAcc.x  -= fVdW.x;
 				fAcc.y  -= fVdW.y;
 				fAcc.z  -= fVdW.z;
-				eVdWAcc -= eVdW;
+				eAcc -= eVdW;
 
 				if (calc_elec) {
 					REAL eEl;
@@ -147,7 +147,7 @@ void NLPotForce(
 					fAcc.x += fEl.x;
 					fAcc.y += fEl.y;
 					fAcc.z += fEl.z;
-					eVdWAcc += eEl;
+					eAcc += eEl;
 
 					ChargePotForce(grid->dPlateau2_inv(), rdx, rdy, rdz,
 							chargeLigRec,
@@ -156,14 +156,14 @@ void NLPotForce(
 					fAcc.x -= fEl.x;
 					fAcc.y -= fEl.y;
 					fAcc.z -= fEl.z;
-					eVdWAcc -= eEl;
+					eAcc -= eEl;
 				}
 			} // for j
 
-			outLig_fx[i]   +=  fAcc.x;
-			outLig_fy[i]   +=  fAcc.y;
-			outLig_fz[i]   +=  fAcc.z;
-			outLig_eVdW[i] +=  eVdWAcc;
+			outLig_fx[i] += fAcc.x;
+			outLig_fy[i] += fAcc.y;
+			outLig_fz[i] += fAcc.z;
+			outLig_E[i]  += eAcc;
 
 		} // for i
 	}

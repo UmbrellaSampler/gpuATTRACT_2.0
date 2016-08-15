@@ -24,14 +24,14 @@ TEST ?= OFF
 LIBS_TEST = 
 ifeq ($(TEST), OFF)
 	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp")
-	VPATH = $(SOURCE_DIR):$(SOURCE_DIR_TEST)
+	VPATH = $(SOURCE_DIR):$(SOURCE_DIR)/fileIO
 else ifeq ($(TEST), ON)
 	BINARY = "$(NAME)_TEST"
 	EXCLUDE = main.cpp
 	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp" -and -not -name "$(EXCLUDE)") \
 		$(shell find $(SOURCE_DIR_TEST) -name "*.cpp")
 	LIBS_TEST = -lgtest -lgmock
-	VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR)
+	VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR):$(SOURCE_DIR)/fileIO
 endif
 
 OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))
@@ -48,9 +48,9 @@ else
 endif
 
 CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
-INCLUDES = -I$(CUDADIR)/include -I$(CURDIR)/src -I$(CURDIR)/src/asDB
+INCLUDES = -I$(CUDADIR)/include -I$(CURDIR)/src -I$(CURDIR)/src/fileIO 
 LDFLAGS = #-L...
-LIBS = -lpthread -lrt $(LIBS_TEST)
+LIBS = -lpthread -lrt $(LIBS_TEST) -lboost_program_options
 
 ifeq ($(CUDA), ON)
 	OFLAGS += -DCUDA
@@ -61,7 +61,7 @@ endif
 # search directories for source files
 #VPATH = $(shell find  src/ -type d)
 #VPATH += $(shell find test/ -type d)
-VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR):$(SOURCE_DIR)/asDB
+#VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR):$(SOURCE_DIR)/fileIO
 
 $(BINARY): $(OBJECTS)
 	@echo 'Building target: $@'

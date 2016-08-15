@@ -22,6 +22,8 @@
 
 //#include "grid_orig.h"
 
+#include "../fileIO/readFile.h"
+
 #include <sstream>
 #include <fstream>
 #include <memory>
@@ -35,8 +37,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "readFile.h"
-#include "grid_orig.h"
+#include "../fileIO/grid_orig.h"
 #include "Vec3.h"
 #include "Protein.h"
 #include "GridUnion.h"
@@ -45,19 +46,12 @@
 
 namespace as {
 
-//static void errorPDBFormat(std::string filename) {
-//	std::cerr << "Error reading file " << filename
-//			<< ". pdb-Format is not supported." << std::endl;
-//}
+static void errorDOFFormat(std::string filename) {
+	std::cerr << "Error reading file " << filename
+			<< ". DOF-Format is not supported." << std::endl;
+}
 
-
-//static void errorDOFFormat(std::string filename) {
-//	std::cerr << "Error reading file " << filename
-//			<< ". DOF-Format is not supported." << std::endl;
-//}
-
-
-static std::vector<std::string> pdbLine2Strings(std::string line) {
+static std::vector<std::string> pdbLine2Strings(std::string const& line) {
 	using namespace std;
 	istringstream iss(line);
 	/* char offset in file: X, Y, Z, type, charge */
@@ -73,6 +67,13 @@ static std::vector<std::string> pdbLine2Strings(std::string line) {
 		tokens.push_back(str);
 	}
 	return tokens;
+}
+
+static std::vector<std::string> line2Strings(std::string const& line) {
+	using namespace std;
+	istringstream iss(line);
+	return vector<string> { istream_iterator<string> { iss },
+					istream_iterator<string> { } };
 }
 
 template<typename REAL>
@@ -433,6 +434,276 @@ void readParamTableFromFile(std::shared_ptr<ParamTable<REAL>> table, std::string
 
 }
 
+std::vector<AttractEnGrad> readEnGradFromFile(std::string filename) {
+//void readEnGradFromFile(std::string filename, unsigned& numEl) {
+	using namespace std;
+
+	ifstream file(filename);
+	vector<AttractEnGrad> enGrads;
+
+	string line;
+	if (file.is_open()) {
+		while (!file.eof()) {
+
+			getline(file, line);
+			if (!line.compare(0,2, "##")) {
+				continue;
+			} else if (!line.compare(0,8, " Energy:")){
+				AttractEnGrad enGrad;
+				{
+					string substr = line.substr(8);
+					stringstream stream(substr);
+					stream >> enGrad.E;
+				}
+
+				{
+					getline(file, line);
+					stringstream stream(line);
+					stream >> enGrad.E_VdW >> enGrad.E_El;
+				}
+
+				{
+					getline(file, line);
+					string substr = line.substr(11);
+					stringstream stream(substr);
+					stream >> enGrad.ang.x >> enGrad.ang.y >> enGrad.ang.z
+						>> enGrad.pos.x >> enGrad.pos.y >> enGrad.pos.z;
+				}
+				enGrads.push_back(enGrad);
+			}
+
+
+		}
+	} else {
+		cerr << "Failed to open file " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	file.close();
+
+	return enGrads;
+}
+
+template<typename REAL>
+std::vector<std::vector<DOF<REAL>>> readDOFFromFile(std::string filename) {
+	using namespace std;
+	using namespace as;
+
+	std::vector<std::vector<DOF<REAL>>> DOF_molecules;
+
+	ifstream file(filename);
+
+	string line;
+	int i_molecules = 0;
+	if (file.is_open()) {
+		while (!file.eof()) {
+
+			getline(file, line);
+
+
+			if (!line.compare(0,1, "#")) { // 0 == true
+				continue;
+			}
+
+			/* read all dofs until the next "#" */
+			unsigned i = 0;
+			while (line.compare(0,1, "#") != 0 && !file.eof()) {
+
+				if (i_molecules == 0) {
+					DOF_molecules.push_back(std::vector<DOF<REAL>> ());
+				}
+
+				std::vector<DOF<REAL>>& vec = DOF_molecules[i];
+				DOF<REAL> dof ;
+				{
+					stringstream stream(line);
+					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
+						>> dof.pos.x >> dof.pos.y >> dof.pos.z;
+				}
+				vec.push_back(dof);
+
+				++i;
+				getline(file, line);
+			}
+			/* check if i equals the number of molecules == DOF_molecules.size(),
+			 * otherwise we miss a molecule in the definition */
+			if (i != DOF_molecules.size()) {
+				errorDOFFormat(filename);
+				cerr << "The DOF definition is incomplete at #" << i_molecules << "." << endl;
+						exit(EXIT_FAILURE);
+			}
+			++i_molecules;
+		}
+	} else {
+		cerr << "Error: Failed to open file " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	file.close();
+
+}
+template<typename REAL>
+DOFHeader<REAL> readDOFHeader(std::string filename) {
+	using namespace std;
+	using vec3_t = Vec3<REAL>;
+	ifstream file(filename);
+	string line;
+
+	DOFHeader<REAL> header;
+
+	bool finished_reading_pivots = false;
+	bool finished_reading_centered_receptor = false;
+	bool finished_reading_centered_ligands = false;
+	header.auto_pivot = false;
+
+	if (file.is_open()) {
+		while (!file.eof()) {
+
+			if (finished_reading_pivots && finished_reading_centered_receptor && finished_reading_centered_ligands) {
+				break;
+			}
+
+			getline(file, line);
+
+			/* Check for commandline comment (use in ATTRACT output) */
+			if (!line.compare(0,2, "##")) { // 0 == true
+				continue;
+			}
+
+			/* get pivots */
+
+			/* split line to vector of strings */
+			vector<string> tokens = line2Strings(line);
+//			cout << line << endl;
+			if (tokens[0].compare("#pivot") == 0 && !finished_reading_pivots) {
+				if (tokens[1].compare("auto") == 0) {
+					header.auto_pivot = true;
+					finished_reading_pivots = true;
+					continue;
+				} else {
+					if (tokens.size() != 5) { // validate format
+						errorDOFFormat(filename);
+						cerr << "Incorrect pivot definition." << endl;
+						exit(EXIT_FAILURE);
+					} else { // read pivots
+						vec3_t pivot;
+						stringstream(tokens[2]) >> pivot[0];
+						stringstream(tokens[3]) >> pivot[1];
+						stringstream(tokens[4]) >> pivot[2];
+						header.pivots.push_back(pivot);
+						continue;
+					}
+				}
+
+			} else if (tokens[0].compare("#pivot") == 0 && finished_reading_pivots) { // validate format
+				errorDOFFormat(filename);
+				cerr << "Incorrect pivot definition." << endl;
+				exit(EXIT_FAILURE);
+			}
+
+			/* read centered definition */
+			if (tokens[0].compare("#centered") == 0 &&
+					(!finished_reading_centered_receptor || !finished_reading_centered_ligands)) {
+				finished_reading_pivots = true;
+				if (tokens[1].compare("receptor:") == 0) {
+					if (tokens[2].compare("true") == 0) {
+						header.centered_receptor = true;
+						finished_reading_centered_receptor = true;
+						continue;
+					} else if (tokens[2].compare("false") == 0) {
+						header.centered_receptor = false;
+						finished_reading_centered_receptor = true;
+						continue;
+					} else {
+						errorDOFFormat(filename);
+						cerr << "Receptor centering definition invalid." << endl;
+						exit(EXIT_FAILURE);
+					}
+				} else if (tokens[1].compare("ligand:") == 0 || tokens[1].compare("ligands:") == 0) {
+					if (tokens[2].compare("true") == 0) {
+						header.centered_ligands = true;
+						finished_reading_centered_ligands = true;
+						continue;
+					} else if (tokens[2].compare("false") == 0) {
+						header.centered_ligands = false;
+						finished_reading_centered_ligands = true;
+						continue;
+					} else {
+						errorDOFFormat(filename);
+						cerr << "Ligand centering definition invalid." << endl;
+						exit(EXIT_FAILURE);
+					}
+				} else {
+					errorDOFFormat(filename);
+					cerr << "Centering definition invalid." << endl;
+					exit(EXIT_FAILURE);
+				}
+			}
+
+		} // while (!file.eof())
+	} else {
+		cerr << "Error: Failed to open file " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	return header;
+}
+
+std::vector<std::string> readFileNamesFromEnsembleList(std::string filename) {
+	using namespace std;
+	using namespace as;
+
+	ifstream file(filename);
+
+	vector<string> fileNames;
+	string line;
+	if (file.is_open()) {
+		getline(file, line);
+		while (!file.eof()) {
+			fileNames.push_back(line);
+			getline(file, line);
+		}
+	} else {
+		cerr << "Error: Failed to open file " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	file.close();
+	return fileNames;
+}
+
+static void errorGridAlphabetFormat(std::string filename) {
+	std::cerr << "Error reading file " << filename
+			<< ". Grid alphabet format is not supported." << std::endl;
+}
+
+std::vector<unsigned> readGridAlphabetFromFile(std::string filename) {
+
+	using namespace std;
+	using namespace as;
+
+	ifstream file(filename);
+	vector<unsigned> vec;
+	string line;
+	if (file.is_open()) {
+		while (std::getline(file, line))
+		{
+			std::istringstream iss(line);
+			int key = 0; // serves as a key value pair for a map
+			if (!(iss >> key) || key < 0) {
+				errorGridAlphabetFormat(filename);
+				exit(EXIT_FAILURE);
+			}
+			vec.push_back(static_cast<unsigned>(key));
+		}
+	} else {
+		cerr << "Error: Failed to open file " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	return vec;
+}
+
 
 template
 std::shared_ptr<Protein<float>> createProteinFromPDB(std::string filename);
@@ -470,6 +741,11 @@ std::shared_ptr<ParamTable<double>> createParamTableFromFile(std::string filenam
 template
 void readParamTableFromFile(std::shared_ptr<ParamTable<double>>, std::string filename);
 
+template<>
+std::vector<std::vector<DOF<float>>> readDOFFromFile(std::string filename);
+
+template<>
+std::vector<std::vector<DOF<double>>> readDOFFromFile(std::string filename);
 
 } // namespace as
 
@@ -994,61 +1270,6 @@ void readParamTableFromFile(std::shared_ptr<ParamTable<double>>, std::string fil
 //
 //}
 //
-//void asDB::readDOFFromFile(std::string filename, std::vector<std::vector<DOF>>& DOF_molecules ) {
-//	using namespace std;
-//	using namespace as;
-//
-//	ifstream file(filename);
-//
-//	string line;
-//	int i_molecules = 0;
-//	if (file.is_open()) {
-//		while (!file.eof()) {
-//
-//			getline(file, line);
-//
-//
-//			if (!line.compare(0,1, "#")) { // 0 == true
-//				continue;
-//			}
-//
-//			/* read all dofs until the next "#" */
-//			unsigned i = 0;
-//			while (line.compare(0,1, "#") != 0 && !file.eof()) {
-//
-//				if (i_molecules == 0) {
-//					DOF_molecules.push_back(std::vector<DOF> ());
-//				}
-//
-//				std::vector<DOF>& vec = DOF_molecules[i];
-//				DOF dof ;
-//				{
-//					stringstream stream(line);
-//					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
-//						>> dof.pos.x >> dof.pos.y >> dof.pos.z;
-//				}
-//				vec.push_back(dof);
-//
-//				++i;
-//				getline(file, line);
-//			}
-//			/* check if i equals the number of molecules == DOF_molecules.size(),
-//			 * otherwise we miss a molecule in the definition */
-//			if (i != DOF_molecules.size()) {
-//				errorDOFFormat(filename);
-//				cerr << "The DOF definition is incomplete at #" << i_molecules << "." << endl;
-//						exit(EXIT_FAILURE);
-//			}
-//			++i_molecules;
-//		}
-//	} else {
-//		cerr << "Error: Failed to open file " << filename << endl;
-//		exit(EXIT_FAILURE);
-//	}
-//
-//	file.close();
-//
-//}
 //
 //void asDB::readEnsembleDOFFromFile(std::string filename, std::vector<std::vector<DOF>>& DOF_molecules ) {
 //	using namespace std;
@@ -1106,110 +1327,7 @@ void readParamTableFromFile(std::shared_ptr<ParamTable<double>>, std::string fil
 //
 //}
 //
-//void asDB::readDOFHeader(std::string filename, std::vector<asUtils::Vec3f>& pivots,
-//		bool& auto_pivot, bool& centered_receptor, bool& centered_ligands) {
-//	using namespace std;
-//	using namespace as;
-//	using namespace asUtils;
-//
-//	ifstream file(filename);
-//	string line;
-//
-//	bool finished_reading_pivots = false;
-//	bool finished_reading_centered_receptor = false;
-//	bool finished_reading_centered_ligands = false;
-//	auto_pivot = false;
-//
-//	if (file.is_open()) {
-//		while (!file.eof()) {
-//
-//			if (finished_reading_pivots && finished_reading_centered_receptor && finished_reading_centered_ligands) {
-//				break;
-//			}
-//
-//			getline(file, line);
-//
-//			/* Check for commandline comment (use in ATTRACT output) */
-//			if (!line.compare(0,2, "##")) { // 0 == true
-//				continue;
-//			}
-//
-//			/* get pivots */
-//
-//			/* split line to vector of strings */
-//			vector<string> tokens = line2Strings(line);
-////			cout << line << endl;
-//			if (tokens[0].compare("#pivot") == 0 && !finished_reading_pivots) {
-//				if (tokens[1].compare("auto") == 0) {
-//					auto_pivot = true;
-//					finished_reading_pivots = true;
-//					continue;
-//				} else {
-//					if (tokens.size() != 5) { // validate format
-//						errorDOFFormat(filename);
-//						cerr << "Incorrect pivot definition." << endl;
-//						exit(EXIT_FAILURE);
-//					} else { // read pivots
-//						Vec3f pivot;
-//						stringstream(tokens[2]) >> pivot[0];
-//						stringstream(tokens[3]) >> pivot[1];
-//						stringstream(tokens[4]) >> pivot[2];
-//						pivots.push_back(pivot);
-//						continue;
-//					}
-//				}
-//
-//			} else if (tokens[0].compare("#pivot") == 0 && finished_reading_pivots) { // validate format
-//				errorDOFFormat(filename);
-//				cerr << "Incorrect pivot definition." << endl;
-//				exit(EXIT_FAILURE);
-//			}
-//
-//			/* read centered definition */
-//			if (tokens[0].compare("#centered") == 0 &&
-//					(!finished_reading_centered_receptor || !finished_reading_centered_ligands)) {
-//				finished_reading_pivots = true;
-//				if (tokens[1].compare("receptor:") == 0) {
-//					if (tokens[2].compare("true") == 0) {
-//						centered_receptor = true;
-//						finished_reading_centered_receptor = true;
-//						continue;
-//					} else if (tokens[2].compare("false") == 0) {
-//						centered_receptor = false;
-//						finished_reading_centered_receptor = true;
-//						continue;
-//					} else {
-//						errorDOFFormat(filename);
-//						cerr << "Receptor centering definition invalid." << endl;
-//						exit(EXIT_FAILURE);
-//					}
-//				} else if (tokens[1].compare("ligand:") == 0 || tokens[1].compare("ligands:") == 0) {
-//					if (tokens[2].compare("true") == 0) {
-//						centered_ligands = true;
-//						finished_reading_centered_ligands = true;
-//						continue;
-//					} else if (tokens[2].compare("false") == 0) {
-//						centered_ligands = false;
-//						finished_reading_centered_ligands = true;
-//						continue;
-//					} else {
-//						errorDOFFormat(filename);
-//						cerr << "Ligand centering definition invalid." << endl;
-//						exit(EXIT_FAILURE);
-//					}
-//				} else {
-//					errorDOFFormat(filename);
-//					cerr << "Centering definition invalid." << endl;
-//					exit(EXIT_FAILURE);
-//				}
-//			}
-//
-//		} // while (!file.eof())
-//	} else {
-//		cerr << "Error: Failed to open file " << filename << endl;
-//		exit(EXIT_FAILURE);
-//	}
-//}
+
 //
 //std::vector<std::string> asDB::readFileNamesFromEnsembleList(std::string filename) {
 //	using namespace std;
