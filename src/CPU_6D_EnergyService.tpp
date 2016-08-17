@@ -8,7 +8,7 @@
 #ifndef SRC_CPU6DENERGYSERVICE_TPP_
 #define SRC_CPU6DENERGYSERVICE_TPP_
 
-#include "CPU6DEnergyService.h"
+#include "CPU_6D_EnergyService.h"
 
 #include <cassert>
 #include "WorkerBuffer.h"

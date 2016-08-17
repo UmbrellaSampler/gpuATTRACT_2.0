@@ -12,11 +12,14 @@
 #include "IntrplGrid.h"
 #include "NLGrid.h"
 #include "DataItem.h"
+#include "nativeTypesWrapper.h"
 
 namespace as {
 
 template<typename REAL>
 class GridUnion : public DataItem {
+	using real3_t = typename TypeWrapper<REAL>::real3_t;
+
 public:
 	/* Constructor */
 	GridUnion() {}
@@ -44,6 +47,10 @@ public:
 		inner.reset();
 		outer.reset();
 		NL.reset();
+	}
+
+	void translate(real3_t displ) noexcept {
+		inner->translate(displ);
 	}
 
 	std::shared_ptr<IntrplGrid<REAL>> inner;

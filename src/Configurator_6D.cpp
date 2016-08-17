@@ -1,20 +1,19 @@
 /*
- * scATTRACT.cpp
+ * Init_6D.cpp
  *
  *  Created on: Aug 16, 2016
  *      Author: uwe
  */
 
-#include "scATTRACT.tpp"
+#include "Configurator_6D.tpp"
 
 namespace as {
 
 template
-class scATTRACT<float>;
+class Configurator_6D<float>;
 
 template
-class scATTRACT<double>;
-
+class Configurator_6D<double>;
 
 }  // namespace as
 

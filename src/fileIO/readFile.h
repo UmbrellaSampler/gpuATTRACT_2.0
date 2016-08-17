@@ -25,7 +25,7 @@
 #include <memory>
 #include <vector>
 #include "nativeTypesWrapper.h"
-#include "DOF.h"
+#include "DOF_6D.h"
 
 namespace as {
 
@@ -91,7 +91,7 @@ std::vector<AttractEnGrad> readEnGradFromFile(std::string filename);
  * reads and returns a vector of dofs for each molecule
  */
 template<typename REAL>
-std::vector<std::vector<DOF<REAL>>> readDOFFromFile(std::string filename);
+std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename);
 
 template<typename REAL>
 class DOFHeader {

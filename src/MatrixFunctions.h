@@ -10,6 +10,7 @@
 
 #include "RotMat.h"
 #include "TorqueMat.h"
+#include "nativeTypesWrapper.h"
 
 #ifndef __CUDACC__
 
@@ -17,6 +18,10 @@
 #include <ostream>
 using std::cos;
 using std::sin;
+using std::fmin;
+using std::fmax;
+using std::atan2;
+using std::acos;
 
 #endif
 
@@ -111,9 +116,43 @@ TorqueMat<REAL> euler2torquemat(const REAL& phi, const REAL& ssi, const REAL& ro
 	return torqueMat;
 }
 
+template<typename T>
+void rotmat2euler(const RotMat<T>& rotmat, T& phi, T& ssi, T& rot) {
+	phi = atan2(rotmat[5], rotmat[2]);
+	ssi = acos(fmin(fmax(rotmat[8],-1.0), 1.0));
+	rot = atan2(-rotmat[7], -rotmat[6]);
+	/* handel gimbal lock */
+	if (abs(rotmat[8] >= 0.9999)) {
+		phi = 0.0;
+		if(abs(rotmat[0]) >= 0.9999) {
+			if(rotmat[0] < 0.0) {
+				rot = M_PI;
+			} else {
+				rot = 0.0;
+			}
 
+			if(rotmat[8] < 0.0) {
+				ssi = M_PI;
+			} else {
+				ssi = 0.0;
+			}
 
+		} else {
+			if(rotmat[8] < 0.0) {
+				ssi = M_PI;
+				rot = -acos(-rotmat[0]);
+			} else {
+				ssi = 0.0;
+				rot = acos(rotmat[0]);
+			}
 
+		}
+
+		if (rotmat[1] < 0) {
+			rot *= -1.0;
+		}
+	}
+}
 
 }  // namespace as
 

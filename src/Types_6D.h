@@ -5,8 +5,8 @@
  *      Author: uwe
  */
 
-#ifndef SRC_TYPES_2B_6D_H_
-#define SRC_TYPES_2B_6D_H_
+#ifndef SRC_TYPES_6D_H_
+#define SRC_TYPES_6D_H_
 
 #include "nativeTypesWrapper.h"
 #include "Vec3.h"
@@ -42,4 +42,4 @@ struct Types_6D {
 
 
 
-#endif /* SRC_TYPES_2B_6D_H_ */
+#endif /* SRC_TYPES_6D_H_ */

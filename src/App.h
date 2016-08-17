@@ -17,7 +17,9 @@ class App {
 	static_assert(std::is_arithmetic<REAL>::value, "Only arithmetic types supported");
 public:
 	virtual ~App() {};
-	virtual void run(CmdArgs const& args) = 0;
+	virtual void init(CmdArgs const& args) = 0;
+	virtual void finalize() = 0;
+	virtual void run() = 0;
 };
 
 }  // namespace as

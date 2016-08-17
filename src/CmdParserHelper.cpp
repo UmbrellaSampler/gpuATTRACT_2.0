@@ -38,7 +38,7 @@ ostream& operator<< (ostream& s, const vector<T>& vec) {
 }
 
 template<typename T>
-void enforceAllowedValues(boost::program_options::variables_map const& vm,
+void enforceAllowedValues(po::variables_map const& vm,
 		std::string opt, std::vector<T> const& values) {
 
 	if (!vm.count(opt)) {
@@ -54,8 +54,23 @@ void enforceAllowedValues(boost::program_options::variables_map const& vm,
 
 	if (!passed) {
 		std::stringstream msg;
-		msg << "illegal option assignment. option '" << opt << "' must be one of the following: " << values;
+		msg << "illegal option specification. option '" << opt << "' must be one of the following: " << values;
 		throw po::error(msg.str());
+	}
+}
+
+template<typename T>
+void enforceUniqueness(po::variables_map const& vm, std::string opt)  {
+	auto vec = vm[opt].as<vector<T>>();
+	for (size_t i = 0; i < vec.size()-1; ++i) {
+		for (size_t j = i+1; j < vec.size(); j++) {
+			if (vec[i] == vec[j])
+			{
+				std::stringstream msg;
+				msg << "illegal option specification. option '" << opt << "' is specified multiple times with the same value: " << vec[i];
+				throw po::error(msg.str());
+			}
+		}
 	}
 }
 
@@ -66,5 +81,11 @@ void enforceAllowedValues(boost::program_options::variables_map const& vm,
 template
 void enforceAllowedValues(boost::program_options::variables_map const& vm,
 		std::string opt, std::vector<int> const& values);
+
+template
+void enforceUniqueness<int>(po::variables_map const& vm, std::string opt);
+
+//template<typename T>
+//void enforceUniqueness(po::variables_map const& vm, std::string opt);
 
 } // namespace as

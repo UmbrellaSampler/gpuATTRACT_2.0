@@ -21,6 +21,8 @@ namespace as {
 	void enforceAllowedValues(boost::program_options::variables_map const& vm,
 			std::string opt, std::vector<T> const& values);
 
+	template<typename T>
+	void enforceUniqueness(boost::program_options::variables_map const& vm, std::string opt);
 }
 
 

@@ -10,7 +10,7 @@
 
 #include "CPUService.h"
 #include "publicTypes.h"
-#include "Types_2B_6D.h"
+#include "Types_6D.h"
 #include "nativeTypesWrapper.h"
 
 namespace as {
@@ -20,13 +20,13 @@ class DataManager;
 template<typename REAL>
 class CPU_6D_EnergyService : public CPUService<typename Types_6D<REAL>::DOF, typename Types_6D<REAL>::Common,  typename Types_6D<REAL>::Result> {
 	using real_t = typename TypeWrapper<REAL>::real_t;
+
+public:
 	using dof_t = typename Types_6D<real_t>::DOF;
 	using common_t = typename Types_6D<real_t>::Common;
 	using result_t = typename Types_6D<real_t>::Result;
 	using service_t = CPUService<dof_t, common_t, result_t>;
 	using typename service_t::workItem_t;
-
-public:
 	using typename service_t::itemProcessor_t;
 
 	CPU_6D_EnergyService();

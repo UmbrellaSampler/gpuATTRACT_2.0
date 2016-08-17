@@ -31,6 +31,7 @@ typename TypeWrapper<REAL>::real4_t trilinearInterpolation(
 		const VoxelOctet<REAL> &voxelOct,
 		const REAL &voxelVol_inv)
 {
+	using real_t = typename TypeWrapper<REAL>::real_t;
 	using real3_t = typename TypeWrapper<REAL>::real3_t;
 	using real4_t = typename TypeWrapper<REAL>::real4_t;
 
@@ -40,7 +41,7 @@ typename TypeWrapper<REAL>::real4_t trilinearInterpolation(
 	REAL tmpMax_xy = (posMax_m_pos.x) * (posMax_m_pos.y);
 	REAL tmpMin_xy = (pos_m_posMin.x) * (pos_m_posMin.y);
 
-	real4_t V = voxelOct.data[0][0][0] * (tmpMax_xy * (posMax_m_pos.z))
+	float4 V = voxelOct.data[0][0][0] * (tmpMax_xy * (posMax_m_pos.z))
 			+ voxelOct.data[1][0][0]
 					* ((pos_m_posMin.x) * (posMax_m_pos.y) * (posMax_m_pos.z))
 			+ voxelOct.data[0][1][0]
@@ -53,8 +54,14 @@ typename TypeWrapper<REAL>::real4_t trilinearInterpolation(
 			+ voxelOct.data[1][1][0] * (tmpMin_xy * (posMax_m_pos.z))
 			+ voxelOct.data[1][1][1] * (tmpMin_xy * (pos_m_posMin.z));
 
-	V = V * voxelVol_inv;
-	return V;
+	real4_t V_d = make_real4(
+				static_cast<real_t>(V.x),
+				static_cast<real_t>(V.y),
+				static_cast<real_t>(V.z),
+				static_cast<real_t>(V.w));
+
+	V_d = V_d * voxelVol_inv;
+	return V_d;
 }
 
 }

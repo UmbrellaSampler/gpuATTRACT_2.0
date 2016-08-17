@@ -5,8 +5,8 @@
  *      Author: uwe
  */
 
-#ifndef SRC_DOF_H_
-#define SRC_DOF_H_
+#ifndef SRC_DOF_6D_H_
+#define SRC_DOF_6D_H_
 
 #include "nativeTypesWrapper.h"
 #include "Vec3.h"
@@ -14,7 +14,7 @@
 namespace as {
 
 template<typename REAL>
-class DOF {
+class DOF_6D {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 public:

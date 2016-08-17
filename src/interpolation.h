@@ -11,6 +11,7 @@
 #include "Protein.h"
 #include "IntrplGrid.h"
 #include "nativeTypesFunctions.h"
+#include "nativeTypesMath.h"
 #include "VoxelOctet.h"
 #include "trilinIntrpl.h"
 #include <cmath>

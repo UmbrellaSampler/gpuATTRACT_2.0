@@ -485,11 +485,11 @@ std::vector<AttractEnGrad> readEnGradFromFile(std::string filename) {
 }
 
 template<typename REAL>
-std::vector<std::vector<DOF<REAL>>> readDOFFromFile(std::string filename) {
+std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename) {
 	using namespace std;
 	using namespace as;
 
-	std::vector<std::vector<DOF<REAL>>> DOF_molecules;
+	std::vector<std::vector<DOF_6D<REAL>>> DOF_molecules;
 
 	ifstream file(filename);
 
@@ -510,11 +510,11 @@ std::vector<std::vector<DOF<REAL>>> readDOFFromFile(std::string filename) {
 			while (line.compare(0,1, "#") != 0 && !file.eof()) {
 
 				if (i_molecules == 0) {
-					DOF_molecules.push_back(std::vector<DOF<REAL>> ());
+					DOF_molecules.push_back(std::vector<DOF_6D<REAL>> ());
 				}
 
-				std::vector<DOF<REAL>>& vec = DOF_molecules[i];
-				DOF<REAL> dof ;
+				std::vector<DOF_6D<REAL>>& vec = DOF_molecules[i];
+				DOF_6D<REAL> dof ;
 				{
 					stringstream stream(line);
 					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
@@ -542,6 +542,7 @@ std::vector<std::vector<DOF<REAL>>> readDOFFromFile(std::string filename) {
 	file.close();
 
 }
+
 template<typename REAL>
 DOFHeader<REAL> readDOFHeader(std::string filename) {
 	using namespace std;
@@ -587,9 +588,9 @@ DOFHeader<REAL> readDOFHeader(std::string filename) {
 						exit(EXIT_FAILURE);
 					} else { // read pivots
 						vec3_t pivot;
-						stringstream(tokens[2]) >> pivot[0];
-						stringstream(tokens[3]) >> pivot[1];
-						stringstream(tokens[4]) >> pivot[2];
+						stringstream(tokens[2]) >> pivot.x;
+						stringstream(tokens[3]) >> pivot.y;
+						stringstream(tokens[4]) >> pivot.z;
 						header.pivots.push_back(pivot);
 						continue;
 					}
@@ -741,11 +742,17 @@ std::shared_ptr<ParamTable<double>> createParamTableFromFile(std::string filenam
 template
 void readParamTableFromFile(std::shared_ptr<ParamTable<double>>, std::string filename);
 
-template<>
-std::vector<std::vector<DOF<float>>> readDOFFromFile(std::string filename);
+template
+std::vector<std::vector<DOF_6D<float>>> readDOF_6D(std::string filename);
 
-template<>
-std::vector<std::vector<DOF<double>>> readDOFFromFile(std::string filename);
+template
+std::vector<std::vector<DOF_6D<double>>> readDOF_6D(std::string filename);
+
+template
+DOFHeader<float> readDOFHeader<float>(std::string filename);
+
+template
+DOFHeader<double> readDOFHeader<double>(std::string filename);
 
 } // namespace as
 

@@ -48,9 +48,9 @@ class SimParam : public DataItem {
 	// Check if REAL is of floating-point type
 	using real_t = typename std::enable_if<std::is_floating_point<REAL>::value, REAL>::type;
 public:
-	Dielec  dielec = Dielec::variable;		/** type of dielectric constant */
-	real_t epsilon = 15;			/** dielectric constant */
-	real_t ffelec = FELEC/epsilon;	/** precomputed factor felec/epsilon */
+	Dielec  dielec;		/** type of dielectric constant */
+	real_t epsilon;		/** dielectric constant */
+	real_t ffelec;		/** precomputed factor felec/epsilon */
 };
 
 }  // namespace

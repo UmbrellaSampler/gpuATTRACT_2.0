@@ -8,14 +8,27 @@
 #ifndef SRC_SCATTRACT_H_
 #define SRC_SCATTRACT_H_
 
+#include <memory>
 #include "App.h"
 
 namespace as {
 
 template<typename REAL>
-class scATTRACT : public App<REAL> {
+class Configurator_6D;
 
-	void run(CmdArgs const& args);
+template<typename REAL>
+class scATTRACT : public App<REAL> {
+public:
+	scATTRACT();
+	virtual ~scATTRACT() {}
+
+	void init(CmdArgs const& args) override;
+	void finalize() override;
+	void run() override;
+
+private:
+	std::shared_ptr<Configurator_6D<REAL>> _config;
+
 };
 
 }  // namespace as

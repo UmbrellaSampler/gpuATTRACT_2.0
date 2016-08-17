@@ -25,11 +25,13 @@ public:
 	std::string ligName;
 	std::string recName;
 	std::string paramsName;
-	std::string recGridAlphabetName;
+	std::string alphabetName;
 	int numCPUs;
 	std::vector<int> deviceIds;
 	int chunkSize;
 	std::string precision;
+	std::string dielec;
+	double epsilon;
 
 	friend std::ostream& operator<<(std::ostream& s, CmdArgs const& args);
 };

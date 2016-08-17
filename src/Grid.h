@@ -24,6 +24,7 @@
 
 #include <type_traits>
 #include "nativeTypesWrapper.h"
+#include "nativeTypesMath.h"
 
 namespace as{
 
@@ -75,6 +76,10 @@ public:
 
 	void setDim(size3_t dim) noexcept {
 		_dimN = dim;
+	}
+
+	void translate(real3_t displ) noexcept {
+		_pos = _pos + displ;
 	}
 
 protected:

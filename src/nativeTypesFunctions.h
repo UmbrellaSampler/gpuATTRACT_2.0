@@ -93,27 +93,27 @@ __VECTOR_FUNCTIONS_DECL__ double4 make_double4(double x, double y, double z, dou
 //template<typename REAL>
 //typename TypeWrapper<REAL>::real4_t make_real4(REAL x, REAL y, REAL z, REAL w);
 
-float2 make_real2(float x, float y) {
+static inline float2 make_real2(float x, float y) {
 	return make_float2(x, y);
 }
 
-float3 make_real3(float x, float y, float z) {
+static inline float3 make_real3(float x, float y, float z) {
 	return make_float3(x, y, z);
 }
 
-float4 make_real4(float x, float y, float z, float w) {
+static inline float4 make_real4(float x, float y, float z, float w) {
 	return make_float4(x, y, z, w);
 }
 
-double2 make_real2(double x, double y) {
+static inline double2 make_real2(double x, double y) {
 	return make_double2(x, y);
 }
 
-double3 make_real3(double x, double y, double z) {
+static inline double3 make_real3(double x, double y, double z) {
 	return make_double3(x, y, z);
 }
 
-double4 make_real4(double x, double y, double z, double w) {
+static inline double4 make_real4(double x, double y, double z, double w) {
 	return make_double4(x, y, z, w);
 }
 
