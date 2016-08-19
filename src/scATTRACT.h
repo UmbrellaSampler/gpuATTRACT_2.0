@@ -13,11 +13,13 @@
 
 namespace as {
 
-template<typename REAL>
-class Configurator_6D;
-
-template<typename REAL>
-class scATTRACT : public App<REAL> {
+template<typename SERVICE>
+class scATTRACT : public App {
+	using real_t = typename SERVICE::real_t;
+	using configurator_t = typename SERVICE::configurator_t;
+	using dof_t = typename SERVICE::dof_t;
+	using common_t = typename SERVICE::common_t;
+	using result_t = typename SERVICE::result_t;
 public:
 	scATTRACT();
 	virtual ~scATTRACT() {}
@@ -27,7 +29,8 @@ public:
 	void run() override;
 
 private:
-	std::shared_ptr<Configurator_6D<REAL>> _config;
+
+	std::shared_ptr<configurator_t> _config;
 
 };
 

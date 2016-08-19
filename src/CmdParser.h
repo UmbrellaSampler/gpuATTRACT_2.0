@@ -21,8 +21,8 @@ public:
 
 	void parse(int argc, char* argv[]) noexcept;
 
-	std::shared_ptr<CmdArgs> args() {
-		return _args;
+	CmdArgs args() {
+		return *_args;
 	}
 private:
 

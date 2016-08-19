@@ -10,10 +10,10 @@
 namespace as {
 
 template
-class scATTRACT<float>;
+class scATTRACT<CPU_6D_EnergyService<float>>;
 
 template
-class scATTRACT<double>;
+class scATTRACT<CPU_6D_EnergyService<double>>;
 
 
 }  // namespace as

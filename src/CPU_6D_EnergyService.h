@@ -18,13 +18,20 @@ namespace as {
 class DataManager;
 
 template<typename REAL>
-class CPU_6D_EnergyService : public CPUService<typename Types_6D<REAL>::DOF, typename Types_6D<REAL>::Common,  typename Types_6D<REAL>::Result> {
-	using real_t = typename TypeWrapper<REAL>::real_t;
+class Configurator_6D;
 
+template<typename REAL>
+class CPU_6D_EnergyService : public CPUService<typename Types_6D<REAL>::DOF, typename Types_6D<REAL>::Common,  typename Types_6D<REAL>::Result> {
 public:
+	using real_t = typename TypeWrapper<REAL>::real_t;
 	using dof_t = typename Types_6D<real_t>::DOF;
 	using common_t = typename Types_6D<real_t>::Common;
 	using result_t = typename Types_6D<real_t>::Result;
+
+	/* serves as a builder class*/
+	using configurator_t = Configurator_6D<REAL>;
+
+	/* need public for instantiate the server in configurator */
 	using service_t = CPUService<dof_t, common_t, result_t>;
 	using typename service_t::workItem_t;
 	using typename service_t::itemProcessor_t;

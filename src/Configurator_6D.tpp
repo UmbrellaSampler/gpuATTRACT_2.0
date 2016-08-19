@@ -14,8 +14,8 @@
 #include "Configurator_6D.h"
 #include "readFile.h"
 #include "DOF_6D.h"
-#include "ServerIncludes.h"
-#include "CPU_6D_EnergyService.h"
+//#include "ServerIncludes.h"
+#include "Server.h"
 #include "Protein.h"
 #include "GridUnion.h"
 #include "ParamTable.h"
@@ -82,7 +82,6 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 		_dofs[i].pos = DOF_molecules[1][i].pos;
 		_dofs[i].ang = DOF_molecules[1][i].ang;
 	}
-	_results = std::vector<result_t>(_dofs.size());
 
 	/* init server and service*/
 	std::shared_ptr<service_t> service = std::make_shared<service_t>();

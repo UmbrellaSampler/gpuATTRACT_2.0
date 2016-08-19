@@ -12,9 +12,7 @@
 
 namespace as {
 
-template<typename REAL>
 class App {
-	static_assert(std::is_arithmetic<REAL>::value, "Only arithmetic types supported");
 public:
 	virtual ~App() {};
 	virtual void init(CmdArgs const& args) = 0;
