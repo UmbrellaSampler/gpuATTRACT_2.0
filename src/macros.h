@@ -39,6 +39,7 @@
 	} while(0)
 #define cudaVerifyKernel(x) do {																		\
 		x;																								\
+		cudaDeviceSynchronize();																		\
 		cudaError_t __cu_result = cudaGetLastError();													\
 		if (__cu_result!=cudaSuccess) { 																\
 			fprintf(stderr, "%s:%i: Error: cuda function call failed:\n" 								\

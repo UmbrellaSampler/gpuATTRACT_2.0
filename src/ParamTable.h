@@ -31,18 +31,13 @@ public:
 
 	using type_t = attractFFParams_t;
 
-	/* Constructor */
 	ParamTable() : _paramTable(nullptr), _numTypes(0),
 			_shape(PotShape::undefined), _swiOn(0), _swiOff(0) {}
 
-	/* Destructor */
 	~ParamTable() {
 		delete[] _paramTable;
 	}
 
-	/***************
-	* G E T T E R
-	***************/
 	unsigned numTypes() const noexcept {
 		return _numTypes;
 	}
@@ -80,17 +75,10 @@ public:
 		_swiOff = swiOff;
 	}
 
-	/****************************
-	 * public member functions
-	 ****************************/
-	inline const type_t& getParams(const int& typeA, const int& typeB) const noexcept {
+	const type_t& getParams(const int& typeA, const int& typeB) const noexcept {
 		return _paramTable[_numTypes*typeA + typeB];
 	}
 
-	/*
-	 * Read and write access.
-	 * Should be used for initialization
-	 */
 	type_t* getOrCreateTable() {
 		if (_paramTable == nullptr) {
 			if (_numTypes == 0) {

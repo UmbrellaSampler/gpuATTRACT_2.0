@@ -22,9 +22,25 @@
 #define ROTMAT_H_
 
 #include <Vec3.h>
+#include <algorithm>
+
+#ifndef __CUDACC__
+
+#ifndef __host__
+#define __host__
+#endif
+
+#ifndef __device__
+#define __device__
+#endif
+
+#endif
 
 namespace as {
+
+#ifndef __CUDACC__
 template <typename T> class RotMat;
+// ostream is not available in nvcc
 
 template<typename type>
 std::ostream& operator<<(std::ostream& stream, const RotMat<type>& v) {
@@ -37,17 +53,22 @@ std::ostream& operator<<(std::ostream& stream, const RotMat<type>& v) {
 	stream << "]";
 	return stream;
 }
+#endif
 
 template <typename T>
 class RotMat {
 public:
+	__host__ __device__
 	RotMat() {};
+
+	__host__ __device__
 	RotMat(T value) {
 		std::fill_n(mat, 9, value);
 	}
 
 	T mat[9];
 
+	__host__ __device__
 	RotMat getInv() const {
 		RotMat m0;
 		m0.mat[0] = mat[0];
@@ -62,6 +83,7 @@ public:
 		return m0;
 	}
 
+	__host__ __device__
 	RotMat operator* (const RotMat& rhs) {
 		RotMat matOut(0.0);
 		for(unsigned i = 0; i < 3; ++i) {
@@ -74,14 +96,17 @@ public:
 		return matOut;
 	}
 
+	__host__ __device__
 	T& operator[](const unsigned& i) {
 		return mat[i];
 	}
 
+	__host__ __device__
 	const T& operator[](const unsigned& i) const {
 		return mat[i];
 	}
 
+	__host__ __device__
 	void operator*= (const RotMat& rhs) {
 		RotMat matOut(0.0);
 		for(unsigned i = 0; i < 3; ++i) {
@@ -94,6 +119,7 @@ public:
 		*this = matOut;
 	}
 
+	__host__ __device__
 	Vec3<T> operator * (const Vec3<T>& rhs) const noexcept {
 		Vec3<T> vecOut(0.0);
 		vecOut.x = mat[0] * rhs.x + mat[1] * rhs.y + mat[2] * rhs.z;
@@ -101,8 +127,6 @@ public:
 		vecOut.z = mat[6] * rhs.x + mat[7] * rhs.y + mat[8] * rhs.z;
 		return vecOut;
 	}
-
-	friend std::ostream& operator<< <>(std::ostream& stream, const RotMat<T>& v);
 
 };
 

@@ -21,8 +21,6 @@
 #ifndef VEC3_H_
 #define VEC3_H_
 
-#include "align.h"
-
 #ifndef __CUDACC__
 
 #include <cmath>
@@ -31,24 +29,28 @@ using std::max;
 using std::abs;
 using std::sqrt;
 
+#ifndef __host__
+#define __host__
+#endif
+
+#ifndef __device__
+#define __device__
+#endif
+
 #endif
 
 namespace as{
 
+template<typename type> class Vec3;
 
 #ifndef __CUDACC__
-
-
-template<typename type> class Vec3;
 /** Global operators */
-
 template<typename type>
 std::ostream& operator<<(std::ostream& stream, const Vec3<type>& v) {
 
 	stream << "[" << v.x << "; " << v.y << "; " << v.z << "]";
 	return stream;
 }
-
 #endif
 
 template<typename type>
@@ -60,33 +62,39 @@ template<typename type>
 class Vec3 {
 public:
 
+	__host__ __device__
 	Vec3() {
 	}
 
+	__host__ __device__
 	explicit Vec3(type arg) {
 		x = arg;
 		y = arg;
 		z = arg;
 	}
 
+	__host__ __device__
 	Vec3(type arg0, type arg1, type arg2) {
 		x = arg0;
 		y = arg1;
 		z = arg2;
 	}
 
+	__host__ __device__
 	Vec3(type args[3]) {
 		x = args[0];
 		y = args[1];
 		z = args[2];
 	}
 
+	__host__ __device__
 	Vec3(const Vec3& other) {
 		x = other.x;
 		y = other.y;
 		z = other.z;
 	}
 
+	__host__ __device__
 	Vec3 operator+(const Vec3& rhs) const {
 		Vec3 result;
 		result.x = x + rhs.x;
@@ -95,12 +103,14 @@ public:
 		return Vec3(result);
 	}
 
+	__host__ __device__
 	void operator+=(const Vec3& rhs) {
 		x += rhs.x;
 		y += rhs.y;
 		z += rhs.z;
 	}
 
+	__host__ __device__
 	Vec3 operator-(const Vec3& rhs) const {
 		Vec3 result;
 		result.x = x - rhs.x;
@@ -109,6 +119,7 @@ public:
 		return Vec3(result);
 	}
 
+	__host__ __device__
 	void operator-=(const Vec3& rhs) {
 		x -= rhs.x;
 		y -= rhs.y;
@@ -147,6 +158,7 @@ public:
 		z /= static_cast<type>(scalar);
 	}
 
+	__host__ __device__
 	type MaxNorm() const {
 		type norm;
 		norm = max(abs(x), abs(y));
@@ -154,14 +166,17 @@ public:
 		return norm;
 	}
 
+	__host__ __device__
 	type L2NormSquare() const {
 		return x * x + y * y + z * z;
 	}
 
+	__host__ __device__
 	double L2Norm() const {
 		return sqrt(L2NormSquare());
 	}
 
+	__host__ __device__
 	Vec3& operator=(const Vec3& rhs) {
 		if (this != &rhs) {
 			x = rhs.x;
@@ -171,6 +186,7 @@ public:
 		return *this;
 	}
 
+	__host__ __device__
 	Vec3& operator=(type rhs) {
 		x = rhs;
 		y = rhs;
@@ -178,6 +194,7 @@ public:
 		return *this;
 	}
 
+	__host__ __device__
 	bool operator==(const Vec3& rhs) const {
 		if (x != rhs.x)
 			return false;
@@ -188,10 +205,12 @@ public:
 		return true;
 	}
 
-	bool operator!=(const Vec3& rhs) const {
+	__host__ __device__ bool
+	operator!=(const Vec3& rhs) const {
 		return !(*this == rhs);
 	}
 
+	__host__ __device__
 	~Vec3() {
 	}
 

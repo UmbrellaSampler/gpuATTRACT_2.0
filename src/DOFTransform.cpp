@@ -22,23 +22,19 @@
 #include <cmath>
 #include <cassert>
 
-#include "DOFTransform.h"
 #include "nativeTypesMath.h"
 #include "nativeTypesWrapper.h"
+#include "DOFTransform.h"
 #include "DOF_6D.h"
-#include "Vec3.h"
 #include "MatrixFunctions.h"
 
 namespace as {
-
-
 
 template<typename REAL, typename DOF>
 void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& dof_lig,
 			const Vec3<REAL>& pivot_rec, const Vec3<REAL>& pivot_lig,
 			bool centered_rec, bool centered_lig) {
 	using namespace std;
-	using real3_t = typename TypeWrapper<REAL>::real3_t;
 	using vec3_t = Vec3<REAL>;
 
 	assert(dof_rec.size() == dof_lig.size());

@@ -10,12 +10,9 @@
 
 #include <vector>
 #include <iosfwd>
+#include <AppType.h>
 
 namespace as {
-
-enum class AppType {
-	Score
-};
 
 class CmdArgs {
 public:

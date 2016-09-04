@@ -133,9 +133,6 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					_d->h_trafoLig.getX(),
 					_d->h_trafoLig.getY(),
 					_d->h_trafoLig.getZ(),
-					rec->xPos(),
-					rec->yPos(),
-					rec->zPos(),
 					_d->h_potLig.getX(), // output
 					_d->h_potLig.getY(),
 					_d->h_potLig.getZ(),
@@ -164,10 +161,6 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					lig->numAtoms(),
 					dof.ang
 			); // OK
-
-			std::cout << enGrad << std::endl;
-			exit(1);
-
 
 		}
 

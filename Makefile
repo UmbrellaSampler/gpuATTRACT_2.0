@@ -35,7 +35,8 @@ else ifeq ($(TEST), ON)
 endif
 
 OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))
-OBJECTS = $(OBJECTS_CPP)
+
+
 
 # AttractServer 
 CXX = g++
@@ -52,10 +53,35 @@ INCLUDES = -I$(CUDADIR)/include -I$(CURDIR)/src -I$(CURDIR)/src/fileIO
 LDFLAGS = #-L...
 LIBS = -lpthread -lrt $(LIBS_TEST) -lboost_program_options
 
+
 ifeq ($(CUDA), ON)
 	OFLAGS += -DCUDA
 	LDFLAGS += -L$(CUDADIR)/lib64
 	LIBS += -lcudart
+	LXX = nvcc
+else
+	LXX = ${CXX}
+endif
+
+# prepare nvcc settings
+CUDA_CXX = nvcc
+ARCHFLAGS = -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_50,code=sm_50
+ARCHFLAGS2 = -gencode arch=compute_30,code=compute_30 -gencode arch=compute_35,code=compute_35 -gencode arch=compute_50,code=compute_50
+SOURCES_CU = $(shell find $(SOURCE_DIR) -name "*.cu")
+
+OBJECTS_CU = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CU:.cu=.cuo)))
+ifeq ($(TARGET), RELEASE)
+	CUDA_OFLAGS = ${OFLAGS} -D_FORCE_INLINES -D_MWAITXINTRIN_H_INCLUDED
+else ifeq ($(TARGET), DEBUG) 
+	CUDA_OFLAGS = -O0 -g -G -DCUDA
+else
+	CUDA_OFLAGS =
+endif
+CUDA_CXXFLAGS = ${CUDA_OFLAGS} -std=c++11
+
+OBJECTS = ${OBJECTS_CPP}
+ifeq ($(CUDA), ON)
+	OBJECTS += ${OBJECTS_CU}
 endif
 
 # search directories for source files
@@ -65,22 +91,30 @@ endif
 
 $(BINARY): $(OBJECTS)
 	@echo 'Building target: $@'
-	@echo 'Invoking: GCC C++ Linker'
-	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@echo 'Invoking: GCC/NVCC C++ Linker'
+	$(LXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-$(OBJECTS): $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d
+$(OBJECTS_CPP): $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d
 	@echo 'Building file: "$<"'
 	@echo 'Invoking: GCC C++ Compiler'
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: "$<"'
 	@echo ' '
 
-$(OBJDIR)/%.d: ;	
+$(OBJDIR)/%.d:	;
 	
--include $(OBJECTS:.o=.d)
-	
+
+-include $(OBJECTS_CPP:.o=.d)
+
+$(OBJECTS_CU): $(OBJDIR)/%.cuo: %.cu 
+	@echo 'Building file: $<"'
+	@echo 'Invoking: NVCC Compiler'
+	$(CUDA_CXX) $(CUDA_CXXFLAGS) $(ARCHFLAGS) $(ARCHFLAGS2) $(INCLUDES) --compile --relocatable-device-code=true -x cu -o "$@" "$<"
+	@echo 'Finished building: $<"'
+	@echo ' '	
+
 .PHONY: all clean cleanall clean_deps
 
 all: $(BINARY)

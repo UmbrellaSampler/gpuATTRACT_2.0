@@ -23,11 +23,20 @@ using std::fmax;
 using std::atan2;
 using std::acos;
 
+#ifndef __host__
+#define __host__
+#endif
+
+#ifndef __device__
+#define __device__
+#endif
+
 #endif
 
 namespace as {
 
 template<typename REAL>
+__host__ __device__
 RotMat<REAL>  euler2rotmat(REAL const& phi, REAL const& ssi, REAL const& rot) {
 	//first rotate using rot
 	//		this is a rotation around the Z axis
@@ -68,6 +77,7 @@ RotMat<REAL>  euler2rotmat(REAL const& phi, REAL const& ssi, REAL const& rot) {
 }
 
 template<typename REAL>
+__host__ __device__
 TorqueMat<REAL> euler2torquemat(const REAL& phi, const REAL& ssi, const REAL& rot)
 {
 	REAL cSSI = cos(ssi);
@@ -117,6 +127,7 @@ TorqueMat<REAL> euler2torquemat(const REAL& phi, const REAL& ssi, const REAL& ro
 }
 
 template<typename T>
+__host__ __device__
 void rotmat2euler(const RotMat<T>& rotmat, T& phi, T& ssi, T& rot) {
 	phi = atan2(rotmat[5], rotmat[2]);
 	ssi = acos(fmin(fmax(rotmat[8],-1.0), 1.0));

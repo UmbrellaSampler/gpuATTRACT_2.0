@@ -7,10 +7,12 @@
 
 
 #include <iostream>
+#include <exception>
+#include <memory>
 #include "CmdParser.h"
 #include "CmdArgs.h"
-#include "CPU_6D_EnergyService.h"
-#include "scATTRACT.h"
+#include "App.h"
+#include "AppFactory.h"
 
 
 
@@ -19,13 +21,21 @@ using namespace as;
 
 int main(int argc, char* argv[]) {
 
-	CmdParser parser;
-	parser.parse(argc, argv);
-	auto args = parser.args();
-	std::cout << args << std::endl;
-	scATTRACT<CPU_6D_EnergyService<float>> att;
-	att.init(args);
-	att.run();
+	try {
+
+		CmdParser parser;
+		parser.parse(argc, argv);
+		auto args = parser.args();
+		std::cout << args << std::endl;
+
+		auto app = AppFactory::create(args);
+		app->init(args);
+		app->run();
+	} catch (std::exception& e) {
+		std::cerr << "Catched error in main: " << + e.what() << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
 	return 0;
 
 }

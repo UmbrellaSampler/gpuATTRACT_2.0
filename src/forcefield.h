@@ -11,9 +11,22 @@
 #include "ParamTable.h"
 #include "SimParam.h"
 
+#ifndef __CUDACC__
+
+#ifndef __host__
+#define __host__
+#endif
+
+#ifndef __device__
+#define __device__
+#endif
+
+#endif
+
 namespace as {
 
 template<typename REAL>
+__host__ __device__
 void LJPotForce(
 		REAL const& dr2,
 		REAL const& dr2_inv,
@@ -70,6 +83,7 @@ void LJPotForce(
 }
 
 template<typename REAL>
+__host__ __device__
 void ChargePotForce(
 		REAL const& dr2_inv,
 		REAL const& dx,

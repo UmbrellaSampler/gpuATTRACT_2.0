@@ -12,12 +12,20 @@
 #include "Vec3.h"
 
 namespace as {
-
+#ifndef __CUDACC__ // ostream is not available in nvcc
 template<typename REAL>
 struct DOFImpl;
 
 template<typename REAL>
 std::ostream& operator<< (std::ostream& s, DOFImpl<REAL> const&);
+
+template<typename REAL>
+struct ResultImpl;
+
+template<typename REAL>
+std::ostream& operator<< (std::ostream& s, ResultImpl<REAL> const& args);
+
+#endif
 
 template<typename REAL>
 struct DOFImpl {
@@ -26,13 +34,6 @@ struct DOFImpl {
 	vec3_t pos;
 	vec3_t ang;
 };
-
-
-template<typename REAL>
-struct ResultImpl;
-
-template<typename REAL>
-std::ostream& operator<< (std::ostream& s, ResultImpl<REAL> const& args);
 
 template<typename REAL>
 struct ResultImpl {
@@ -43,17 +44,12 @@ struct ResultImpl {
 	vec3_t ang;
 };
 
-
 template<typename REAL>
 struct Types_6D {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 
 	using DOF = DOFImpl<REAL>;
-//	struct DOF {
-//		vec3_t pos;
-//		vec3_t ang;
-//	};
 
 	struct Common {
 		id_t gridId;

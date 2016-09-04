@@ -8,7 +8,7 @@
 #ifndef SRC_NATIVETYPES_H_
 #define SRC_NATIVETYPES_H_
 
-#ifdef CUDA
+#if defined(CUDA) //&& !defined(__CUDACC__)
 // from cuda toolkit
 #include "vector_functions.h" // CUDA vector_types + functions (e.g. make_float4(...))
 
@@ -20,12 +20,14 @@
 #define __device_builtin__
 #endif
 
-#ifndef __cuda_builtin_vector_align8(tag, members)
+#ifndef __cuda_builtin_vector_align8
+
 #define __cuda_builtin_vector_align8(tag, members) \
 struct __device_builtin__ __align__(8) tag         \
 {                                                  \
     members                                        \
 }
+
 #endif
 
 #ifndef __host__
