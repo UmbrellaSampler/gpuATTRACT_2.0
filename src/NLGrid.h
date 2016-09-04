@@ -89,6 +89,11 @@ public:
 		_maxDim.z = _pos.z + (_dimN.z - 1) * _dVox;
 	}
 
+	virtual void translate(real3_t displ) noexcept {
+		auto pos = _pos + displ;
+		setPos(pos);
+	}
+
 	/*
 	 ** @brief: return the min grid indices according to the position
 	 */

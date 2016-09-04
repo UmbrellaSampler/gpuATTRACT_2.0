@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
 	std::cout << args << std::endl;
 	scATTRACT<CPU_6D_EnergyService<float>> att;
 	att.init(args);
+	att.run();
 	return 0;
 
 }

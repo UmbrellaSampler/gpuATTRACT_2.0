@@ -138,7 +138,7 @@ public:
 
 	void undoPivoting();
 
-	void print();
+	void print(int numEl) const;
 
 protected:
 	std::string _tag;	/** identifier: filename (default) */

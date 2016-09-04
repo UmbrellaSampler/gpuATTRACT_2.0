@@ -78,7 +78,7 @@ public:
 		_dimN = dim;
 	}
 
-	void translate(real3_t displ) noexcept {
+	virtual void translate(real3_t displ) noexcept {
 		_pos = _pos + displ;
 	}
 

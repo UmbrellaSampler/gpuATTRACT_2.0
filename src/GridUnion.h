@@ -51,6 +51,8 @@ public:
 
 	void translate(real3_t displ) noexcept {
 		inner->translate(displ);
+		outer->translate(displ);
+		NL->translate(displ);
 	}
 
 	std::shared_ptr<IntrplGrid<REAL>> inner;

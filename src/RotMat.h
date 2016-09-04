@@ -95,10 +95,10 @@ public:
 	}
 
 	Vec3<T> operator * (const Vec3<T>& rhs) const noexcept {
-		Vec3<T> vecOut;
-		vecOut.x = mat[0] * rhs.x + mat[1] * rhs.x + mat[2] * rhs.x;
-		vecOut.y = mat[3] * rhs.y + mat[4] * rhs.y + mat[5] * rhs.y;
-		vecOut.z = mat[6] * rhs.z + mat[7] * rhs.z + mat[8] * rhs.z;
+		Vec3<T> vecOut(0.0);
+		vecOut.x = mat[0] * rhs.x + mat[1] * rhs.y + mat[2] * rhs.z;
+		vecOut.y = mat[3] * rhs.x + mat[4] * rhs.y + mat[5] * rhs.z;
+		vecOut.z = mat[6] * rhs.x + mat[7] * rhs.y + mat[8] * rhs.z;
 		return vecOut;
 	}
 

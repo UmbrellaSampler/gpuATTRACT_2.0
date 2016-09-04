@@ -77,11 +77,16 @@ public:
 		return _grid + i*_dimN.x*_dimN.y*_dimN.z;
 	}
 
-	void setPos(real3_t pos) noexcept {
+	virtual void setPos(real3_t pos) noexcept {
 		grid_t::setPos(pos);
 		_maxDim.x = _pos.x + (_dimN.x - 1) * _dVox;
 		_maxDim.y = _pos.y + (_dimN.y - 1) * _dVox;
 		_maxDim.z = _pos.z + (_dimN.z - 1) * _dVox;
+	}
+
+	virtual void translate(real3_t displ) noexcept {
+		auto pos = _pos + displ;
+		setPos(pos);
 	}
 
 	/*
@@ -147,7 +152,6 @@ public:
 		voxelOct.data[1][1][0] = _grid[idxGrid + _dimN.x + 1];
 
 		idxGrid += _dimN.x*_dimN.y;
-
 		voxelOct.data[0][0][1] = _grid[idxGrid];
 		voxelOct.data[1][0][1] = _grid[idxGrid + 1];
 		voxelOct.data[0][1][1] = _grid[idxGrid + _dimN.x];

@@ -183,6 +183,7 @@ void readGridFromGridFile(std::shared_ptr<GridUnion<REAL>> gridUnion, std::strin
 	gridDescInner.posMin.x = grid.ori[0];
 	gridDescInner.posMin.y = grid.ori[1];
 	gridDescInner.posMin.z = grid.ori[2];
+
 	unsigned gridsize = gridDescInner.dimN.x * gridDescInner.dimN.y * gridDescInner.dimN.z
 			* gridDescInner.numGrids;
 	gridDescInner.grid = new float4[gridsize];
@@ -288,9 +289,9 @@ void readGridFromGridFile(std::shared_ptr<GridUnion<REAL>> gridUnion, std::strin
 	gridDescNL.dimN.z = grid.gridz;
 	gridDescNL.gridSpacing = grid.gridspacing;
 	gridDescNL.dPlateau = grid.plateaudis;
-	gridDescOuter.posMin.x = grid.ori[0];
-	gridDescOuter.posMin.y = grid.ori[1];
-	gridDescOuter.posMin.z = grid.ori[2];
+	gridDescNL.posMin.x = grid.ori[0];
+	gridDescNL.posMin.y = grid.ori[1];
+	gridDescNL.posMin.z = grid.ori[2];
 	gridDescNL.numEl = grid.nr_neighbours;
 	gridDescNL.neighborArray = new uint[grid.nr_neighbours];
 	for (int n = 0; n < grid.nr_neighbours; n++) {
@@ -540,6 +541,8 @@ std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename) {
 	}
 
 	file.close();
+
+	return DOF_molecules;
 
 }
 

@@ -14,14 +14,46 @@
 namespace as {
 
 template<typename REAL>
+struct DOFImpl;
+
+template<typename REAL>
+std::ostream& operator<< (std::ostream& s, DOFImpl<REAL> const&);
+
+template<typename REAL>
+struct DOFImpl {
+	using real_t = typename TypeWrapper<REAL>::real_t;
+	using vec3_t = Vec3<real_t>;
+	vec3_t pos;
+	vec3_t ang;
+};
+
+
+template<typename REAL>
+struct ResultImpl;
+
+template<typename REAL>
+std::ostream& operator<< (std::ostream& s, ResultImpl<REAL> const& args);
+
+template<typename REAL>
+struct ResultImpl {
+	using real_t = typename TypeWrapper<REAL>::real_t;
+	using vec3_t = Vec3<real_t>;
+	real_t E;
+	vec3_t pos;
+	vec3_t ang;
+};
+
+
+template<typename REAL>
 struct Types_6D {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 
-	struct DOF {
-		vec3_t pos;
-		vec3_t ang;
-	};
+	using DOF = DOFImpl<REAL>;
+//	struct DOF {
+//		vec3_t pos;
+//		vec3_t ang;
+//	};
 
 	struct Common {
 		id_t gridId;
@@ -31,11 +63,7 @@ struct Types_6D {
 		id_t paramsId;
 	};
 
-	struct Result {
-		real_t E;
-		vec3_t pos;
-		vec3_t ang;
-	};
+	using Result = ResultImpl<REAL>;
 };
 
 }  // namespace as

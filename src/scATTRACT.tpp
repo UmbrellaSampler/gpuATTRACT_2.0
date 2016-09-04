@@ -8,6 +8,7 @@
 #ifndef SRC_SCATTRACT_TPP_
 #define SRC_SCATTRACT_TPP_
 
+#include <iostream>
 #include "scATTRACT.h"
 #include "Configurator_6D.h"
 #include "Request.h"
@@ -35,9 +36,15 @@ void scATTRACT<SERVICE>::run() {
 	auto& server = _config->server(); //this->server();
 	auto& common = _config->common();
 	size_t numDofs = dofs.size();
-	auto results = std::vector<result_t>(dofs.size());
 	Request<dof_t, common_t> request(dofs.data(), numDofs, common);
 	server.submit(request);
+
+	auto results = std::vector<result_t>(dofs.size());
+	server.wait(request, results.data());
+
+	for (result_t const res : results) {
+		std::cout << res << std::endl;
+	}
 
 
 }

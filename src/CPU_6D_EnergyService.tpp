@@ -25,6 +25,9 @@
 #include "MatrixFunctions.h"
 #include "RotMat.h"
 
+// todo: remove
+#include <iostream>
+
 namespace as {
 
 template<typename REAL>
@@ -86,8 +89,11 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 		if (itemSize*lig->numAtoms() > _d->h_trafoLig.bufferSize()) {
-			_d->allocateBuffer(itemSize*lig->numAtoms());
+			_d->allocateBuffer(lig->numAtoms());
 		}
+
+//		lig->print(lig->numAtoms());
+//		exit(1);
 
 		for (unsigned i = 0; i < itemSize; ++i) {
 			const auto& dof = dofs[i];
@@ -103,7 +109,7 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					_d->h_trafoLig.getX(), // output
 					_d->h_trafoLig.getY(),
 					_d->h_trafoLig.getZ()
-			);
+			); // OK
 
 			potForce(
 					grid->inner.get(),
@@ -116,7 +122,7 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					_d->h_potLig.getY(),
 					_d->h_potLig.getZ(),
 					_d->h_potLig.getV()
-			);
+			); // OK
 
 			NLPotForce(
 					grid->NL.get(),
@@ -134,7 +140,7 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					_d->h_potLig.getY(),
 					_d->h_potLig.getZ(),
 					_d->h_potLig.getV()
-			);
+			); // OK
 
 			PotForce<REAL> redPotForce = reducePotForce(
 					_d->h_potLig.getX(),
@@ -142,7 +148,7 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					_d->h_potLig.getZ(),
 					_d->h_potLig.getV(),
 					lig->numAtoms()
-			);
+			); // OK
 
 
 			enGrad.E = redPotForce.E;
@@ -157,9 +163,15 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					_d->h_potLig.getZ(),
 					lig->numAtoms(),
 					dof.ang
-			);
+			); // OK
+
+			std::cout << enGrad << std::endl;
+			exit(1);
+
+
 		}
 
+		item->setProcessed();
 
 		return false;
 
@@ -171,5 +183,15 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 }  // namespace as
 
 
-
 #endif /* SRC_CPU6DENERGYSERVICE_TPP_ */
+
+// for debugging
+//
+//			size_t numDispl = lig->numAtoms();
+//			for (size_t i = 0; i < numDispl; ++i) {
+//				std::cout <<  i << " " << _d->h_potLig.getX()[i] << " " << _d->h_potLig.getY()[i] << " " << _d->h_potLig.getZ()[i] << " " << _d->h_potLig.getV()[i] << std::endl;
+//			}
+//			exit(1);
+//
+//			std::cout << enGrad << std::endl;
+//			exit(1);

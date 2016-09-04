@@ -27,7 +27,7 @@ vector<po::options_description> TwoBodyParser::options() const noexcept {
 	input.add_options()
 			("dof"     			  , po::value<string>()->required()								, "structure (DOF) file")
 			("receptor-pdb,r"     , po::value<string>()->default_value("receptorr.pdb")			, "pdb-file of receptor")
-			("ligand-pdb,l"       , po::value<string>()->default_value("ligand.pdb")   			, "pdb-file of ligand")
+			("ligand-pdb,l"       , po::value<string>()->default_value("ligandr.pdb")   			, "pdb-file of ligand")
 			("grid,g"             , po::value<string>()->default_value("receptorgrid.grid")		, "receptor grid file")
 			("par,p"	          , po::value<string>()->default_value("attract.par")			, "attract forcefield parameter file")
 			("alphabet,a"		  , po::value<string>()->default_value("receptorgrid.alphabet")	, "receptor grid alphabet file");

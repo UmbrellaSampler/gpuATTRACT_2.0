@@ -14,6 +14,9 @@
 #include "MatrixFunctions.h"
 #include "nativeTypesWrapper.h"
 
+// todo: remove
+#include <iostream>
+
 namespace as {
 
 template<typename REAL>
@@ -35,11 +38,18 @@ PotForce<REAL> reducePotForce(
 		unsigned const& numAtoms)
 {
 	PotForce<REAL> potForce;
+	potForce.E = 0.0;
+	potForce.pos = Vec3<REAL>(0.0);
+
+	typename Types_6D<REAL>::Result res;
+	res.E = potForce.E;
+	res.pos = potForce.pos;
+
 	for(unsigned i = 0; i < numAtoms; ++i) {
+		potForce.E += energy[i];
 		potForce.pos.x += fx[i];
 		potForce.pos.y += fy[i];
 		potForce.pos.z += fz[i];
-		potForce.E += energy[i];
 	}
 
 	// force reduction, some times helps in case of very "bad" start structure

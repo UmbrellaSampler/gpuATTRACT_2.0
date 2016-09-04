@@ -30,6 +30,7 @@ std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::s
 	checkDeviceIdAndSetCurrent(deviceId);
 
 	unsigned numAtoms = protein->numAtoms();
+	unsigned numMappedTypes = protein->numMappedTypes();
 
 	REAL *d_xPos;
 	CUDA_CHECK(cudaMalloc((void**) &d_xPos, numAtoms * sizeof(REAL)));
@@ -46,7 +47,12 @@ std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::s
 	CUDA_CHECK(cudaMemcpy(d_type, protein->type(), numAtoms * sizeof(unsigned), cudaMemcpyHostToDevice));
 	unsigned* d_mappedType;
 	CUDA_CHECK(cudaMalloc((void**) &d_mappedType, numAtoms * sizeof(unsigned)));
-	CUDA_CHECK(cudaMemcpy(d_mappedType, protein->mappedType(), numAtoms * sizeof(unsigned), cudaMemcpyHostToDevice));
+	if (numMappedTypes > 0) {
+		CUDA_CHECK(cudaMemcpy(d_mappedType, protein->mappedType(), numAtoms *numMappedTypes* sizeof(unsigned), cudaMemcpyHostToDevice));
+	} else {
+		d_mappedType = nullptr;
+	}
+
 	REAL* d_charge;
 	CUDA_CHECK(cudaMalloc((void**) &d_charge, numAtoms * sizeof(REAL)));
 	CUDA_CHECK(cudaMemcpy(d_charge, protein->charge(), numAtoms * sizeof(REAL), cudaMemcpyHostToDevice));

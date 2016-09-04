@@ -28,8 +28,8 @@ namespace as {
 template<typename REAL>
 typename TypeWrapper<REAL>::real4_t trilinearInterpolation(
 		typename TypeWrapper<REAL>::real3_t const& pos,
-		const VoxelOctet<REAL> &voxelOct,
-		const REAL &voxelVol_inv)
+		VoxelOctet<REAL> const& voxelOct,
+		REAL const& voxelVol_inv)
 {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using real3_t = typename TypeWrapper<REAL>::real3_t;

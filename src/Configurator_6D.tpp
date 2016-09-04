@@ -34,7 +34,7 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 	auto receptor = createProteinFromPDB<REAL>(args.recName);
 	auto ligand = createProteinFromPDB<REAL>(args.ligName);
 	auto grid = createGridFromGridFile<REAL>(args.gridName);
-	auto paramTable = createParamTableFromFile<REAL>(args.gridName);
+	auto paramTable = createParamTableFromFile<REAL>(args.paramsName);
 
 	auto simParam = std::make_shared<SimParam<REAL>>();
 	if (args.dielec == "variable") {
@@ -45,8 +45,17 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 	simParam->epsilon = static_cast<REAL>(args.epsilon);
 	simParam->ffelec = 	static_cast<REAL>(FELEC/args.epsilon);
 
+
+	/* apply mapping according to receptor grid alphabet to ligand */
+	auto mapVec = readGridAlphabetFromFile(args.alphabetName); // map: std::vector<unsigned>
+	TypeMap typeMap = createTypeMapFromVector(mapVec);
+	ligand->setNumMappedTypes(1);
+	ligand->getOrCreateMappedPtr();
+	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
+	applyMapping(typeMap, ligand->numAtoms(), ligand->type(), ligand->mappedType());
+
 	/* add items to dataMng */
-	std::shared_ptr<DataManager> dataManager;
+	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
 	_ids.recId = dataManager->add(receptor);
 	_ids.ligId = dataManager->add(ligand);
 	_ids.gridId = dataManager->add(grid);
@@ -76,6 +85,7 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 	/* transform ligand dofs assuming that the receptor is always centered in the origin */
 	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
 
+
 	/* init dof and result buffer */
 	_dofs = std::vector<dof_t>(DOF_molecules[1].size());
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
@@ -85,6 +95,7 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 
 	/* init server and service*/
 	std::shared_ptr<service_t> service = std::make_shared<service_t>();
+	service->initAllocators();
 	service->setDataManager(dataManager); // do not forget!
 	_server = std::unique_ptr<server_t>(new server_t(service));
 	if (args.numCPUs > 0) {
@@ -96,13 +107,13 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 	/* apply pivoting to proteins */
 	if(h.auto_pivot) {
 		if (!h.pivots.empty()) {
-			throw std::logic_error("Auto pivot specified, but explicitly definined pivots available. (File " + args.dofName + ")" );
+			throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
 		}
 		h.pivots.push_back(receptor->pivot());
 		h.pivots.push_back(ligand->pivot());
 	} else {
 		if (h.pivots.size() != 2) {
-			throw std::logic_error("No auto pivot specified, but number of definined pivots is incorrect. (File " + args.dofName + ")" );
+			throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
 		}
 		receptor->pivotize(h.pivots[0]);
 		ligand->pivotize(h.pivots[1]);
@@ -112,11 +123,6 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 	auto pivot = h.pivots[0];
 	grid->translate(-make_real3(pivot.x,pivot.y,pivot.z));
 
-	/* apply mapping according to receptor grid alphabet to ligand */
-	auto mapVec = readGridAlphabetFromFile(args.alphabetName); // map: std::vector<unsigned>
-	TypeMap typeMap = createTypeMapFromVector(mapVec);
-	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
-	applyMapping(typeMap, ligand->numAtoms(), ligand->type(), ligand->mappedType());
 }
 
 template<typename REAL>

@@ -77,7 +77,7 @@ inline __host__  __device__ float3 operator/(float3 a, float b) {
 }
 
 inline __host__  __device__ float3 operator-(float3 a) {
-	return make_float3(-a.x , -a.y, -a.z);
+	return make_float3(-a.x, -a.y, -a.z);
 }
 
 /* double */
@@ -107,7 +107,7 @@ inline __host__  __device__ double4 operator/(double4 a, double b) {
 }
 
 inline __host__  __device__ double4 operator-(double4 a) {
-	return make_double4(-a.x , -a.y, -a.z, -a.w);
+	return make_double4(-a.x, -a.y, -a.z, -a.w);
 }
 
 inline __host__  __device__ double3 operator-(double3 a, double3 b) {
@@ -135,7 +135,7 @@ inline __host__  __device__ double3 operator/(double3 a, double b) {
 }
 
 inline __host__  __device__ double3 operator-(double3 a) {
-	return make_double3(-a.x , -a.y, -a.z);
+	return make_double3(-a.x, -a.y, -a.z);
 }
 
 

@@ -25,6 +25,10 @@
 
 #include "Protein.h"
 
+//todo: remove
+#include <iostream>
+#include <iomanip>
+
 namespace as {
 
 template<typename REAL>
@@ -73,10 +77,10 @@ template<typename REAL>
 auto Protein<REAL>::getOrCreateMappedPtr() -> type_t* {
 	if (_mappedTypes == nullptr) {
 		if (_numAtoms == 0) {
-			throw std::runtime_error("getOrCreateTypePtr(): the number of atoms must be set before");
+			throw std::runtime_error("getOrCreateMappedPtr(): the number of atoms must be set before");
 		}
 		if (_numMappedTypes == 0) {
-			throw std::runtime_error("getOrCreateTypePtr(): the number of mapped types must be set before");
+			throw std::runtime_error("getOrCreateMappedPtr(): the number of mapped types must be set before");
 		}
 		_mappedTypes = new type_t[_numAtoms*_numMappedTypes];
 	}
@@ -149,39 +153,39 @@ void Protein<REAL>::undoPivoting() {
 	_pivot = vec3_t(0,0,0);
 }
 
+//TODO: move print to free functions
+template<typename REAL>
+void Protein<REAL>::print(int numEL) const {
+	using namespace std;
+	int precisionSetting = cout.precision( );
+	ios::fmtflags flagSettings = cout.flags();
+	cout.setf(ios::dec | ios::showpoint | ios::showpos);
+	cout.precision(6);
+
+	int w = 13;
+//	outStream 	<< setw(w) << "DOF"
+//				<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z
+//				<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z;
+
+	cout << setw(5) << "#" << setw(w) << "X" << setw(w) << "Y" << setw(w) << "Z" << setw(6) << "TYPE" << setw(w) << "CHARGE" << endl;
+	for(unsigned i = 0; i < numEL; ++i) {
+		cout << setw(5) << i+1
+			 << setw(w) << xPos()[i]
+		     << setw(w) << yPos()[i]
+		     << setw(w) << zPos()[i]
+		     << setw(6) << type()[i]
+		     << setw(6) << mappedType()[i]
+			 << setw(w) << charge()[i]
+			 << endl;
+	}
+
+	cout.precision(precisionSetting);
+	cout.flags(flagSettings);
+}
+
 } // namespace as
 
 #endif
-
-//TODO: move print to free functions
-
-//void Protein<REAL>::print() {
-//	using namespace std;
-//	int precisionSetting = cout.precision( );
-//	ios::fmtflags flagSettings = cout.flags();
-//	cout.setf(ios::dec | ios::showpoint | ios::showpos);
-//	cout.precision(6);
-//
-//	int w = 13;
-////	outStream 	<< setw(w) << "DOF"
-////				<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z
-////				<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z;
-//
-//	cout << setw(5) << "#" << setw(w) << "X" << setw(w) << "Y" << setw(w) << "Z" << setw(6) << "TYPE" << setw(w) << "CHARGE" << endl;
-//	for(unsigned i = 0; i < _numAtoms; ++i) {
-//		cout << setw(5) << i+1
-//			 << setw(w) << xPos()[i]
-//		     << setw(w) << yPos()[i]
-//		     << setw(w) << zPos()[i]
-//		     << setw(6) << type()[i]
-//		     << setw(6) << mappedTypes()[i]
-//			 << setw(w) << charge()[i]
-//			 << endl;
-//	}
-//
-//	cout.precision(precisionSetting);
-//	cout.flags(flagSettings);
-//}
 
 
 

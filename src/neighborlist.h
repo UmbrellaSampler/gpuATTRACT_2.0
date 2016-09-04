@@ -11,6 +11,9 @@
 #include "forcefield.h"
 #include "nativeTypesWrapper.h"
 
+// todo: remove
+#include <iostream>
+
 namespace as {
 
 template<typename REAL>
@@ -36,7 +39,6 @@ void NLPotForce(
 	using real4_t = typename TypeWrapper<REAL>::real4_t;
 
 	const unsigned numAtomsLig = lig->numAtoms();
-	/* loop over all elements in input/output */
 	for (unsigned i = 0; i < numAtomsLig; ++i) {
 		const unsigned atomTypeLig = lig->type()[i];
 
@@ -48,7 +50,7 @@ void NLPotForce(
 		const REAL posLigZ = LigPosZ[i];
 
 
-		/* test if particle is out of bounds and perform data fetch and neigbourlist calculations */
+		/* test if particle is out of bounds and perform data fetch and neighbourlist calculations */
 		if (!(grid->outOfBounds(posLigX, posLigY, posLigZ))) {
 
 			int idxX, idxY, idxZ;
@@ -56,23 +58,16 @@ void NLPotForce(
 			const NeighbourDesc &nDesc = grid->getNeighbourDesc(idxX, idxY,
 					idxZ);
 
-
 			real3_t fAcc = {0.0,0.0,0.0};
 			REAL eAcc = 0.0;
 
 			for (unsigned j = 0; j < nDesc.numEl; ++j) {
 				const unsigned nIdx = grid->getNeighbor(nDesc.idx + j);
 
-				REAL dx, dy, dz;
-				if (rec->numModes() > 0) {
-					dx = posLigX - RecPosX[nIdx];
-					dy = posLigY - RecPosY[nIdx];
-					dz = posLigZ - RecPosZ[nIdx];
-				} else {
-					dx = posLigX - rec->xPos()[nIdx];
-					dy = posLigY - rec->yPos()[nIdx];
-					dz = posLigZ - rec->zPos()[nIdx];
-				}
+				REAL dx = posLigX - rec->xPos()[nIdx];
+				REAL dy = posLigY - rec->yPos()[nIdx];
+				REAL dz = posLigZ - rec->zPos()[nIdx];
+
 
 				const REAL dr2 = dx * dx + dy * dy + dz * dz;
 
@@ -117,13 +112,10 @@ void NLPotForce(
 				const bool calc_elec = abs(chargeLigRec) > 0.001; // evaluate electric potential
 
 				REAL rdx, rdy, rdz;
-				if (calc_elec) {
-
-					REAL ratio = grid->getRatio(dr2);
-					rdx = ratio*dx;
-					rdy = ratio*dy;
-					rdz = ratio*dz;
-				}
+				REAL ratio = grid->getRatio(dr2);
+				rdx = ratio*dx;
+				rdy = ratio*dy;
+				rdz = ratio*dz;
 
 				LJPotForce(grid->dPlateau2(), grid->dPlateau2_inv(), rdx, rdy, rdz,
 					table->getParams(atomTypeRec-1, atomTypeLig-1),

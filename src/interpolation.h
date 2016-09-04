@@ -18,7 +18,6 @@
 
 namespace as {
 
-
 template<typename REAL>
 typename TypeWrapper<REAL>::real4_t interpolate(
 		IntrplGrid<REAL> const* grid, typename TypeWrapper<REAL>::real3_t const& pos,
@@ -26,9 +25,11 @@ typename TypeWrapper<REAL>::real4_t interpolate(
 {
 	using real4_t = typename TypeWrapper<REAL>::real4_t;
 
-	int3 idx = grid->getIndex(pos);
+	const int3 idx = grid->getIndex(pos);
 	VoxelOctet<REAL> voxel = grid->getVoxelByIndex(idx, type);
+
 	real4_t pot = trilinearInterpolation(pos, voxel,grid->voxelVol_inv());
+
 	/* El.stat. - Forces/Energy */
 	if (std::fabs(charge) > static_cast<REAL>(0.001)) {
 		voxel = grid->getVoxelByIndex(idx, 0);
@@ -62,19 +63,19 @@ void potForce(
 	/* loop over all elements in LigPos/output */
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		unsigned const& type = prot->mappedType()[i];
-		if (type == 0)
-			continue;
-		real3_t pos = make_real3(LigPosX[i], LigPosY[i], LigPosZ[i]);
-		const REAL& charge = prot->charge()[i];
-
-		const REAL zero = static_cast<REAL>(0);
+		constexpr REAL zero = static_cast<REAL>(0);
 		real4_t pot = make_real4(zero, zero, zero, zero); //interpolated value for Van-der-Waals & electorstatic interactions
-		if (innerGrid->outOfBounds_byPos(pos)) {
-			if (!outerGrid->outOfBounds_byPos(pos)) {
-				pot = interpolate(outerGrid, pos, type, charge);
+		if (type != 0) {
+			const real3_t pos = make_real3(LigPosX[i], LigPosY[i], LigPosZ[i]);
+			const REAL& charge = prot->charge()[i];
+
+			if (innerGrid->outOfBounds_byPos(pos)) {
+				if (!outerGrid->outOfBounds_byPos(pos)) {
+					pot = interpolate(outerGrid, pos, type, charge);
+				}
+			} else {
+				pot = interpolate(innerGrid, pos, type, charge);
 			}
-		} else {
-			pot = interpolate(innerGrid, pos, type, charge);
 		}
 
 		data_out_x[i] = pot.x;
@@ -91,3 +92,13 @@ void potForce(
 
 
 #endif /* SRC_INTERPOLATION_H_ */
+
+// for debugging
+//template<typename REAL>
+//std::ostream& operator<< (std::ostream& s, VoxelOctet<REAL> const& octet) {
+//	const REAL* data = reinterpret_cast<const REAL*>(octet.data);
+//	for (size_t i = 0; i < 8; ++i) {
+//		s << data[i] << " ";
+//	}
+//	return s;
+//}

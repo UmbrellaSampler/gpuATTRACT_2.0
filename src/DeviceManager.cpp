@@ -16,6 +16,7 @@
 #include "Protein.h"
 #include "GridUnion.h"
 #include "ParamTable.h"
+#include "SimParam.h"
 #include "DeviceProtein.h"
 #include "DeviceGridUnion.h"
 #include "DeviceParamTable.h"
@@ -46,6 +47,9 @@ void DeviceManager::attachToDevice(std::shared_ptr<DataItem> item, id_t id, devi
 		deviceItem = std::static_pointer_cast<DeviceItem>(DeviceDataConfigurator::attach(derived, deviceId));
 	} else if (auto derived =  std::dynamic_pointer_cast<ParamTable<double>>(item)) {
 		deviceItem = std::static_pointer_cast<DeviceItem>(DeviceDataConfigurator::attach(derived, deviceId));
+	} else if (std::dynamic_pointer_cast<SimParam<float>>(item)
+			|| std::dynamic_pointer_cast<SimParam<double>>(item)) {
+		return;
 	} else {
 		throw std::runtime_error("Invalid DataItem. Dynamic cast failed");
 	}
@@ -77,7 +81,7 @@ void DeviceManager::detachFromDevice(id_t id, deviceId_t deviceId) {
 	} else if (auto derived = std::dynamic_pointer_cast<DeviceParamTable<double>>(item)) {
 		DeviceDataConfigurator::detach(derived, deviceId);
 	} else {
-		throw std::runtime_error("Invalid DataItem. Dynamic cast failed");
+		throw std::runtime_error("Invalid DeviceItem. Dynamic cast failed");
 	}
 
 	_deviceOccupancyMap[deviceId].removeId(id);

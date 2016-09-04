@@ -35,7 +35,7 @@ template<class T>
 class ThreadSafeQueue;
 
 constexpr unsigned defaultItemSize = 100;
-constexpr unsigned maxWaitMilliSeconds = 10000;
+constexpr unsigned maxWaitMilliSeconds = 20000;
 
 template<typename Service>
 class Server {
