@@ -94,6 +94,10 @@ void DataManager::releaseAllDevices() {
 	_deviceManager.detachAll();
 }
 
+std::shared_ptr<DataItem> DataManager::get(id_t id, deviceId_t deviceId) const {
+	_deviceManager.getItem(id, deviceId);
+}
+
 std::vector<deviceId_t> DataManager::getCommonDeviceIds(std::vector<id_t> const& ids) {
 	std::vector<std::vector<deviceId_t>> idVecs;
 	for (size_t i = 0; i < ids.size(); ++i) {

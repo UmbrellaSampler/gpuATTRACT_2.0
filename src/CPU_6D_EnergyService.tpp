@@ -17,6 +17,9 @@
 #include "WorkItem.h"
 #include "Protein.h"
 #include "GridUnion.h"
+#include "ParamTable.h"
+#include "SimParam.h"
+
 
 #include "transform.h"
 #include "interpolation.h"

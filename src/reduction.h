@@ -13,9 +13,7 @@
 #include "TorqueMat.h"
 #include "MatrixFunctions.h"
 #include "nativeTypesWrapper.h"
-
-// todo: remove
-#include <iostream>
+#include "Types_6D.h"
 
 namespace as {
 
@@ -89,11 +87,111 @@ Vec3<REAL> reduceTorque(
 		torque.mat[2][2] += z[i]*fz[i];
 	}
 
-	TorqueMat<REAL> torqueMat = euler2torquemat(ang.x, ang.y, ang.z);
+	const TorqueMat<REAL> torqueMat = euler2torquemat(ang.x, ang.y, ang.z);
 	Vec3<REAL> result = torqueMat.rotateReduce(torque);
 
 	return result;
 }
+
+inline bool isPow2(unsigned int x)
+{
+    return ((x&(x-1))==0);
+}
+
+inline unsigned int nextPow2(unsigned int x)
+{
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return ++x;
+}
+
+template <class T>
+void d_reduce(
+		const unsigned& threads,
+		const unsigned& blocks,
+		const unsigned& numAtoms,
+		T* xPos, T* yPos, T* zPos,
+		T *d_fx, T *d_fy, T *d_fz, T *d_E,
+		T *g_odata,
+		const cudaStream_t& stream);
+
+/* wrapper function to call the device kernel for the reduction */
+template<typename REAL>
+void deviceReduce(
+		const unsigned& blockSize,
+		const unsigned& numDOFs,
+		const unsigned& ligandSize,
+		REAL* xPos, REAL* yPos, REAL* zPos,
+		REAL *d_fx, REAL *d_fy, REAL *d_fz, REAL *d_E,
+		REAL *d_out,
+		const cudaStream_t& stream)
+{
+	/* we need at least twice the block size number of threads */
+	const unsigned threads = (ligandSize < blockSize*2) ? nextPow2((ligandSize + 1)/ 2) : blockSize;
+	/* each structure is reduced by one thread block */
+	const unsigned blocks = numDOFs;
+	d_reduce(threads, blocks, ligandSize,
+			xPos, yPos, zPos,
+			d_fx, d_fy, d_fz, d_E,
+			d_out,
+			stream);
+}
+
+/* remaining reduce part that is performed on the host */
+template<typename REAL>
+void h_finalReduce(
+			const unsigned& numDOFs,
+			typename Types_6D<REAL>::DOF* dofs,
+			const REAL* deviceOut,
+			typename Types_6D<REAL>::Result* enGrads)
+{
+
+	for (unsigned i = 0; i < numDOFs; ++i)
+	{
+		auto &enGrad = enGrads[i];
+		enGrad.pos.x = deviceOut[i*13 + 0];
+		enGrad.pos.y = deviceOut[i*13 + 1];
+		enGrad.pos.z = deviceOut[i*13 + 2];
+
+		for(unsigned j = 0; i < 3; ++i) {
+			REAL magn2 = enGrad.pos.x*enGrad.pos.x
+					+ enGrad.pos.y*enGrad.pos.y
+					+ enGrad.pos.z*enGrad.pos.z;
+
+			if(magn2 > static_cast<REAL>(ForceLim)) {
+				enGrad.pos.x *= 0.01;
+				enGrad.pos.y *= 0.01;
+				enGrad.pos.z *= 0.01;
+			}
+		}
+
+		enGrad.E = deviceOut[i*13 + 3];
+
+		REAL torque[3][3] = {0};
+		torque[0][0] = deviceOut[i*13 + 4 ];
+		torque[0][1] = deviceOut[i*13 + 5 ];
+		torque[0][2] = deviceOut[i*13 + 6 ];
+		torque[1][0] = deviceOut[i*13 + 7 ];
+		torque[1][1] = deviceOut[i*13 + 8 ];
+		torque[1][2] = deviceOut[i*13 + 9 ];
+		torque[2][0] = deviceOut[i*13 + 10];
+		torque[2][1] = deviceOut[i*13 + 11];
+		torque[2][2] = deviceOut[i*13 + 12];
+
+		const auto &dof = dofs[i];
+		const TorqueMat<REAL> torqueMat = euler2torquemat(dof.ang.x, dof.ang.y, dof.ang.z);
+		Vec3<REAL> result = torqueMat.rotateReduce(torque);
+
+		enGrad.ang.x = result.x;
+		enGrad.ang.y = result.y;
+		enGrad.ang.z = result.z;
+	}
+}
+
 
 } // namespace as
 

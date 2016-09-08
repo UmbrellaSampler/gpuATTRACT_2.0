@@ -5,6 +5,8 @@
  *      Author: uwe
  */
 
+#include "neighborlist.h"
+
 #include "nativeTypesWrapper.h"
 #include "DeviceNLGrid.h"
 #include "DeviceProtein.h"
@@ -84,7 +86,8 @@ __global__ void d_NLPotForce(
 						continue;
 					}
 
-					const REAL dr2_inv = 1.0/dr2; // inverse of dr2
+					constexpr REAL one = static_cast<REAL>(1.0);
+					const REAL dr2_inv = one/dr2; // inverse of dr2
 
 					// Scale distances
 					dx *= dr2_inv;
@@ -102,7 +105,7 @@ __global__ void d_NLPotForce(
 					auto const params = table.getParams(atomTypeRec-1, atomTypeLig-1);
 					LJPotForce(dr2, dr2_inv, dx, dy, dz,
 							params,
-							1, table.shape,
+							one, table.shape,
 							fVdW.x, fVdW.y, fVdW.z, eVdW);
 
 					fAcc.x  += fVdW.x;
@@ -124,7 +127,7 @@ __global__ void d_NLPotForce(
 
 					LJPotForce(dPlateau2, dPlateau2_inv, rdx, rdy, rdz,
 						params,
-						1, table.shape,
+						one, table.shape,
 						fVdW.x, fVdW.y, fVdW.z, eVdW);
 					fAcc.x  -= fVdW.x;
 					fAcc.y  -= fVdW.y;
@@ -140,7 +143,7 @@ __global__ void d_NLPotForce(
 
 						ChargePotForce(dr2_inv, dx, dy, dz,
 								chargeLigRec,
-								1, simParam.dielec,
+								one, simParam.dielec,
 								fEl.x, fEl.y, fEl.z, eEl);
 
 						fAcc.x += fEl.x;
@@ -150,7 +153,7 @@ __global__ void d_NLPotForce(
 
 						ChargePotForce(dPlateau2_inv, rdx, rdy, rdz,
 								chargeLigRec,
-								1, simParam.dielec,
+								one, simParam.dielec,
 								fEl.x, fEl.y, fEl.z, eEl);
 						fAcc.x -= fEl.x;
 						fAcc.y -= fEl.y;

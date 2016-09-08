@@ -10,9 +10,11 @@
 
 #include "forcefield.h"
 #include "nativeTypesWrapper.h"
-
-// todo: remove
-#include <iostream>
+#include "NLGrid.h"
+#include "Protein.h"
+#include "SimParam.h"
+#include "ParamTable.h"
+#include "Types_6D.h"
 
 namespace as {
 
@@ -157,6 +159,21 @@ void NLPotForce(
 		} // for i
 	}
 }
+
+template<typename REAL>
+void d_DOF2Pos(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		REAL const* x,
+		REAL const* y,
+		REAL const* z,
+		typename Types_6D<REAL>::DOF* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs,
+		REAL* xTr,
+		REAL* yTr,
+		REAL* zTr);
 
 }  // namespace as
 

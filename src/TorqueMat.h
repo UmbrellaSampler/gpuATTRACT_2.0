@@ -24,7 +24,7 @@ public:
 	/**
 	 * Rotation and Reduction of torque components
 	 */
-	Vec3<T> rotateReduce(Torque<T> const& torque) {
+	Vec3<T> rotateReduce(Torque<T> const& torque) const {
 		Vec3<T> result(0.0);
 		for (unsigned k = 0; k < 3; ++k) {
 			for (unsigned l = 0; l < 3; ++l) {

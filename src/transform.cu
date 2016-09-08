@@ -5,6 +5,8 @@
  *      Author: uwe
  */
 
+#include "transform.h"
+
 #include "Vec3.h"
 #include "RotMat.h"
 #include "Types_6D.h"

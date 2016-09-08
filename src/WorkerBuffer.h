@@ -12,6 +12,8 @@
 #include <vector>
 #include <cassert>
 
+namespace as {
+
 template<typename REAL, typename ALLOC = std::allocator<REAL>>
 class WorkerBuffer {
 public:
@@ -81,6 +83,8 @@ private:
 	std::vector<REAL*> _buffers;
 	size_t _bufferSize;
 };
+
+}  // namespace as
 
 
 #endif /* SRC_WORKERBUFFER_H_ */

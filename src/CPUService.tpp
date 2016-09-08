@@ -18,6 +18,7 @@ namespace as {
 template<typename InputType, typename CommonType, typename ResultType>
 auto CPUService<InputType,CommonType,ResultType>::createDistributor() -> distributor_t {
 	distributor_t fncObj = [] (common_t const* common, size_t numWorkers) {
+		(void)common;
 		std::vector<as::workerId_t> vec(numWorkers);
 		std::iota(vec.begin(), vec.end(), 0);
 		return vec;

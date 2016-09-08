@@ -13,6 +13,14 @@
 #include "DeviceItem.h"
 #include "ParamTable.h"
 
+#ifndef __CUDACC__
+
+#ifndef __device__
+#define __device__
+#endif
+
+#endif
+
 namespace as {
 
 template <typename REAL>
@@ -24,6 +32,7 @@ public:
 		PotShape shape;			/** potential shape that is supported by the table */
 		type_t* paramTable;
 
+		__device__
 		type_t getParams(const int& typeA, const int& typeB) const noexcept {
 			return paramTable[numTypes*typeA + typeB];
 		}

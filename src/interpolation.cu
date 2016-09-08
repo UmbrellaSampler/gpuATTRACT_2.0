@@ -5,6 +5,8 @@
  *      Author: uwe
  */
 
+#include "interpolation.h"
+
 #include "nativeTypesWrapper.h"
 #include "DeviceIntrplGrid.h"
 #include "DeviceProtein.h"

@@ -1,12 +1,12 @@
 /*
- * HostPinnedBufferAllocator.cpp
+ * DeviceAllocator.tpp
  *
- *  Created on: Mar 18, 2016
+ *  Created on: Sep 8, 2016
  *      Author: uwe
  */
 
-#ifndef SRC_HOSTPINNEDALLOCATOR_TPP_
-#define SRC_HOSTPINNEDALLOCATOR_TPP_
+#ifndef SRC_DEVICEALLOCATOR_TPP_
+#define SRC_DEVICEALLOCATOR_TPP_
 
 #ifdef CUDA
 
@@ -19,19 +19,20 @@ namespace as {
 template<typename BufferType>
 BufferType* HostPinnedAllocator<BufferType>::allocate(size_t size) {
 	BufferType* buffer;
-	CUDA_CHECK(cudaMallocHost((void**)&buffer, size*sizeof(BufferType)));
+	CUDA_CHECK(cudaMalloc((void**)&buffer, size*sizeof(BufferType)));
 	return buffer;
 }
 
 template<typename BufferType>
 void HostPinnedAllocator<BufferType>::deallocate(BufferType* buffer, size_t size) {
 	(void)size;
-	CUDA_CHECK(cudaFreeHost(buffer));
+	CUDA_CHECK(cudaFree(buffer));
 }
 
 } // namespace as
 #endif
 
-#endif /* SRC_HOSTPINNEDALLOCATOR_TPP_ */
 
 
+
+#endif /* SRC_DEVICEALLOCATOR_TPP_ */

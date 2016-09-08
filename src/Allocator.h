@@ -17,22 +17,34 @@ class Allocator {
 public:
 	virtual ~Allocator() {}
 	virtual BufferType* allocate(size_t) = 0;
-	virtual void deallocate(BufferType*) = 0;
+	virtual void deallocate(BufferType*, size_t size = 0) = 0;
 };
 
 template<typename BufferType>
 class HostAllocator : public Allocator<BufferType> {
 public:
 	BufferType* allocate(size_t);
-	void deallocate(BufferType*);
+	void deallocate(BufferType*, size_t); // second size_t argument for std::allocator compatibility
 };
+
+
+#ifdef CUDA
 
 template<typename BufferType>
 class HostPinnedAllocator : public Allocator<BufferType> {
 public:
 	BufferType* allocate(size_t);
-	void deallocate(BufferType*);
+	void deallocate(BufferType*, size_t);
 };
+
+template<typename BufferType>
+class DeviceAllocator : public Allocator<BufferType> {
+public:
+	BufferType* allocate(size_t);
+	void deallocate(BufferType*, size_t);
+};
+
+#endif
 
 
 }  // namespace as

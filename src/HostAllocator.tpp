@@ -19,7 +19,8 @@ BufferType* HostAllocator<BufferType>::allocate(size_t size) {
 
 
 template<typename BufferType>
-void HostAllocator<BufferType>::deallocate(BufferType* buffer) {
+void HostAllocator<BufferType>::deallocate(BufferType* buffer, size_t size) {
+	(void)size;
 	delete[] buffer;
 }
 
