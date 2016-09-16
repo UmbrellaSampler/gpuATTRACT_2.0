@@ -10,6 +10,10 @@
 #include "scATTRACT.h"
 #include "CPU_6D_EnergyService.h"
 
+#ifdef CUDA
+#include "GPU_6D_EnergyService.h"
+#endif
+
 namespace as {
 
 std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
@@ -46,6 +50,11 @@ std::unique_ptr<App> AppFactory::create(AppType appType, Platform p) {
 			case Platform::CPU:
 				app = std::unique_ptr<App> (new scATTRACT<CPU_6D_EnergyService<REAL>>());
 				break;
+#ifdef CUDA
+			case Platform::GPU:
+				app = std::unique_ptr<App> (new scATTRACT<GPU_6D_EnergyService<REAL>>());
+				break;
+#endif
 			default:
 				throw std::invalid_argument("unknown platform to create: " + static_cast<int>(appType));
 		}

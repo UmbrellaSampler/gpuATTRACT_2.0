@@ -44,6 +44,9 @@ public:
 	HostResc hostResc;
 };
 
+template<typename REAL>
+using d_ParamTable = typename DeviceParamTable<REAL>::Desc;
+
 }  // namespace as
 
 #endif

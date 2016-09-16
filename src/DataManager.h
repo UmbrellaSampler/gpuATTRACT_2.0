@@ -19,6 +19,7 @@
 namespace as {
 
 class DataItem;
+class DeviceItem;
 
 class DataManager {
 
@@ -56,7 +57,7 @@ public:
 	void releaseDevice(deviceId_t deviceId);
 	void releaseAllDevices();
 
-	std::shared_ptr<DataItem> get(id_t id, deviceId_t deviceId) const;
+	std::shared_ptr<DeviceItem> get(id_t id, deviceId_t deviceId) const;
 
 	std::vector<deviceId_t> getCommonDeviceIds(std::vector<id_t> const& ids);
 

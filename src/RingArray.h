@@ -36,10 +36,13 @@ class RingArray {
 		_ring[calcIdx(0)] = obj;
 	}
 
-	T get(const unsigned& stage) const {
+	T const& get(const unsigned& stage) const {
 		return _ring[calcIdx(stage)];
 	}
 
+	T& get(const unsigned& stage) {
+		return const_cast<T&>(static_cast<const RingArray*>(this)->get(stage));
+	}
 
 	void rotate() {
 		_pointer = (_pointer + 1) % _ring.size();

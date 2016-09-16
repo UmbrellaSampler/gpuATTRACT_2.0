@@ -10,16 +10,16 @@
 
 #include <memory>
 #include "CmdArgs.h"
-#include "CPU_6D_EnergyService.h"
 
 namespace as {
 
 template<typename SERVICE>
 class Server;
 
-template<typename REAL>
+template<typename SERVICE>
 class Configurator_6D {
-	using service_t = CPU_6D_EnergyService<REAL>;
+	using service_t = SERVICE;
+	using real_t = typename service_t::real_t;
 	using dof_t = typename service_t::dof_t;
 	using common_t = typename service_t::common_t;
 public:

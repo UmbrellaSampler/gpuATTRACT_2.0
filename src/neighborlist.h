@@ -16,6 +16,13 @@
 #include "ParamTable.h"
 #include "Types_6D.h"
 
+#ifdef CUDA
+#include "DeviceProtein.h"
+#include "DeviceIntrplGrid.h"
+#include "DeviceNLGrid.h"
+#include "DeviceParamTable.h"
+#endif
+
 namespace as {
 
 template<typename REAL>
@@ -160,20 +167,28 @@ void NLPotForce(
 	}
 }
 
+#ifdef CUDA
+
 template<typename REAL>
-void d_DOF2Pos(
+void d_NLPotForce(
 		unsigned blockSize,
 		unsigned gridSize,
 		const cudaStream_t &stream,
-		REAL const* x,
-		REAL const* y,
-		REAL const* z,
-		typename Types_6D<REAL>::DOF* dofs,
-		unsigned numAtoms,
-		unsigned numDOFs,
-		REAL* xTr,
-		REAL* yTr,
-		REAL* zTr);
+		const d_NLGrid<REAL>& grid,
+		const d_Protein<REAL>& rec,
+		const d_Protein<REAL>& lig,
+		const d_ParamTable<REAL>& table,
+		const SimParam<REAL>& simParam,
+		const unsigned& numDOFs,
+		const REAL* LigPosX,
+		const REAL* LigPosY,
+		const REAL* LigPosZ,
+		REAL* outLig_fx,
+		REAL* outLig_fy,
+		REAL* outLig_fz,
+		REAL* outLigand_E);
+
+#endif
 
 }  // namespace as
 

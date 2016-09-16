@@ -69,7 +69,7 @@ ARCHFLAGS = -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm
 ARCHFLAGS2 = -gencode arch=compute_30,code=compute_30 -gencode arch=compute_35,code=compute_35 -gencode arch=compute_50,code=compute_50
 SOURCES_CU = $(shell find $(SOURCE_DIR) -name "*.cu")
 
-OBJECTS_CU = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CU:.cu=.cuo)))
+OBJECTS_CU = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CU:.cu=_cu.o)))
 ifeq ($(TARGET), RELEASE)
 	CUDA_OFLAGS = ${OFLAGS} -D_FORCE_INLINES -D_MWAITXINTRIN_H_INCLUDED
 else ifeq ($(TARGET), DEBUG) 
@@ -108,7 +108,7 @@ $(OBJDIR)/%.d:	;
 
 -include $(OBJECTS_CPP:.o=.d)
 
-$(OBJECTS_CU): $(OBJDIR)/%.cuo: %.cu 
+$(OBJECTS_CU): $(OBJDIR)/%_cu.o: %.cu 
 	@echo 'Building file: $<"'
 	@echo 'Invoking: NVCC Compiler'
 	$(CUDA_CXX) $(CUDA_CXXFLAGS) $(ARCHFLAGS) $(ARCHFLAGS2) $(INCLUDES) --compile --relocatable-device-code=true -x cu -o "$@" "$<"

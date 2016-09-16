@@ -23,6 +23,8 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
+#include <string>
 
 #ifdef CUDA
 #include <cuda_runtime.h>

@@ -17,7 +17,7 @@ namespace as {
 
 class DataManager;
 
-template<typename REAL>
+template<typename SERVICE>
 class Configurator_6D;
 
 template<typename REAL>
@@ -29,26 +29,12 @@ public:
 	using result_t = typename Types_6D<real_t>::Result;
 
 	/* serves as a builder class*/
-	using configurator_t = Configurator_6D<REAL>;
+	using configurator_t = Configurator_6D<CPU_6D_EnergyService<REAL>>;
 
 	/* need public for instantiate the server in configurator */
 	using service_t = CPUService<dof_t, common_t, result_t>;
 	using typename service_t::workItem_t;
 	using typename service_t::itemProcessor_t;
-
-	CPU_6D_EnergyService();
-	CPU_6D_EnergyService(CPU_6D_EnergyService const&) = delete;
-	CPU_6D_EnergyService& operator= (CPU_6D_EnergyService const&) = delete;
-	CPU_6D_EnergyService(CPU_6D_EnergyService&& copy) {
-		*this = std::move(copy);
-	}
-	CPU_6D_EnergyService& operator= (CPU_6D_EnergyService&& copy) {
-		_d = std::move(copy._d);
-		_dataMng = std::move(copy._dataMng);
-		return *this;
-	}
-
-	virtual ~CPU_6D_EnergyService();
 
 	itemProcessor_t createItemProcessor() override;
 
@@ -57,8 +43,8 @@ public:
 	}
 private:
 
-	class Private;
-	Private* _d;
+	class Buffer;
+
 	std::shared_ptr<DataManager> _dataMng;
 
 };

@@ -53,6 +53,10 @@ public:
 	HostResc hostResc;
 
 };
+
+template<typename REAL>
+using d_NLGrid = typename DeviceNLGrid<REAL>::Desc;
+
 }
 
 #endif //CUDA

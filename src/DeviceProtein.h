@@ -44,6 +44,8 @@ public:
 	HostResc hostResc;
 };
 
+template<typename REAL>
+using d_Protein = typename DeviceProtein<REAL>::Desc;
 
 }
 

@@ -18,15 +18,6 @@
 namespace as {
 
 template<typename REAL>
-using d_NLGrid = typename DeviceNLGrid<REAL>::Desc;
-
-template<typename REAL>
-using d_Protein = typename DeviceProtein<REAL>::Desc;
-
-template<typename REAL>
-using d_ParamTable = typename DeviceParamTable<REAL>::Desc;
-
-template<typename REAL>
 __global__ void d_NLPotForce(
 		const d_NLGrid<REAL> grid,
 		const d_Protein<REAL> rec,
@@ -140,6 +131,11 @@ __global__ void d_NLPotForce(
 						real3_t fEl;
 
 						// calculate energy and potential/energy of charge potential
+
+						if (false) {
+							printf("%u %f %f %f %u\n" ,
+									i, posLigX, posLigY, posLigZ, atomTypeLig);
+						}
 
 						ChargePotForce(dr2_inv, dx, dy, dz,
 								chargeLigRec,

@@ -109,6 +109,8 @@ inline unsigned int nextPow2(unsigned int x)
     return ++x;
 }
 
+#ifdef CUDA
+
 template <class T>
 void d_reduce(
 		const unsigned& threads,
@@ -157,7 +159,7 @@ void h_finalReduce(
 		enGrad.pos.y = deviceOut[i*13 + 1];
 		enGrad.pos.z = deviceOut[i*13 + 2];
 
-		for(unsigned j = 0; i < 3; ++i) {
+		for(unsigned j = 0; j < 3; ++j) {
 			REAL magn2 = enGrad.pos.x*enGrad.pos.x
 					+ enGrad.pos.y*enGrad.pos.y
 					+ enGrad.pos.z*enGrad.pos.z;
@@ -191,6 +193,8 @@ void h_finalReduce(
 		enGrad.ang.z = result.z;
 	}
 }
+
+#endif // CUDA
 
 
 } // namespace as

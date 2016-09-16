@@ -40,7 +40,7 @@ constexpr unsigned maxWaitMilliSeconds = 20000;
 template<typename Service>
 class Server {
 public:
-	using input_t = typename Service::input_t;;
+	using input_t = typename Service::input_t;
 	using result_t = typename Service::result_t;
 	using common_t = typename Service::common_t;
 

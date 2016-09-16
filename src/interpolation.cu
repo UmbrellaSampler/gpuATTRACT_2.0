@@ -15,12 +15,6 @@
 namespace as {
 
 template<typename REAL>
-using d_IntrlpGrid = typename DeviceIntrplGrid<REAL>::Desc;
-
-template<typename REAL>
-using d_Protein = typename DeviceProtein<REAL>::Desc;
-
-template<typename REAL>
 __global__ void d_innerPotForce (
 		const d_IntrlpGrid<REAL> grid,
 		const d_Protein<REAL> prot,
@@ -72,7 +66,8 @@ __global__ void d_innerPotForce (
 
 template<typename REAL>
 __global__ void d_outerPotForce(
-		const d_IntrlpGrid<REAL> grid,
+		const d_IntrlpGrid<REAL> inner,
+		const d_IntrlpGrid<REAL> outer,
 		const d_Protein<REAL> prot,
 		const unsigned numDOFs,
 		const REAL* data_in_x,
@@ -86,6 +81,15 @@ __global__ void d_outerPotForce(
 
 	using real4_t = typename TypeWrapper<REAL>::real4_t;
 	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+
+	//DEBUG
+//	if (idx == 0) {
+//		printf("%f %f %f %f %f %f\n" ,
+//				grid.minDim.x, grid.minDim.y, grid.minDim.z,
+//				grid.maxDim.x, grid.maxDim.y, grid.maxDim.z);
+//	}
+
+
 	const unsigned numAtoms = prot.numAtoms;
 	if (idx < numAtoms*numDOFs) {
 		unsigned type = prot.mappedType[idx % numAtoms];
@@ -95,25 +99,36 @@ __global__ void d_outerPotForce(
 			REAL y = data_in_y[idx];
 			REAL z = data_in_z[idx];
 
-			if (      ((x < grid.minDim.x || x > grid.maxDim.x)
-					|| (y < grid.minDim.y || y > grid.maxDim.y)
-					|| (z < grid.minDim.z || z > grid.maxDim.z))
-					&&
-					  ((x >= grid.minDim.x && x <= grid.maxDim.x)
-					&& (y >= grid.minDim.y && y <= grid.maxDim.y)
-					&& (z >= grid.minDim.z && z <= grid.maxDim.z)))
-			{
-				x = (x - grid.minDim.x) * grid.dVox_inv + 0.5f;
-				y = (y - grid.minDim.y) * grid.dVox_inv + 0.5f;
-				z = (z - grid.minDim.z) * grid.dVox_inv + 0.5f;
+//			if (idx < 50) {
+//				printf("%u %f %f %f %u\n" ,
+//						idx, x, y, z, type);
+//			}
 
-				float4 pot = tex3D<float4>(grid.texArrayLin[type], x, y, z); /** Interpolated value */
+			if (      ((x < inner.minDim.x || x > inner.maxDim.x)
+					|| (y < inner.minDim.y || y > inner.maxDim.y)
+					|| (z < inner.minDim.z || z > inner.maxDim.z))
+					&&
+					  ((x >= outer.minDim.x && x <= outer.maxDim.x)
+					&& (y >= outer.minDim.y && y <= outer.maxDim.y)
+					&& (z >= outer.minDim.z && z <= outer.maxDim.z)))
+			{
+
+				x = (x - outer.minDim.x) * outer.dVox_inv + 0.5f;
+				y = (y - outer.minDim.y) * outer.dVox_inv + 0.5f;
+				z = (z - outer.minDim.z) * outer.dVox_inv + 0.5f;
+
+				float4 pot = tex3D<float4>(outer.texArrayLin[type], x, y, z); /** Interpolated value */
 
 				REAL charge = prot.charge[idx % numAtoms];
 				if (fabs(charge) > 0.001f) {
-					float4 V_el = tex3D<float4>(grid.texArrayLin[0], x, y, z); /** Interpolated value */
+					float4 V_el = tex3D<float4>(outer.texArrayLin[0], x, y, z); /** Interpolated value */
 					pot = pot + V_el * charge;
 				}
+
+//				if (idx < 20) {
+//					printf("%u %f %f %f %f %f %f\n" ,
+//							idx, pot.x, pot.y, pot.z, pot.w);
+//				}
 
 				data_out_x[idx] = static_cast<REAL>(pot.x);
 				data_out_y[idx] = static_cast<REAL>(pot.y);
@@ -144,6 +159,22 @@ void d_potForce (
 	cudaVerifyKernel((
 			d_innerPotForce<<<gridSize, blockSize, 0, stream>>> (
 				inner,
+				prot,
+				numDOFs,
+				data_in_x,
+				data_in_y,
+				data_in_z,
+				data_out_x,
+				data_out_y,
+				data_out_z,
+				data_out_E
+			)
+		));
+
+	cudaVerifyKernel((
+			d_outerPotForce<<<gridSize, blockSize, 0, stream>>> (
+				inner,
+				outer,
 				prot,
 				numDOFs,
 				data_in_x,

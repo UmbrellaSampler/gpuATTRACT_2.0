@@ -66,7 +66,9 @@ void TwoBodyParser::enforceRules(po::variables_map const& vm) const {
 	allowedValues = {"variable", "constant"};
 	enforceAllowedValues(vm, "dielec", allowedValues);
 
+#ifdef CUDA
 	enforceUniqueness<int>(vm, "device");
+#endif
 
 
 }

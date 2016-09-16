@@ -8,7 +8,6 @@
 #ifndef SRC_WORKERBUFFER_H_
 #define SRC_WORKERBUFFER_H_
 
-#include <memory>
 #include <vector>
 #include <cassert>
 
@@ -63,11 +62,11 @@ public:
 		return get(2);
 	}
 
-	REAL* getV() const noexcept {
+	REAL* getW() const noexcept {
 		return get(3);
 	}
 
-	REAL* getW() const noexcept {
+	REAL* getV() const noexcept {
 		return get(4);
 	}
 

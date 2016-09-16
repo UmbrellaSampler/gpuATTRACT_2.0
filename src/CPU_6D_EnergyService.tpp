@@ -28,24 +28,13 @@
 #include "MatrixFunctions.h"
 #include "RotMat.h"
 
-// todo: remove
+// ToDo: remove
 #include <iostream>
 
 namespace as {
 
 template<typename REAL>
-CPU_6D_EnergyService<REAL>::CPU_6D_EnergyService() {
-	_d = new Private();
-}
-
-template<typename REAL>
-CPU_6D_EnergyService<REAL>::~CPU_6D_EnergyService() {
-	delete _d;
-}
-
-
-template<typename REAL>
-class CPU_6D_EnergyService<REAL>::Private {
+class CPU_6D_EnergyService<REAL>::Buffer {
 public:
 
 	/**
@@ -56,16 +45,23 @@ public:
 		h_potLig = std::move(WorkerBuffer<REAL>(4,size));
 	}
 
+	size_t bufferSize() {
+		return h_trafoLig.bufferSize();
+	}
+
 	WorkerBuffer<REAL> h_trafoLig;
 	WorkerBuffer<REAL> h_potLig;
 };
 
 
 template<typename REAL>
+
+
 auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 
+	std::shared_ptr<Buffer> buffers = std::make_shared<Buffer>();
 
-	itemProcessor_t fncObj = [this] (workItem_t* item) -> bool {
+	itemProcessor_t fncObj = [this,buffers] (workItem_t* item) -> bool {
 		assert(item->size() > 0);
 		const auto itemSize = item->size();
 
@@ -91,8 +87,8 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 		assert(simParams != nullptr);
 
 
-		if (itemSize*lig->numAtoms() > _d->h_trafoLig.bufferSize()) {
-			_d->allocateBuffer(lig->numAtoms());
+		if (lig->numAtoms() > buffers->bufferSize()) {
+			buffers->allocateBuffer(lig->numAtoms());
 		}
 
 //		lig->print(lig->numAtoms());
@@ -109,23 +105,36 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					dof.pos,
 					dof.ang,
 					lig->numAtoms(),
-					_d->h_trafoLig.getX(), // output
-					_d->h_trafoLig.getY(),
-					_d->h_trafoLig.getZ()
+					buffers->h_trafoLig.getX(), // output
+					buffers->h_trafoLig.getY(),
+					buffers->h_trafoLig.getZ()
 			); // OK
+
+//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
+//			for(size_t i = 0; i < 20; ++i) {
+//				std::cout << buffers->h_trafoLig.getX()[i] << " " << buffers->h_trafoLig.getY()[i] << " " << buffers->h_trafoLig.getZ()[i] << std::endl;
+//			}
+//			exit(EXIT_SUCCESS);
 
 			potForce(
 					grid->inner.get(),
 					grid->outer.get(),
 					lig,
-					_d->h_trafoLig.getX(),
-					_d->h_trafoLig.getY(),
-					_d->h_trafoLig.getZ(),
-					_d->h_potLig.getX(), // output
-					_d->h_potLig.getY(),
-					_d->h_potLig.getZ(),
-					_d->h_potLig.getV()
+					buffers->h_trafoLig.getX(),
+					buffers->h_trafoLig.getY(),
+					buffers->h_trafoLig.getZ(),
+					buffers->h_potLig.getX(), // output
+					buffers->h_potLig.getY(),
+					buffers->h_potLig.getZ(),
+					buffers->h_potLig.getW()
 			); // OK
+
+//			exit(EXIT_SUCCESS);
+//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
+//			for(size_t i = 0; i < 20; ++i) {
+//				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
+//			}
+//			exit(EXIT_SUCCESS);
 
 			NLPotForce(
 					grid->NL.get(),
@@ -133,20 +142,26 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					lig,
 					simParams,
 					table,
-					_d->h_trafoLig.getX(),
-					_d->h_trafoLig.getY(),
-					_d->h_trafoLig.getZ(),
-					_d->h_potLig.getX(), // output
-					_d->h_potLig.getY(),
-					_d->h_potLig.getZ(),
-					_d->h_potLig.getV()
+					buffers->h_trafoLig.getX(),
+					buffers->h_trafoLig.getY(),
+					buffers->h_trafoLig.getZ(),
+					buffers->h_potLig.getX(), // output
+					buffers->h_potLig.getY(),
+					buffers->h_potLig.getZ(),
+					buffers->h_potLig.getW()
 			); // OK
 
+			for(size_t i = 0; i < lig->numAtoms(); ++i) {
+//			for(size_t i = 0; i < 20; ++i) {
+				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
+			}
+			exit(EXIT_SUCCESS);
+
 			PotForce<REAL> redPotForce = reducePotForce(
-					_d->h_potLig.getX(),
-					_d->h_potLig.getY(),
-					_d->h_potLig.getZ(),
-					_d->h_potLig.getV(),
+					buffers->h_potLig.getX(),
+					buffers->h_potLig.getY(),
+					buffers->h_potLig.getZ(),
+					buffers->h_potLig.getW(),
 					lig->numAtoms()
 			); // OK
 
@@ -158,9 +173,9 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 					lig->xPos(),
 					lig->yPos(),
 					lig->zPos(),
-					_d->h_potLig.getX(),
-					_d->h_potLig.getY(),
-					_d->h_potLig.getZ(),
+					buffers->h_potLig.getX(),
+					buffers->h_potLig.getY(),
+					buffers->h_potLig.getZ(),
 					lig->numAtoms(),
 					dof.ang
 			); // OK
@@ -185,7 +200,7 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 //
 //			size_t numDispl = lig->numAtoms();
 //			for (size_t i = 0; i < numDispl; ++i) {
-//				std::cout <<  i << " " << _d->h_potLig.getX()[i] << " " << _d->h_potLig.getY()[i] << " " << _d->h_potLig.getZ()[i] << " " << _d->h_potLig.getV()[i] << std::endl;
+//				std::cout <<  i << " " << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
 //			}
 //			exit(1);
 //

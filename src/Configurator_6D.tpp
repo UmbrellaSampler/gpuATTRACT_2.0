@@ -27,23 +27,23 @@
 
 namespace as {
 
-template<typename REAL>
-void Configurator_6D<REAL>::init(CmdArgs const& args) {
+template<typename SERVICE>
+void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 
 	/* load dataItems */
-	auto receptor = createProteinFromPDB<REAL>(args.recName);
-	auto ligand = createProteinFromPDB<REAL>(args.ligName);
-	auto grid = createGridFromGridFile<REAL>(args.gridName);
-	auto paramTable = createParamTableFromFile<REAL>(args.paramsName);
+	auto receptor = createProteinFromPDB<real_t>(args.recName);
+	auto ligand = createProteinFromPDB<real_t>(args.ligName);
+	auto grid = createGridFromGridFile<real_t>(args.gridName);
+	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 
-	auto simParam = std::make_shared<SimParam<REAL>>();
+	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
 		simParam->dielec = Dielec::variable;
 	} else {
 		simParam->dielec = Dielec::constant;
 	}
-	simParam->epsilon = static_cast<REAL>(args.epsilon);
-	simParam->ffelec = 	static_cast<REAL>(FELEC/args.epsilon);
+	simParam->epsilon = static_cast<real_t>(args.epsilon);
+	simParam->ffelec = 	static_cast<real_t>(FELEC/args.epsilon);
 
 
 	/* apply mapping according to receptor grid alphabet to ligand */
@@ -54,30 +54,14 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
 	applyMapping(typeMap, ligand->numAtoms(), ligand->type(), ligand->mappedType());
 
-	/* add items to dataMng */
-	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
-	_ids.recId = dataManager->add(receptor);
-	_ids.ligId = dataManager->add(ligand);
-	_ids.gridId = dataManager->add(grid);
-	_ids.tableId = dataManager->add(paramTable);
-	_ids.paramsId = dataManager->add(simParam);
-
-#ifdef CUDA
-	if (args.deviceIds.size() > 0) {
-		for (auto id : args.deviceIds) {
-			dataManager->attachAllDataToDevice(id);
-		}
-	}
-#endif
-
 	/* read dof file */
-	DOFHeader<REAL> h = readDOFHeader<REAL>(args.dofName);
+	DOFHeader<real_t> h = readDOFHeader<real_t>(args.dofName);
 	/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
 	if(!h.auto_pivot && h.pivots.size() > 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
-	std::vector<std::vector<DOF_6D<REAL>>> DOF_molecules = readDOF_6D<REAL>(args.dofName);
+	std::vector<std::vector<DOF_6D<real_t>>> DOF_molecules = readDOF_6D<real_t>(args.dofName);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
@@ -91,17 +75,6 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
 		_dofs[i].pos = DOF_molecules[1][i].pos;
 		_dofs[i].ang = DOF_molecules[1][i].ang;
-	}
-
-	/* init server and service*/
-	std::shared_ptr<service_t> service = std::make_shared<service_t>();
-	service->initAllocators();
-	service->setDataManager(dataManager); // do not forget!
-	_server = std::unique_ptr<server_t>(new server_t(service));
-	if (args.numCPUs > 0) {
-		_server->createWorkers(args.numCPUs);
-	} else {
-		_server->createWorkers(args.deviceIds.size());
 	}
 
 	/* apply pivoting to proteins */
@@ -123,10 +96,37 @@ void Configurator_6D<REAL>::init(CmdArgs const& args) {
 	auto pivot = h.pivots[0];
 	grid->translate(-make_real3(pivot.x,pivot.y,pivot.z));
 
+	/* add items to dataMng */
+	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
+	_ids.recId = dataManager->add(receptor);
+	_ids.ligId = dataManager->add(ligand);
+	_ids.gridId = dataManager->add(grid);
+	_ids.tableId = dataManager->add(paramTable);
+	_ids.paramsId = dataManager->add(simParam);
+
+#ifdef CUDA
+	if (args.deviceIds.size() > 0) {
+		for (auto id : args.deviceIds) {
+			dataManager->attachAllDataToDevice(id);
+		}
+	}
+#endif
+
+	/* init server and service*/
+	std::shared_ptr<service_t> service = std::make_shared<service_t>();
+	service->initAllocators();
+	service->setDataManager(dataManager); // do not forget!
+	_server = std::unique_ptr<server_t>(new server_t(service));
+	if (args.numCPUs > 0) {
+		_server->createWorkers(args.numCPUs);
+	} else {
+		_server->createWorkers(args.deviceIds.size());
+	}
+
 }
 
-template<typename REAL>
-void Configurator_6D<REAL>::finalize() {
+template<typename SERVICE>
+void Configurator_6D<SERVICE>::finalize() {
 
 }
 

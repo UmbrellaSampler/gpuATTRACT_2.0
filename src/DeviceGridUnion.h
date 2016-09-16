@@ -57,6 +57,9 @@ public:
 
 };
 
+template<typename REAL>
+using d_GridUnion = typename DeviceGridUnion<REAL>::Desc;
+
 
 }
 

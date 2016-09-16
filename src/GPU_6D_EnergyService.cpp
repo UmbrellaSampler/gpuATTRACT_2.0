@@ -5,8 +5,11 @@
  *      Author: uwe
  */
 
-#include "GPU_6D_EnergyService.tpp"
+#ifdef CUDA
+
 #include "DeviceAllocator.tpp"
+#include "HostPinnedAllocator.tpp"
+#include "GPU_6D_EnergyService.tpp"
 
 namespace as {
 
@@ -19,3 +22,4 @@ class GPU_6D_EnergyService<double>;
 }  // namespace as
 
 
+#endif

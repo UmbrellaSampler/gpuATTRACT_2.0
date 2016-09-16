@@ -12,6 +12,10 @@
 #include "RotMat.h"
 #include "MatrixFunctions.h"
 
+#ifdef CUDA
+#include "Types_6D.h"
+#endif
+
 namespace as {
 
 template<typename REAL>
@@ -38,6 +42,25 @@ void rotate_translate(
 		zTr[i] = posAtom.z;
 	}
 }
+
+#ifdef CUDA
+
+template<typename REAL>
+void d_DOF2Pos(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		REAL const* x,
+		REAL const* y,
+		REAL const* z,
+		typename Types_6D<REAL>::DOF* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs,
+		REAL* xTr,
+		REAL* yTr,
+		REAL* zTr);
+
+#endif
 
 } // namespace as
 

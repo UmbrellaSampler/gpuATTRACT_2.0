@@ -20,7 +20,7 @@ namespace as {
 
 class DataManager;
 
-template<typename REAL>
+template<typename SERVICE>
 class Configurator_6D;
 
 template<typename REAL>
@@ -36,26 +36,12 @@ public:
 public:
 
 	/* serves as a builder class*/
-	using configurator_t = Configurator_6D<REAL>;
+	using configurator_t = Configurator_6D<GPU_6D_EnergyService<REAL>>;
 
 	/* need public for instantiate the server in configurator */
 
 	using typename service_t::workItem_t;
 	using typename service_t::itemProcessor_t;
-
-	GPU_6D_EnergyService();
-	GPU_6D_EnergyService(GPU_6D_EnergyService const&) = delete;
-	GPU_6D_EnergyService& operator= (GPU_6D_EnergyService const&) = delete;
-	GPU_6D_EnergyService(GPU_6D_EnergyService&& copy) {
-		*this = std::move(copy);
-	}
-	GPU_6D_EnergyService& operator= (GPU_6D_EnergyService&& copy) {
-		_d = std::move(copy._d);
-		_dataMng = std::move(copy._dataMng);
-		return *this;
-	}
-
-	virtual ~GPU_6D_EnergyService();
 
 	distributor_t createDistributor() override;
 
@@ -65,9 +51,7 @@ public:
 		_dataMng = mng;
 	}
 private:
-
 	class Private;
-	Private* _d;
 	std::shared_ptr<DataManager> _dataMng;
 
 	size_t _workerId; // serves as counter for
