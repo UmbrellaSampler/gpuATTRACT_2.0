@@ -26,7 +26,8 @@ SingleBufferManager<BufferType>::~SingleBufferManager() {
 	ASSERT(_bufferQueue.size() == _bufferSizeMap.size() && "Have you called 'wait(...)' for all submitted requests?");
 
 	for (auto& pair : _bufferSizeMap) {
-		delete[] pair.first;
+		_allocator->deallocate(pair.first);
+//		delete[] pair.first;
 	}
 }
 

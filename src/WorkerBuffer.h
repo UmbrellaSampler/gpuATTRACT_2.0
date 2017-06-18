@@ -74,7 +74,7 @@ public:
 		return _buffers.size();
 	}
 
-	size_t bufferSize() {
+	size_t bufferSize() const noexcept {
 		return _bufferSize;
 	}
 

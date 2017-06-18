@@ -56,6 +56,11 @@ private:
 
 	size_t _workerId; // serves as counter for
 
+
+	struct StageResource;
+
+	StageResource createStageResource(workItem_t* item, unsigned const& deviceId);
+
 };
 
 }  // namespace as

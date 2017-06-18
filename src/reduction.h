@@ -173,16 +173,16 @@ void h_finalReduce(
 
 		enGrad.E = deviceOut[i*13 + 3];
 
-		REAL torque[3][3] = {0};
-		torque[0][0] = deviceOut[i*13 + 4 ];
-		torque[0][1] = deviceOut[i*13 + 5 ];
-		torque[0][2] = deviceOut[i*13 + 6 ];
-		torque[1][0] = deviceOut[i*13 + 7 ];
-		torque[1][1] = deviceOut[i*13 + 8 ];
-		torque[1][2] = deviceOut[i*13 + 9 ];
-		torque[2][0] = deviceOut[i*13 + 10];
-		torque[2][1] = deviceOut[i*13 + 11];
-		torque[2][2] = deviceOut[i*13 + 12];
+		Torque<REAL> torque;
+		torque.mat[0][0] = deviceOut[i*13 + 4 ];
+		torque.mat[0][1] = deviceOut[i*13 + 5 ];
+		torque.mat[0][2] = deviceOut[i*13 + 6 ];
+		torque.mat[1][0] = deviceOut[i*13 + 7 ];
+		torque.mat[1][1] = deviceOut[i*13 + 8 ];
+		torque.mat[1][2] = deviceOut[i*13 + 9 ];
+		torque.mat[2][0] = deviceOut[i*13 + 10];
+		torque.mat[2][1] = deviceOut[i*13 + 11];
+		torque.mat[2][2] = deviceOut[i*13 + 12];
 
 		const auto &dof = dofs[i];
 		const TorqueMat<REAL> torqueMat = euler2torquemat(dof.ang.x, dof.ang.y, dof.ang.z);

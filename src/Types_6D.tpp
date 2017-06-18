@@ -57,7 +57,7 @@ std::ostream& operator<<(std::ostream& s, ResultImpl<REAL> const& enGrad) {
 	int width = 20;
 	s << " Gradients: "
 			<< setw(width) << enGrad.ang.x  << setw(width) << enGrad.ang.y  << setw(width) << enGrad.ang.z
-			<< setw(width) << enGrad.pos.x  << setw(width) << enGrad.pos.y  << setw(width) << enGrad.pos.z  << endl;
+			<< setw(width) << enGrad.pos.x  << setw(width) << enGrad.pos.y  << setw(width) << enGrad.pos.z;
 	s.unsetf(ios::scientific);
 
 	s.precision(precisionSetting);

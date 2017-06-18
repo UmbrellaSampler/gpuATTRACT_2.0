@@ -374,19 +374,19 @@ blockReduce(unsigned numAtoms,
 
     // write result for this block to global mem
     if (tid == 0) {
-    	g_odata[0  + blockIdx.x*14] = sum_fx;
-    	g_odata[1  + blockIdx.x*14] = sum_fy;
-    	g_odata[2  + blockIdx.x*14] = sum_fz;
-    	g_odata[3  + blockIdx.x*14] = sum_E;
-    	g_odata[4  + blockIdx.x*14] = sum_torque[0];
-    	g_odata[5  + blockIdx.x*14] = sum_torque[1];
-    	g_odata[6  + blockIdx.x*14] = sum_torque[2];
-    	g_odata[7  + blockIdx.x*14] = sum_torque[3];
-    	g_odata[8  + blockIdx.x*14] = sum_torque[4];
-    	g_odata[9  + blockIdx.x*14] = sum_torque[5];
-    	g_odata[10 + blockIdx.x*14] = sum_torque[6];
-    	g_odata[11 + blockIdx.x*14] = sum_torque[7];
-    	g_odata[12 + blockIdx.x*14] = sum_torque[8];
+    	g_odata[0  + blockIdx.x*13] = sum_fx;
+    	g_odata[1  + blockIdx.x*13] = sum_fy;
+    	g_odata[2  + blockIdx.x*13] = sum_fz;
+    	g_odata[3  + blockIdx.x*13] = sum_E;
+    	g_odata[4  + blockIdx.x*13] = sum_torque[0];
+    	g_odata[5  + blockIdx.x*13] = sum_torque[1];
+    	g_odata[6  + blockIdx.x*13] = sum_torque[2];
+    	g_odata[7  + blockIdx.x*13] = sum_torque[3];
+    	g_odata[8  + blockIdx.x*13] = sum_torque[4];
+    	g_odata[9  + blockIdx.x*13] = sum_torque[5];
+    	g_odata[10 + blockIdx.x*13] = sum_torque[6];
+    	g_odata[11 + blockIdx.x*13] = sum_torque[7];
+    	g_odata[12 + blockIdx.x*13] = sum_torque[8];
     }
 }
 
@@ -405,7 +405,7 @@ void d_reduce(
 
 	// when there is only one warp per block, we need to allocate two warps
 	// worth of shared memory so that we don't index shared memory out of bounds
-	int smemSize = (threads <= 32) ? 2 * 13 * threads * sizeof(T) : 13 * threads * sizeof(T);
+	const int smemSize = (threads <= 32) ? 2 * 13 * threads * sizeof(T) : 13 * threads * sizeof(T);
 
 	// choose which of the optimized versions of reduction to launch
 

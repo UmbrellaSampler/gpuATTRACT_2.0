@@ -38,7 +38,8 @@ __global__ void d_DOF2Pos(
 		Vec3<REAL> const& displacement = dof.pos;
 		Vec3<REAL> const& ang = dof.ang;
 
-		Vec3<REAL> posAtom(x[idx], y[idx], z[idx]);
+		unsigned atomIdx = idx % numAtoms;
+		Vec3<REAL> posAtom(x[atomIdx], y[atomIdx], z[atomIdx]);
 
 		const RotMat<REAL> rotMat = euler2rotmat(ang.x, ang.y, ang.z);
 
@@ -48,7 +49,6 @@ __global__ void d_DOF2Pos(
 		xTr[idx] = posAtom.x;
 		yTr[idx] = posAtom.y;
 		zTr[idx] = posAtom.z;
-
 	}
 }
 

@@ -25,13 +25,13 @@ void rotate_translate(
 		REAL const* z,
 		Vec3<REAL> const& displacement,
 		Vec3<REAL> const& ang,
-		unsigned const& numAtoms,
+		unsigned const& ligSize,
 		REAL* xTr,
 		REAL* yTr,
 		REAL* zTr)
 {
 	const RotMat<REAL> rotMat = euler2rotmat(ang.x, ang.y, ang.z);
-	for (unsigned i = 0; i < numAtoms; ++i) {
+	for (unsigned i = 0; i < ligSize; ++i) {
 		Vec3<REAL> posAtom(x[i], y[i], z[i]);
 
 		posAtom = rotMat*posAtom;
@@ -54,7 +54,7 @@ void d_DOF2Pos(
 		REAL const* y,
 		REAL const* z,
 		typename Types_6D<REAL>::DOF* dofs,
-		unsigned numAtoms,
+		unsigned ligSize,
 		unsigned numDOFs,
 		REAL* xTr,
 		REAL* yTr,

@@ -20,10 +20,11 @@ SOURCE_DIR_TEST = $(CURDIR)/test
 # Each config should at least provide the two targets RELEASE and DEBUG.
 TARGET ?= RELEASE
 TEST ?= OFF
+CUDA ?= ON
 
 LIBS_TEST = 
 ifeq ($(TEST), OFF)
-	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp")
+	SOURCES_CPP = $(shell find src -name "*.cpp" -and -not -path "*emATTRACT*")
 	VPATH = $(SOURCE_DIR):$(SOURCE_DIR)/fileIO
 else ifeq ($(TEST), ON)
 	BINARY = "$(NAME)_TEST"
@@ -57,11 +58,13 @@ LIBS = -lpthread -lrt $(LIBS_TEST) -lboost_program_options
 ifeq ($(CUDA), ON)
 	OFLAGS += -DCUDA
 	LDFLAGS += -L$(CUDADIR)/lib64
-	LIBS += -lcudart
+	LIBS += -lcudart -lnvToolsExt
 	LXX = /usr/local/cuda/bin/nvcc
 else
 	LXX = ${CXX}
 endif
+
+
 
 # prepare nvcc settings
 CUDA_CXX = /usr/local/cuda/bin/nvcc

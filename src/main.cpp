@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 		CmdParser parser;
 		parser.parse(argc, argv);
 		auto args = parser.args();
-		std::cout << args << std::endl;
+//		std::cout << args << std::endl;
 
 		auto app = AppFactory::create(args);
 		app->init(args);
