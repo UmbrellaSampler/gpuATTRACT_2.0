@@ -25,7 +25,7 @@
 #include "interpolation.h"
 #include "neighborlist.h"
 #include "reduction.h"
-#include "MatrixFunctions.h"
+#include "matrixFunctions.h"
 #include "RotMat.h"
 
 // ToDo: remove

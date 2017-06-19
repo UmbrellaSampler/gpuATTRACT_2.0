@@ -17,6 +17,8 @@
 #include <chrono>
 
 #include "Server.h"
+
+#include "../commons/helper.h"
 #include "Service.h"
 #include "WorkItem.h"
 #include "Request.h"
@@ -27,7 +29,6 @@
 #include "ThreadSafeQueue.h"
 #include "ServerFunctions.h"
 #include "macros.h"
-#include "helper.h"
 
 namespace as {
 

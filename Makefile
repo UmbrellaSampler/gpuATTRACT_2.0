@@ -22,10 +22,13 @@ TARGET ?= RELEASE
 TEST ?= OFF
 CUDA ?= ON
 
+SOURCE_FOLDERS = $(shell find $(SOURCE_DIR) -maxdepth 1 -type d)
+
 LIBS_TEST = 
 ifeq ($(TEST), OFF)
-	SOURCES_CPP = $(shell find src -name "*.cpp" -and -not -path "*emATTRACT*")
-	VPATH = $(SOURCE_DIR):$(SOURCE_DIR)/fileIO
+	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp" -and -not -path "*emATTRACT*")
+#	VPATH = $(SOURCE_DIR):$(SOURCE_DIR)/fileIO:$(SOURCE_DIR)/allocator:$(SOURCE_DIR)/cli:$(SOURCE_DIR)/fileIO:$(SOURCE_DIR)/model:$(SOURCE_DIR)/service:$(SOURCE_DIR)/apps:$(SOURCE_DIR)/commons:$(SOURCE_DIR)/server
+	VPATH = $(foreach d, $(SOURCE_FOLDERS), $d:)
 else ifeq ($(TEST), ON)
 	BINARY = "$(NAME)_TEST"
 	EXCLUDE = main.cpp
@@ -50,7 +53,8 @@ else
 endif
 
 CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
-INCLUDES = -I$(CUDADIR)/include -I$(CURDIR)/src -I$(CURDIR)/src/fileIO 
+INCLUDES = $(foreach d, $(SOURCE_FOLDERS), -I$d)
+#INCLUDES = -I$(CURDIR)/src -I$(CURDIR)/src/fileIO 
 LDFLAGS = #-L...
 LIBS = -lpthread -lrt $(LIBS_TEST) -lboost_program_options
 
@@ -59,6 +63,7 @@ ifeq ($(CUDA), ON)
 	OFLAGS += -DCUDA
 	LDFLAGS += -L$(CUDADIR)/lib64
 	LIBS += -lcudart -lnvToolsExt
+	INCLUDES += -I$(CUDADIR)/include
 	LXX = /usr/local/cuda/bin/nvcc
 else
 	LXX = ${CXX}
