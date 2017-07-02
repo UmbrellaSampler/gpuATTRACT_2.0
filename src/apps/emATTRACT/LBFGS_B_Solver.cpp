@@ -30,7 +30,7 @@ extern "C" void lbfgsb_FUN(int* n, int* m, double* x, double* l, double* u,
         double* wa, int* iwa, char* task, int* iprint, char* csave, int*
         lsave, int* isave, double* dsave);
 
-ema::LBFGS_B_Solver::Options ema::LBFGS_B_Solver::settings;
+as::LBFGS_B_Solver::Options as::LBFGS_B_Solver::settings;
 
 /* Struct to reserve storage for working variables */
 struct LBFGS_B_WorkingStruct {
@@ -144,7 +144,7 @@ int lbfgsb_run(LBFGS_B_WorkingStruct& opt, double* x, double* f, double* g) {
 	}
 }
 
-void ema::LBFGS_B_Solver::run(coro_t::caller_type& energyAndGradients) {
+void as::LBFGS_B_Solver::run(coro_t::caller_type& energyAndGradients) {
 	// dimension of problem
 	int n = state.rows();
 

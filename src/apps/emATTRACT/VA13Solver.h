@@ -23,7 +23,7 @@
 
 #include "SolverBase.h"
 
-namespace ema {
+namespace as {
 
 struct VA13Statistic : public Statistic {
 

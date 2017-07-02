@@ -27,14 +27,14 @@
 using std::cerr;
 using std::endl;
 
-ema::BFGSSolver::Options ema::BFGSSolver::settings;
+as::BFGSSolver::Options as::BFGSSolver::settings;
 
 template <typename T> inline
 int sign(T val) {
 	return (T(0) < val) - (val < T(0));
 }
 
-void ema::BFGSSolver::run(coro_t::caller_type& ca) {
+void as::BFGSSolver::run(coro_t::caller_type& ca) {
 
 	/* Algorithm 6.1, J. Nocedal, S. J. Wright, Numerical Optimization (2nd Edition), page 140 */
 	Vector x_curr = getState();
@@ -151,7 +151,7 @@ void ema::BFGSSolver::run(coro_t::caller_type& ca) {
 	return;
 }
 
-namespace ema {
+namespace as {
 
 inline double cubic_interpolate(const double& alpha_curr, const double& alpha_last,
 		const ObjGrad& objGrad_curr, const ObjGrad& objGrad_last,
@@ -166,7 +166,7 @@ inline double cubic_interpolate(const double& alpha_curr, const double& alpha_la
 }
 
 
-inline double ema::BFGSSolver::zoom(coro_t::caller_type& ca, const Vector& x0, const Vector& p,
+inline double as::BFGSSolver::zoom(coro_t::caller_type& ca, const Vector& x0, const Vector& p,
 		const ObjGrad& objGrad0, const double& phi0_dash, const double& min_alpha,
 		double& alpha_lo, double& alpha_hi,
 		ObjGrad& objGrad_lo, ObjGrad& objGrad_hi,
@@ -249,7 +249,7 @@ inline double ema::BFGSSolver::zoom(coro_t::caller_type& ca, const Vector& x0, c
 
 } // namespace
 
-double ema::BFGSSolver::linesearch_WolfeRule(coro_t::caller_type& ca, const Vector& x0, const ObjGrad& objGrad0, const Vector& p,
+double as::BFGSSolver::linesearch_WolfeRule(coro_t::caller_type& ca, const Vector& x0, const ObjGrad& objGrad0, const Vector& p,
 		const double& dObj,
 		/*OUT:*/ Vector& x_next, ObjGrad& objGrad_next)
 {

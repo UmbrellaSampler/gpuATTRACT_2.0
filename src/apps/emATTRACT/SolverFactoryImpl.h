@@ -25,12 +25,11 @@
 
 #include "SolverFactory.h"
 
-namespace ema {
+namespace as {
 
 class SolverFactoryImpl : public SolverFactory {
 private:
 	std::unique_ptr<SolverBase> createSolverByNameImpl(const std::string& name) override;
-
 
 	enum SolverType {
 		VA13,

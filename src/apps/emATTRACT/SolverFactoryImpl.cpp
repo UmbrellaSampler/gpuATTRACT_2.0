@@ -27,9 +27,9 @@
 #include "LBFGS_B_Solver.h"
 
 
+namespace as {
 
-
-std::map<std::string, ema::SolverFactoryImpl::SolverType> ema::SolverFactoryImpl::_solverTypeMap =
+std::map<std::string, SolverFactoryImpl::SolverType> SolverFactoryImpl::_solverTypeMap =
 	{
 			{"VA13", SolverType::VA13},
 			{"BFGS", SolverType::BFGS},
@@ -41,13 +41,13 @@ std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-std::unique_ptr<ema::SolverBase> ema::SolverFactoryImpl::createSolverByNameImpl(const std::string& name) {
+auto SolverFactoryImpl::createSolverByNameImpl(const std::string& name) -> std::unique_ptr<SolverBase> {
 	using namespace std;
 	/* assert that map contains element of name */
 	assert(_solverTypeMap.find(name) != _solverTypeMap.end());
 	switch (_solverTypeMap[name] ) {
 	case VA13:
-		return make_unique<VA13Solver>();
+		return make_unique<VA13Solver<DOFType, ResultType>>();
 		break;
 	case BFGS:
 		return make_unique<BFGSSolver>();
@@ -62,4 +62,4 @@ std::unique_ptr<ema::SolverBase> ema::SolverFactoryImpl::createSolverByNameImpl(
 	}
 }
 
-
+} // namespace

@@ -27,7 +27,7 @@
 
 #include <meta.h>
 
-namespace ema {
+namespace as {
 
 using coro_t = boost::coroutines::coroutine<void(void)>;
 
@@ -43,9 +43,6 @@ private:
 	virtual std::ostream& print(std::ostream&) const = 0;
 
 };
-
-
-
 
 class SolverBase {
 public:
@@ -73,11 +70,16 @@ public:
 
 	bool converged() {return !*coro;}
 	void setState(const Vector& value) { state = value;}
-	void setState(const extDOF& value) { state = extDOF2Vector(value);}
+
+	template <typename DOFType>
+	void setState(const DOFType& value) { state = extDOF2Vector(value);}
+
 	Vector getState() {return state;}
 
 	void setObjective(const ObjGrad& value) { objective = value; }
-	void setObjective(const extEnGrad& value) {	objective = extEnGrad2ObjGrad(value); }
+
+	template <typename ResultType>
+	void setObjective(const ResultType& value) {	objective = extEnGrad2ObjGrad(value); }
 
 	ObjGrad getObjective() {return objective;}
 

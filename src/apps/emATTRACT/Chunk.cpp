@@ -19,7 +19,7 @@
  *******************************************************************************/
 #include "Chunk.h"
 
-void ema::Chunk::setResults(const std::vector<extEnGrad>& results) {
+void as::Chunk::setResults(const std::vector<extEnGrad>& results) {
 	auto iter = results.begin();
 	/* fill main list */
 	for (auto& pair : _cont ) {
@@ -48,7 +48,7 @@ void ema::Chunk::setResults(const std::vector<extEnGrad>& results) {
 	_LBcontRefs.clear();
 }
 
-void ema::Chunk::checkLBconts() {
+void as::Chunk::checkLBconts() {
 	for (auto LBcontIter = _LBconts.begin();  LBcontIter != _LBconts.end();) {
 
 		if (LBcontIter->complete) {
@@ -64,7 +64,7 @@ void ema::Chunk::checkLBconts() {
 	}
 }
 
-unsigned ema::Chunk::overAllSize() {
+unsigned as::Chunk::overAllSize() {
 	unsigned count = 0;
 	count += _cont.size();
 //	std::cerr << "overAllSize: " << _cont.size() << "     ";
@@ -78,7 +78,7 @@ unsigned ema::Chunk::overAllSize() {
 
 //#define H_IO
 
-void ema::loadBalanceChunks (std::list<Chunk>& chunkList) {
+void as::loadBalanceChunks (std::list<Chunk>& chunkList) {
 	using std::cerr;
 	using std::endl;
 
@@ -178,7 +178,7 @@ void ema::loadBalanceChunks (std::list<Chunk>& chunkList) {
 	} // for
 }
 
-double ema::chunkSizeRatio (std::list<Chunk> const& chunkList) {
+double as::chunkSizeRatio (std::list<Chunk> const& chunkList) {
 
 	auto fnc = [] (Chunk const& lhs, Chunk const& rhs) -> bool { return lhs.size() < rhs.size();} ;
 	auto minmax = std::minmax_element(chunkList.begin(), chunkList.end(), fnc);

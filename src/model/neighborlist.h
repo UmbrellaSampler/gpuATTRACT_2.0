@@ -28,7 +28,7 @@ namespace as {
 template<typename REAL>
 void NLPotForce(
 		NLGrid<REAL> const* grid,
-		Protein<REAL> const* rec,
+		Protein<REAL> const* rec, //TODO: use receptor positions instead of receptor
 		Protein<REAL> const* lig,
 		SimParam<REAL> const* simParam,
 		ParamTable<REAL> const* table,

@@ -25,7 +25,7 @@
 #include <list>
 #include "SolverBase.h"
  
-namespace ema {
+namespace as {
 
 class Chunk {
 public:

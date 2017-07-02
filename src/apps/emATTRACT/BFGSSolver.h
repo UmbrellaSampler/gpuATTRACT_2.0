@@ -25,7 +25,7 @@
 
 #include <memory>
 
-namespace ema {
+namespace as {
 
 struct BFGSStatistic : public Statistic {
 

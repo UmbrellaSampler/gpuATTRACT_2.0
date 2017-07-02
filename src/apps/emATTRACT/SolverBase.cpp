@@ -25,14 +25,14 @@
 #include "VA13Solver.h"
 
 
-void ema::SolverBase::start() {
+void as::SolverBase::start() {
 	assert(state.rows() > 0);
 	coro =  new coro_t(std::bind(&SolverBase::run, this, std::placeholders::_1));
 
 
 }
 
-void ema::SolverBase::step() {
+void as::SolverBase::step() {
 	assert(this->converged() == false);
 	/* make sure that objective is already set !!! */
 	(*coro)();
@@ -43,11 +43,11 @@ void ema::SolverBase::step() {
 	}
 }
 
-void ema::SolverBase::finalize() {
+void as::SolverBase::finalize() {
 	if (coro) {
 		delete coro;
 		coro = nullptr;
 	}
 }
 
-bool ema::SolverBase::stats = false;
+bool as::SolverBase::stats = false;

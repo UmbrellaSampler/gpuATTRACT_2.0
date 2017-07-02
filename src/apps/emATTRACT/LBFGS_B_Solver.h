@@ -23,7 +23,7 @@
 
 #include "SolverBase.h"
 
-namespace ema {
+namespace as {
 
 struct LBFGS_B_Statistic : public Statistic {
 

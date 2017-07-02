@@ -17,7 +17,7 @@ namespace as {
 
 
 template<typename REAL>
-std::ostream& operator<<(std::ostream& outStream, DOFImpl<REAL> const& dof)
+std::ostream& operator<<(std::ostream& outStream, DOF_6D_Impl<REAL> const& dof)
 {
 	using namespace std;
 	int precisionSetting = outStream.precision( );
@@ -37,7 +37,7 @@ std::ostream& operator<<(std::ostream& outStream, DOFImpl<REAL> const& dof)
 }
 
 template<typename REAL>
-std::ostream& operator<<(std::ostream& s, ResultImpl<REAL> const& enGrad) {
+std::ostream& operator<<(std::ostream& s, Result_6D_Impl<REAL> const& enGrad) {
 	using namespace std;
 	int precisionSetting = s.precision( );
 	ios::fmtflags flagSettings = s.flags();

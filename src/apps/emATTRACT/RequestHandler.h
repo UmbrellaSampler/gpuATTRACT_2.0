@@ -29,35 +29,61 @@
 #include "BFGSSolver.h"
 #include "Chunk.h"
 
-#include <AttractServer>
+namespace as {
 
-namespace ema {
-
-constexpr unsigned maxConcurrentObjects = 20000; // default maximum number of running coroutines that may exist at the same time.
-constexpr unsigned numChunks = 2; // default number of chunks running at the same time. Each chunk maintains maxConcurrentObjects/numChunks objects.
-constexpr unsigned minChunkSize = 10; // minimum chunksize that is worth to work with
 
 template<typename SERVER>
 class RequestHandler {
+public:
+	constexpr unsigned DEFAULT_MAX_CONCURRENT_OBJECTS = 20000; // default maximum number of asynchronous coroutines
+	constexpr unsigned DEFAULT_NUM_CHUNKS = 2; // default number of chunks running at the same time. Each chunk maintains numConcurrentObjects/numChunks objects.
+	constexpr unsigned DEFAULT_MIN_CHUNK_SIZE = 10; // minimum chunksize that is worth to work with
 
+private:
 	using extDOF = typename SERVER::input_t;
 	using extEnGrad = typename SERVER::result_t;
 	using common_t = typename SERVER::common_t;
 	using extServer = SERVER;
+	using SharedSolver = std::shared_ptr<SolverBase>;
+	using ObjMap = std::map<unsigned, SharedSolver>;
+	using ObjMapIter = ObjMap::iterator;
+	using ChunkIter = Chunk::iterator;
+
+	std::shared_ptr<extServer> _server;
+	const unsigned _numConcurrentObjects;
+	const unsigned _numChunks;
+	const unsigned _minChunkSize;
+
+	unsigned _numObjects;
+	ObjMap _objects;
+	ObjMap _finishedObjects;
+
+	const common_t _common;
+	std::list<Chunk> _chunkList;
+	std::vector<extDOF> _collectedRequests;
+	std::vector<extEnGrad> _collectedResults;
+
+
+	explicit RequestHandler(std::shared_ptr<extServer> server,
+			unsigned numConcurrentObjects,
+			unsigned numChunks,
+			unsigned minChunkSize,
+			std::vector<extDOF> const& dofs,
+			common_t const& common,
+			std::string const& solverName) :
+		_server(server),
+		_numConcurrentObjects(numConcurrentObjects),
+		_numChunks(numChunks),
+		_minChunkSize(minChunkSize),
+		_numObjects(0),
+		_common(common)
+	{
+		init(solverName, dofs, common);
+	};
+
 public:
 
-	RequestHandler() : _server(nullptr),
-		_numObjects(0), _numConcurrentObjects(maxConcurrentObjects), _numChunks(numChunks),
-		_minChunkSize(minChunkSize){};
-
-	void setNumConcurrentObjects(unsigned value) {_numConcurrentObjects = value;}
-	void setNumChunks(unsigned value) {_numChunks = value;}
-	void setMinChunkSize(unsigned value) { _minChunkSize = value;}
-
-	/*
-	 ** @brief: Initializes the RequestHandler. Member run() may now be called.
-	 */
-	void init(extServer& server, std::string const& solverName, std::vector<extDOF>& dofs, common_t common);
+	void init(std::string const& solverName, std::vector<extDOF>& dofs, common_t const& common);
 
 	void run();
 
@@ -65,27 +91,42 @@ public:
 	std::vector<extEnGrad> getResultEnGrads();
 	std::vector<std::unique_ptr<Statistic>> getStatistics();
 
-private:
 
-	SERVER* _server;
 
-	using SharedSolver = std::shared_ptr<SolverBase>;
+	class Builder {
+	private:
+		std::shared_ptr<extServer> _server;
+		unsigned _numConcurrentObjects = DEFAULT_MAX_CONCURRENT_OBJECTS;
+		unsigned _numChunks = DEFAULT_NUM_CHUNKS;
+		unsigned _minChunkSize = DEFAULT_MIN_CHUNK_SIZE;
 
-	using ObjMap = std::map<unsigned, SharedSolver>;
-	using ObjMapIter = ObjMap::iterator;
-	ObjMap _objects;
-	ObjMap _finishedObjects;
+	public:
+		Builder& withServer(std::shared_ptr<extServer> server) {
+			_server = server;
+			return *this;
+		}
 
-	using ChunkIter = Chunk::iterator;
-	std::list<Chunk> _chunkList;
+		Builder& withNumConcurrentObjects(unsigned numConcurrentObjects) {
+			_numConcurrentObjects = numConcurrentObjects;
+			return *this;
+		}
 
-	std::vector<extDOF> _collectedRequests;
-	std::vector<extEnGrad> _collectedResults;
+		Builder& withNumChunks(unsigned numChunks) {
+			_numChunks = numChunks;
+			return *this;
+		}
 
-	unsigned _numObjects;
-	unsigned _numConcurrentObjects;
-	unsigned _numChunks;
-	unsigned _minChunkSize;
+		Builder& withMinChunkSize(unsigned minChunkSize) {
+			_minChunkSize = minChunkSize;
+			return *this;
+		}
+	};
+
+	static Builder newBuilder() {
+		return Builder();
+	}
+
+
 };
 
 } // namespace

@@ -23,7 +23,7 @@
 
 #include <list>
 
-namespace ema {
+namespace as {
 
 template <typename T>
 class RingArray {

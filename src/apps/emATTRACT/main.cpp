@@ -44,7 +44,7 @@
 using namespace std;
 
 /* global logger */
-namespace ema {
+namespace as {
 std::unique_ptr<Log::Logger> log;
 }
 
@@ -57,9 +57,9 @@ void init_logger( bool use_file = true) {
 #endif
 	if (use_file) {
 		string filename = "emATTRACT.log";
-		ema::log.reset(new Logger(level, filename.substr(0,filename.size()-4)));
+		as::log.reset(new Logger(level, filename.substr(0,filename.size()-4)));
 	} else {
-		ema::log.reset(new Logger(level, &(std::cerr)));
+		as::log.reset(new Logger(level, &(std::cerr)));
 	}
 }
 
@@ -69,7 +69,7 @@ void printResultsOutput(unsigned numDofs, as::DOF* dofs, as::EnGrad* enGrads, st
 
 int main (int argc, char *argv[]) {
 	using namespace std;
-	using ema::log;
+	using as::log;
 
 	/* initialize Logger */
 	bool use_file = true;
@@ -381,13 +381,13 @@ int main (int argc, char *argv[]) {
 	 ** Next we need to initialize the client.
 	 */
 
-	ema::RequestHandler reqHandler;
+	as::RequestHandler reqHandler;
 	reqHandler.setNumChunks(rh_numChunks);
 	reqHandler.setNumConcurrentObjects(rh_maxNumConcurrentObjects);
 	reqHandler.setServerOptions({gridId, recId, ligId, serverMode});
 	reqHandler.init(server, solverName, DOF_molecules[1]);
 	if (stats > 0)
-		ema::SolverBase::enableStats();
+		as::SolverBase::enableStats();
 	reqHandler.run();
 
 	vector<as::EnGrad> enGrads = reqHandler.getResultEnGrads();
@@ -402,11 +402,11 @@ int main (int argc, char *argv[]) {
 		break;
 	case 1:
 		{
-			vector<std::unique_ptr<ema::Statistic>> stats = reqHandler.getStatistics();
+			vector<std::unique_ptr<as::Statistic>> stats = reqHandler.getStatistics();
 			unsigned num_objEval = 0;
 			double minEnergy = DBL_MAX;
 			for(unsigned i = 0; i < DOF_molecules[0].size(); ++i) {
-				ema::Statistic* stat = stats[i].get();
+				as::Statistic* stat = stats[i].get();
 				if(stat) {
 					num_objEval += stat->numRequests;
 					double energy = enGrads[i].E_El + enGrads[i].E_VdW;
@@ -420,11 +420,11 @@ int main (int argc, char *argv[]) {
 		break;
 	case 2:
 		{
-			vector<std::unique_ptr<ema::Statistic>> stats = reqHandler.getStatistics();
+			vector<std::unique_ptr<as::Statistic>> stats = reqHandler.getStatistics();
 			unsigned num_objEval = 0;
 			double minEnergy = DBL_MAX;
 			for(unsigned i = 0; i < DOF_molecules[0].size(); ++i) {
-				ema::Statistic* stat = stats[i].get();
+				as::Statistic* stat = stats[i].get();
 				if(stat) {
 					num_objEval += stat->numRequests;
 					double energy = enGrads[i].E_El + enGrads[i].E_VdW;

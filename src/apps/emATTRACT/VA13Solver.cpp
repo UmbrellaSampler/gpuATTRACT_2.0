@@ -24,13 +24,14 @@
 using std::cerr;
 using std::endl;
 
-ema::VA13Solver::Options ema::VA13Solver::settings;
+as::VA13Solver::Options as::VA13Solver::settings;
 
 extern "C" void minfor_(void* FortranSmuggler_ptr, int const& maxFunEval,
 		double const* state);
 
-
-void ema::VA13Solver::run(coro_t::caller_type& ca) {
+namespace as {
+template <typename DOFType, typename ResultType>
+void VA13Solver<DOFType, ResultType>::run(coro_t::caller_type& ca) {
 	/* Create Smuggler */
 	VA13Solver::FortranSmuggler smuggler(ca, state, objective);
 
@@ -43,6 +44,8 @@ void ema::VA13Solver::run(coro_t::caller_type& ca) {
 	minfor_(&smuggler, settings.maxFunEval, state_array);
 }
 
+} // namespace
+
 
 // Call back function for fortran to access the class.  This is a free function
 // that is not a member or friend of MyClass, so it can only access public
@@ -52,10 +55,10 @@ extern "C" void energy_for_fortran_to_call_(void* FortranSmuggler_ptr, double st
 {
    // Cast to BaseClass.  If the pointer isn't a pointer to an object
    // derived from BaseClass, then the world will end.
-	ema::VA13Solver::FortranSmuggler* smuggler = static_cast<ema::VA13Solver::FortranSmuggler*>(FortranSmuggler_ptr);
+	as::VA13Solver::FortranSmuggler* smuggler = static_cast<as::VA13Solver::FortranSmuggler*>(FortranSmuggler_ptr);
 
 	/* set the state */
-	ema::Vector& state = smuggler->state_ref();
+	as::Vector& state = smuggler->state_ref();
 	for (int i = 0; i < state.rows(); ++i) {
 		state(i) = state_ptr[i];
 	}
@@ -64,10 +67,9 @@ extern "C" void energy_for_fortran_to_call_(void* FortranSmuggler_ptr, double st
 	smuggler->call_coro();
 
 	/* get the state */
-	ema::ObjGrad& objGrad = smuggler->objective_ref();
+	as::ObjGrad& objGrad = smuggler->objective_ref();
 	*energy = objGrad.obj;
 	for (int i = 0; i < objGrad.grad.rows(); ++i) {
 		grad[i] = objGrad.grad(i);
 	}
-
 }

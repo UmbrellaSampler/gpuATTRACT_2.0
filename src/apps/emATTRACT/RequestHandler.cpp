@@ -22,7 +22,6 @@
 #include <cassert>
 #include <algorithm>
 
-#include <AttractServer>
 #include "nvToolsExt.h"
 
 #include "RequestHandler.h"
@@ -33,9 +32,10 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
+namespace as {
 
-void ema::RequestHandler::init(extServer& server, std::string const& solverName, std::vector<extDOF>& dofs) {
-	_server = &server;
+template<typename SERVER>
+void RequestHandler<SERVER>::init(extServer& server, std::string const& solverName, std::vector<extDOF>& dofs, common_t const& common) {
 	std::unique_ptr<SolverFactory> factory(new SolverFactoryImpl);
 
 	/* Fill the object array */
@@ -94,7 +94,8 @@ void ema::RequestHandler::init(extServer& server, std::string const& solverName,
 
 //#define H_IO
 
-void ema::RequestHandler::run() {
+template<typename SERVER>
+void RequestHandler<SERVER>::run() {
 
 	_collectedRequests.reserve(_chunkList.begin()->size());
 	_collectedResults.reserve(_chunkList.begin()->size());
@@ -112,7 +113,7 @@ void ema::RequestHandler::run() {
 		nvtxRangePop();
 
 		nvtxRangePushA("Submit");
-//		int reqId = ema::server_submit(*_server, _collectedRequests.data(), _collectedRequests.size(),
+//		int reqId = as::server_submit(*_server, _collectedRequests.data(), _collectedRequests.size(),
 //				_serverOpt.gridId, _serverOpt.recId, _serverOpt.ligId, _serverOpt.useMode);
 		int reqId = asClient::server_submit(*_server, _collectedRequests.data(), _collectedRequests.size(),
 				_serverOpt.gridId, _serverOpt.recId, _serverOpt.ligId, _serverOpt.useMode);
@@ -156,7 +157,7 @@ void ema::RequestHandler::run() {
 
 					/* Wait for requests */
 					nvtxRangePushA("Waiting");
-	//				unsigned count = ema::server_pull(*_server, chunk.reqId(), _collectedResults.data());
+	//				unsigned count = as::server_pull(*_server, chunk.reqId(), _collectedResults.data());
 					unsigned count = asClient::server_pull(*_server, chunk.reqId(), _collectedResults.data());
 					nvtxRangePop();
 
@@ -219,7 +220,7 @@ void ema::RequestHandler::run() {
 			/* submit request */
 			if (_collectedRequests.size() > 0) { // there is still something to submit
 				nvtxRangePushA("Submit");
-//				int reqId = ema::server_submit(*_server, _collectedRequests.data(), chunk.size(),
+//				int reqId = as::server_submit(*_server, _collectedRequests.data(), chunk.size(),
 //						_serverOpt.gridId, _serverOpt.recId, _serverOpt.ligId, _serverOpt.useMode);
 				int reqId = asClient::server_submit(*_server, _collectedRequests.data(), chunk.size(),
 						_serverOpt.gridId, _serverOpt.recId, _serverOpt.ligId, _serverOpt.useMode);
@@ -243,25 +244,31 @@ void ema::RequestHandler::run() {
 
 }
 
-std::vector<ema::extDOF> ema::RequestHandler::getResultStates() {
+template<typename SERVER>
+auto RequestHandler<SERVER>::getResultStates() -> std::vector<extDOF>{
 	std::vector<extDOF> stateVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
 		stateVec[i] = Vector2extDOF(_finishedObjects[i]->getState());
 	}
 	return stateVec;
 }
-std::vector<ema::extEnGrad> ema::RequestHandler::getResultEnGrads() {
+
+template<typename SERVER>
+auto RequestHandler<SERVER>::getResultEnGrads() -> std::vector<extEnGrad> {
 	std::vector<extEnGrad> enGradVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
 		enGradVec[i] = ObjGrad2extEnGrad(_finishedObjects[i]->getObjective());
 	}
 	return enGradVec;
 }
-std::vector<std::unique_ptr<ema::Statistic>> ema::RequestHandler::getStatistics() {
+
+template<typename SERVER>
+auto RequestHandler<SERVER>::getStatistics() -> std::vector<std::unique_ptr<Statistic>> {
 	std::vector<std::unique_ptr<Statistic>> statisticVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
 		statisticVec[i] = _finishedObjects[i]->getStats();
 	}
 	return statisticVec;
-
 }
+
+} // namespace

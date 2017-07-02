@@ -14,21 +14,21 @@
 namespace as {
 #ifndef __CUDACC__ // ostream is not available in nvcc
 template<typename REAL>
-struct DOFImpl;
+struct DOF_6D_Impl;
 
 template<typename REAL>
-std::ostream& operator<< (std::ostream& s, DOFImpl<REAL> const&);
+std::ostream& operator<< (std::ostream& s, DOF_6D_Impl<REAL> const&);
 
 template<typename REAL>
-struct ResultImpl;
+struct Result_6D_Impl;
 
 template<typename REAL>
-std::ostream& operator<< (std::ostream& s, ResultImpl<REAL> const& args);
+std::ostream& operator<< (std::ostream& s, Result_6D_Impl<REAL> const& args);
 
 #endif
 
 template<typename REAL>
-struct DOFImpl {
+struct DOF_6D_Impl {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 	vec3_t pos;
@@ -36,7 +36,7 @@ struct DOFImpl {
 };
 
 template<typename REAL>
-struct ResultImpl {
+struct Result_6D_Impl {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 	real_t E;
@@ -49,7 +49,7 @@ struct Types_6D {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 
-	using DOF = DOFImpl<REAL>;
+	using DOF = DOF_6D_Impl<real_t>;
 
 	struct Common {
 		id_t gridId;
@@ -59,7 +59,7 @@ struct Types_6D {
 		id_t paramsId;
 	};
 
-	using Result = ResultImpl<REAL>;
+	using Result = Result_6D_Impl<REAL>;
 };
 
 }  // namespace as
