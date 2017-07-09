@@ -25,19 +25,21 @@
 #include <map>
 #include <list>
 #include <memory>
-#include "SolverBase.h"
-#include "BFGSSolver.h"
-#include "Chunk.h"
 
 namespace as {
 
+class SolverBase;
+struct Statistic;
 
 template<typename SERVER>
 class RequestHandler {
+	class Builder;
+	class Chunk;
+
 public:
-	constexpr unsigned DEFAULT_MAX_CONCURRENT_OBJECTS = 20000; // default maximum number of asynchronous coroutines
-	constexpr unsigned DEFAULT_NUM_CHUNKS = 2; // default number of chunks running at the same time. Each chunk maintains numConcurrentObjects/numChunks objects.
-	constexpr unsigned DEFAULT_MIN_CHUNK_SIZE = 10; // minimum chunksize that is worth to work with
+	static constexpr unsigned DEFAULT_MAX_CONCURRENT_OBJECTS = 20000; // default maximum number of asynchronous coroutines
+	static constexpr unsigned DEFAULT_NUM_CHUNKS = 2; // default number of chunks running at the same time. Each chunk maintains numConcurrentObjects/numChunks objects.
+	static constexpr unsigned DEFAULT_MIN_CHUNK_SIZE = 10; // minimum chunksize that is worth to work with
 
 private:
 	using extDOF = typename SERVER::input_t;
@@ -47,11 +49,13 @@ private:
 	using SharedSolver = std::shared_ptr<SolverBase>;
 	using ObjMap = std::map<unsigned, SharedSolver>;
 	using ObjMapIter = ObjMap::iterator;
-	using ChunkIter = Chunk::iterator;
+	using ChunkIter = typename Chunk::iterator;
+
+	using request_t = typename SERVER::request_t;
 
 	std::shared_ptr<extServer> _server;
 	const unsigned _numConcurrentObjects;
-	const unsigned _numChunks;
+	unsigned _numChunks;
 	const unsigned _minChunkSize;
 
 	unsigned _numObjects;
@@ -70,61 +74,22 @@ private:
 			unsigned minChunkSize,
 			std::vector<extDOF> const& dofs,
 			common_t const& common,
-			std::string const& solverName) :
-		_server(server),
-		_numConcurrentObjects(numConcurrentObjects),
-		_numChunks(numChunks),
-		_minChunkSize(minChunkSize),
-		_numObjects(0),
-		_common(common)
-	{
-		init(solverName, dofs, common);
-	};
+			std::string const& solverName);
+
+	void init(std::string const& solverName, std::vector<extDOF> const& dofs);
 
 public:
 
-	void init(std::string const& solverName, std::vector<extDOF>& dofs, common_t const& common);
-
 	void run();
 
-	std::vector<extDOF> getResultStates();
-	std::vector<extEnGrad> getResultEnGrads();
-	std::vector<std::unique_ptr<Statistic>> getStatistics();
-
-
-
-	class Builder {
-	private:
-		std::shared_ptr<extServer> _server;
-		unsigned _numConcurrentObjects = DEFAULT_MAX_CONCURRENT_OBJECTS;
-		unsigned _numChunks = DEFAULT_NUM_CHUNKS;
-		unsigned _minChunkSize = DEFAULT_MIN_CHUNK_SIZE;
-
-	public:
-		Builder& withServer(std::shared_ptr<extServer> server) {
-			_server = server;
-			return *this;
-		}
-
-		Builder& withNumConcurrentObjects(unsigned numConcurrentObjects) {
-			_numConcurrentObjects = numConcurrentObjects;
-			return *this;
-		}
-
-		Builder& withNumChunks(unsigned numChunks) {
-			_numChunks = numChunks;
-			return *this;
-		}
-
-		Builder& withMinChunkSize(unsigned minChunkSize) {
-			_minChunkSize = minChunkSize;
-			return *this;
-		}
-	};
+	std::vector<extDOF> getResultStates() noexcept;
+	std::vector<extEnGrad> getResultEnGrads() noexcept;
+	std::vector<std::unique_ptr<Statistic>> getStatistics() noexcept;
 
 	static Builder newBuilder() {
 		return Builder();
 	}
+
 
 
 };

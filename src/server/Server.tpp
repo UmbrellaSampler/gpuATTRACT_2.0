@@ -34,8 +34,8 @@ namespace as {
 
 template<typename Service>
 Server<Service>::Server(std::shared_ptr<Service> service):
-	_itemSize(defaultItemSize),
-	_waitTime(maxWaitMilliSeconds),
+	_itemSize(DEFAULT_ITEM_SIZE),
+	_waitTime(MAX_WAIT_MILLISECONDS),
 	_bufferMng(make_unique<BufferManager<input_t, result_t>>()),
 	_requestMng(make_unique<RequestManager<input_t, common_t, result_t>>()),
 	_dispatcher(make_unique<Dispatcher<input_t, common_t, result_t>>()),

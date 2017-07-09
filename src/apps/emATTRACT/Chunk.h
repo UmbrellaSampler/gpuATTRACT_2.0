@@ -23,19 +23,20 @@
 
 #include <memory>
 #include <list>
-#include "SolverBase.h"
- 
+#include "RequestHandler.h"
+
 namespace as {
 
-class Chunk {
-public:
+template<typename SERVER>
+class RequestHandler<SERVER>::Chunk {
 
-	int reqId() const {
-		return _reqId;
+public:
+	request_t request() const {
+		return _request;
 	}
 
-	void setReqId(int value) {
-		_reqId = value;
+	void setRequest(request_t const& request) {
+		_request = request;
 	}
 
 	unsigned fetchSize() const {
@@ -50,7 +51,6 @@ public:
 		return _cont.size();
 	}
 
-	using SharedSolver = std::shared_ptr<SolverBase>;
 	using ContainerType = std::list<std::pair<unsigned, SharedSolver>>;
 	ContainerType& getContainer() {
 		return _cont;
@@ -67,15 +67,18 @@ public:
 	 *
 	 */
 	class LBCont {
-	public:
 
-		LBCont(unsigned numEl) : cont(numEl), complete(false) {}
-		LBCont() : LBCont(0) {}
+	public:
+		LBCont(unsigned numEl) :
+				cont(numEl), complete(false) {
+		}
+		LBCont() :
+				LBCont(0) {
+		}
 
 		std::vector<std::pair<unsigned, SharedSolver>> cont;
 		bool complete;
 	};
-
 
 	/* is called by other chunks to get a LBCont they want to process.
 	 * process means: the they assign the results and set the complete flag */
@@ -91,7 +94,7 @@ public:
 		_LBcontRefs.push_front(&lbcont); // append at front to preseve original ordering of main list (_cont)
 	}
 
-	void setResults (const std::vector<extEnGrad>& results);
+	void setResults(const std::vector<extEnGrad>& results);
 
 	/*
 	 * checks if a LBCont in _LBconts is already processed. If so, the elements of the
@@ -108,32 +111,29 @@ public:
 	 */
 	unsigned overAllSize();
 
+	/*
+	 * Performs a load balancing step of the Chunks. This function may not be called in subsequent iterations.
+	 */
+	static void loadBalanceChunks(std::list<Chunk>& chunkList);
+
+	/*
+	 * Returns the ratio between the largest and the smallest chunk size (> 1.0)
+	 */
+	static double chunkSizeRatio(std::list<Chunk> const& chunkList);
+
 private:
-	int _reqId = -1; 		/** id for the server request */
-	unsigned _fetchSize; 	/** number of requests to fetch */
-	ContainerType _cont; 	// we use a list to be able to erase arbitrary elements
+	request_t _request; /** server request */
+	unsigned _fetchSize; /** number of requests to fetch */
+	ContainerType _cont; // we use a list to be able to erase arbitrary elements
 
-
-	std::list<LBCont> _LBconts; 	/** container of LBcontainers that needs to get processed by other chunks */
+	std::list<LBCont> _LBconts; /** container of LBcontainers that needs to get processed by other chunks */
 	std::list<LBCont*> _LBcontRefs; /** container of LBcontainers that need to get processed by this chunks.
-	 	 	 	 	 	 	 	 	 ** processed means: results get assigned to these containers */
+	 ** processed means: results get assigned to these containers */
 
 };
 
 //#define H_IO
 
-/*
- * Performs a load balancing step of the Chunks. This function may not be called in subsequent iterations.
- */
-void loadBalanceChunks (std::list<Chunk>& chunkList);
-
-
-/*
- * Returns the ratio between the largest and the smallest chunk size (> 1.0)
- */
-double chunkSizeRatio (std::list<Chunk> const& chunkList);
-
 } // namespace
-
 
 #endif /* CHUNK_H_ */

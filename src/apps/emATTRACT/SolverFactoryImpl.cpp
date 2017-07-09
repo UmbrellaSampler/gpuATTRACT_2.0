@@ -47,7 +47,7 @@ auto SolverFactoryImpl::createSolverByNameImpl(const std::string& name) -> std::
 	assert(_solverTypeMap.find(name) != _solverTypeMap.end());
 	switch (_solverTypeMap[name] ) {
 	case VA13:
-		return make_unique<VA13Solver<DOFType, ResultType>>();
+		return make_unique<VA13Solver>();
 		break;
 	case BFGS:
 		return make_unique<BFGSSolver>();

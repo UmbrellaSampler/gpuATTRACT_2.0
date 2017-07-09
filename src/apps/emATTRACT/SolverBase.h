@@ -72,14 +72,14 @@ public:
 	void setState(const Vector& value) { state = value;}
 
 	template <typename DOFType>
-	void setState(const DOFType& value) { state = extDOF2Vector(value);}
+	void setState(const DOFType& value) { state = TypesConverter<DOFType, Vector>::toSecond(value);}
 
 	Vector getState() {return state;}
 
 	void setObjective(const ObjGrad& value) { objective = value; }
 
 	template <typename ResultType>
-	void setObjective(const ResultType& value) {	objective = extEnGrad2ObjGrad(value); }
+	void setObjective(const ResultType& value) {	objective = TypesConverter<ResultType, ObjGrad>::toSecond(value); }
 
 	ObjGrad getObjective() {return objective;}
 

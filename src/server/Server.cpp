@@ -13,6 +13,7 @@
 #endif
 
 namespace as {
+
 template
 class Server<CPU_6D_EnergyService<float>>;
 

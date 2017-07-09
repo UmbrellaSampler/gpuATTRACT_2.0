@@ -22,11 +22,12 @@ TARGET ?= RELEASE
 TEST ?= OFF
 CUDA ?= ON
 
-SOURCE_FOLDERS = $(shell find $(SOURCE_DIR) -maxdepth 1 -type d)
+SOURCE_FOLDERS = $(shell find $(SOURCE_DIR) -maxdepth 2 -type d)
 
 LIBS_TEST = 
 ifeq ($(TEST), OFF)
-	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp" -and -not -path "*emATTRACT*")
+#	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp" -and -not -path "*emATTRACT*")
+	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp")
 #	VPATH = $(SOURCE_DIR):$(SOURCE_DIR)/fileIO:$(SOURCE_DIR)/allocator:$(SOURCE_DIR)/cli:$(SOURCE_DIR)/fileIO:$(SOURCE_DIR)/model:$(SOURCE_DIR)/service:$(SOURCE_DIR)/apps:$(SOURCE_DIR)/commons:$(SOURCE_DIR)/server
 	VPATH = $(foreach d, $(SOURCE_FOLDERS), $d:)
 else ifeq ($(TEST), ON)
@@ -46,17 +47,20 @@ OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))
 CXX = g++
 ifeq ($(TARGET), RELEASE)
 	OFLAGS = -O3 -DNDEBUG
+	FXX_OFLAGS = -O2 
 else ifeq ($(TARGET), DEBUG) 
 	OFLAGS = -O0 -g -Wall -Wextra
+	FXX_OFLAGS = -O0 -g -Wall -Wextra
 else
 	OFLAGS =
+	FXX_OFLAGS = 
 endif
 
 CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
 INCLUDES = $(foreach d, $(SOURCE_FOLDERS), -I$d)
 #INCLUDES = -I$(CURDIR)/src -I$(CURDIR)/src/fileIO 
 LDFLAGS = #-L...
-LIBS = -lpthread -lrt $(LIBS_TEST) -lboost_program_options
+LIBS = -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_coroutine -lboost_context -lboost_system
 
 
 ifeq ($(CUDA), ON)
@@ -87,7 +91,14 @@ else
 endif
 CUDA_CXXFLAGS = ${CUDA_OFLAGS} -std=c++11
 
-OBJECTS = ${OBJECTS_CPP}
+
+FXX = gfortran
+FXXFLAGS = $(FXX_OFLAGS) -fcray-pointer
+SOURCES_F = $(shell find $(CURDIR)/src/ -name "*.f")
+OBJECTS_F = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_F:.f=.o)))
+
+
+OBJECTS = ${OBJECTS_CPP} $(OBJECTS_F)
 ifeq ($(CUDA), ON)
 	OBJECTS += ${OBJECTS_CU}
 endif
@@ -96,6 +107,8 @@ endif
 #VPATH = $(shell find  src/ -type d)
 #VPATH += $(shell find test/ -type d)
 #VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR):$(SOURCE_DIR)/fileIO
+
+
 
 $(BINARY): $(OBJECTS)
 	@echo 'Building target: $@'
@@ -112,6 +125,13 @@ $(OBJECTS_CPP): $(OBJDIR)/%.o: %.cpp $(OBJDIR)/%.d
 	@echo ' '
 
 $(OBJDIR)/%.d:	;
+
+$(OBJECTS_F): $(OBJDIR)/%.o: %.f
+	@echo 'Building file: "$<"'
+	@echo 'Invoking: GCC Fortran Compiler'
+	$(FXX) $(FXXFLAGS) -c -o "$@" "$<"
+	@echo 'Finished building: "$<"'
+	@echo ' '	
 	
 
 -include $(OBJECTS_CPP:.o=.d)

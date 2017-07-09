@@ -85,12 +85,23 @@ public:
 };
 
 template<typename REAL>
+class TypesConverter<Vector, DOF_6D_Impl<REAL>> {
+public:
+	static Vector toFirst(DOF_6D_Impl<REAL> const& dof) {
+		return TypesConverter<DOF_6D_Impl<REAL>, Vector>::toSecond(dof);
+	}
+
+	static DOF_6D_Impl<REAL> toSecond(Vector const& vec) {
+		return TypesConverter<DOF_6D_Impl<REAL>, Vector>::toFirst(vec);
+	}
+};
+
+template<typename REAL>
 class TypesConverter<Result_6D_Impl<REAL>, ObjGrad> {
 public:
 	static Result_6D_Impl<REAL> toFirst(ObjGrad const& objGrad) {
 		Result_6D_Impl<REAL> enGrad;
-		enGrad.E_VdW = objGrad.obj;
-		enGrad.E_El = 0.0; // TODO This is not true, we just lost the information
+		enGrad.E = objGrad.obj;
 		enGrad.ang.x = objGrad.grad(0);
 		enGrad.ang.y = objGrad.grad(1);
 		enGrad.ang.z = objGrad.grad(2);
@@ -102,12 +113,25 @@ public:
 
 	static ObjGrad toSecond (Result_6D_Impl<REAL> const& enGrad) {
 		ObjGrad objGrad;
-		objGrad.obj = enGrad.E_VdW + enGrad.E_El;
+		objGrad.obj = enGrad.E;
 		objGrad.grad = Vector(6);
 		// for ATTRACT multiply gradients by -1.0
 		objGrad.grad  << -enGrad.ang.x, -enGrad.ang.y,  -enGrad.ang.z,
 						 -enGrad.pos.x, -enGrad.pos.y , -enGrad.pos.z;
 		return objGrad;
+	}
+};
+
+template<typename REAL>
+class TypesConverter<ObjGrad, Result_6D_Impl<REAL>> {
+public:
+
+	static ObjGrad toFirst (Result_6D_Impl<REAL> const& enGrad) {
+		return TypesConverter<Result_6D_Impl<REAL>, ObjGrad>::toSecond(enGrad);
+	}
+
+	static Result_6D_Impl<REAL> toSecond(ObjGrad const& objGrad) {
+		return TypesConverter<Result_6D_Impl<REAL>, ObjGrad>::toFirst(objGrad);
 	}
 };
 

@@ -30,8 +30,8 @@ extern "C" void minfor_(void* FortranSmuggler_ptr, int const& maxFunEval,
 		double const* state);
 
 namespace as {
-template <typename DOFType, typename ResultType>
-void VA13Solver<DOFType, ResultType>::run(coro_t::caller_type& ca) {
+
+void VA13Solver::run(coro_t::caller_type& ca) {
 	/* Create Smuggler */
 	VA13Solver::FortranSmuggler smuggler(ca, state, objective);
 
