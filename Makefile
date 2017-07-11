@@ -65,7 +65,7 @@ LIBS = -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_co
 
 ifeq ($(CUDA), ON)
 	OFLAGS += -DCUDA
-	LDFLAGS += -L$(CUDADIR)/lib64
+	LDFLAGS += -L$(CUDADIR)/lib64 -Wno-deprecated-gpu-targets
 	LIBS += -lcudart -lnvToolsExt
 	INCLUDES += -I$(CUDADIR)/include
 	LXX = /usr/local/cuda/bin/nvcc

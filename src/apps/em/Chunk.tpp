@@ -69,8 +69,6 @@ unsigned RequestHandler<SERVER>::Chunk::overAllSize() {
 //#define H_IO
 template<typename SERVER>
 void RequestHandler<SERVER>::Chunk::loadBalanceChunks (std::list<Chunk>& chunkList) {
-	using std::cerr;
-	using std::endl;
 
 	assert(chunkList.size() > 1);
 	unsigned numObjects = 0;
@@ -112,6 +110,8 @@ void RequestHandler<SERVER>::Chunk::loadBalanceChunks (std::list<Chunk>& chunkLi
 	}
 
 #ifdef H_IO
+	using std::cerr;
+	using std::endl;
 	cerr << "Chunk sizes before sorting" << endl;
 	for (auto& chunk : chunkVec) {
 		cerr << chunk->size() << " ";
