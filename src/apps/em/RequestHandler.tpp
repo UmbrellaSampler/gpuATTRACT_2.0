@@ -7,8 +7,9 @@
 
 #include "nvToolsExt.h"
 
-#include "RequestHandler.h"
 #include "Chunk.h"
+#include "RequestHandler.h"
+
 #include "SolverFactoryImpl.h"
 #include "SolverBase.h"
 #include "BFGSSolver.h"
@@ -275,35 +276,6 @@ auto RequestHandler<SERVER>::getStatistics() noexcept -> std::vector<std::unique
 	return statisticVec;
 }
 
-template<typename SERVER>
-class RequestHandler<SERVER>::Builder {
-	private:
-		std::shared_ptr<extServer> _server;
-		unsigned _numConcurrentObjects = DEFAULT_MAX_CONCURRENT_OBJECTS;
-		unsigned _numChunks = DEFAULT_NUM_CHUNKS;
-		unsigned _minChunkSize = DEFAULT_MIN_CHUNK_SIZE;
-
-	public:
-		Builder& withServer(std::shared_ptr<extServer> server) {
-			_server = server;
-			return *this;
-		}
-
-		Builder& withNumConcurrentObjects(unsigned numConcurrentObjects) {
-			_numConcurrentObjects = numConcurrentObjects;
-			return *this;
-		}
-
-		Builder& withNumChunks(unsigned numChunks) {
-			_numChunks = numChunks;
-			return *this;
-		}
-
-		Builder& withMinChunkSize(unsigned minChunkSize) {
-			_minChunkSize = minChunkSize;
-			return *this;
-		}
-	};
 
 } // namespace
 

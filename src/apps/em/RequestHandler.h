@@ -49,7 +49,7 @@ private:
 	using SharedSolver = std::shared_ptr<SolverBase>;
 	using ObjMap = std::map<unsigned, SharedSolver>;
 	using ObjMapIter = ObjMap::iterator;
-	using ChunkIter = typename Chunk::iterator;
+//	using ChunkIter = typename Chunk::iterator;
 
 	using request_t = typename SERVER::request_t;
 
@@ -89,12 +89,11 @@ public:
 	static Builder newBuilder() {
 		return Builder();
 	}
-
-
-
 };
 
 } // namespace
+
+#include "RequestHandlerBuilder.h"
 
 
 #endif /* REQUESTHANDLER_H_ */

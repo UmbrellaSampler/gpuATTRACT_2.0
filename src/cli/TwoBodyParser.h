@@ -18,6 +18,7 @@ namespace as {
 class TwoBodyParser : public AppCmdParser {
 public:
 	virtual ~TwoBodyParser() {};
+	virtual void parse(int argc, char* argv[]) = 0;
 protected:
 	TwoBodyParser(std::shared_ptr<CmdArgs> args) : AppCmdParser::AppCmdParser(args) {}
 

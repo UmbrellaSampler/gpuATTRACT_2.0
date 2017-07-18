@@ -29,8 +29,8 @@ public:
 		return _dofs;
 	}
 
-	server_t& server() {
-		return *_server;
+	std::shared_ptr<server_t> server() {
+		return _server;
 	}
 
 	common_t& common() {
