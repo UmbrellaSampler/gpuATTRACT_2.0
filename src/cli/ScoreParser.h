@@ -15,11 +15,10 @@ namespace as {
 class ScoreParser : public TwoBodyParser {
 public:
 	ScoreParser(std::shared_ptr<CmdArgs> args) : TwoBodyParser::TwoBodyParser(args) {}
+	virtual ~ScoreParser() {};
 
-	std::vector<boost::program_options::options_description> options();
-	void parse(int argc, char* argv[]) override;
-	void enforceRules(boost::program_options::variables_map const& vm) const;
-	void assigneArgs(boost::program_options::variables_map const& vm) noexcept;
+protected:
+
 };
 
 }  // namespace as

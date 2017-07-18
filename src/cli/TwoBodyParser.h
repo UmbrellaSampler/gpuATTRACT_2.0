@@ -18,11 +18,14 @@ namespace as {
 class TwoBodyParser : public AppCmdParser {
 public:
 	virtual ~TwoBodyParser() {};
-	virtual void parse(int argc, char* argv[]) = 0;
+	virtual void parse(int argc, char* argv[]) override;
+
 protected:
 	TwoBodyParser(std::shared_ptr<CmdArgs> args) : AppCmdParser::AppCmdParser(args) {}
 
-	std::vector<boost::program_options::options_description> options() const noexcept;
+	virtual std::string usage() const noexcept;
+
+	virtual std::vector<boost::program_options::options_description> options() const noexcept;
 	void enforceRules(boost::program_options::variables_map const& vm) const;
 	void assigneArgs(boost::program_options::variables_map const& vm) noexcept;
 

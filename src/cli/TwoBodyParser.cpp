@@ -5,13 +5,62 @@
  *      Author: uwe
  */
 
+#include <iostream>
 #include <string>
+#include <fstream>
 #include "TwoBodyParser.h"
 #include "CmdParserHelper.h"
 
 using namespace as;
 using namespace std;
 namespace po = boost::program_options;
+
+void TwoBodyParser::parse(int argc, char* argv[])  {
+	std::vector<po::options_description> opts = options();
+	po::variables_map vm;
+	try {
+		po::options_description cmdline_options;
+		for (auto const& opt: opts) {
+			cmdline_options.add(opt);
+		}
+
+		store(po::command_line_parser(std::min(argc, argc), argv).
+				  options(cmdline_options).run(), vm);
+
+
+		if (vm.count("help")) {
+			cout << usage() << endl << endl;
+			cout << cmdline_options << endl;
+			exit(EXIT_SUCCESS);
+		}
+
+		notify(vm);
+
+		if (vm.count("config")) {
+			string config_file = vm["config"].as<string>();
+			ifstream ifs(config_file.c_str());
+			if (!ifs)
+			{
+				throw po::error("cannot open config file: " + config_file + "\n");
+			}
+			else
+			{
+				store(parse_config_file(ifs, cmdline_options), vm);
+				notify(vm);
+			}
+		}
+		enforceRules(vm);
+		assigneArgs(vm);
+
+	} catch (po::error& e) {
+		cerr << "error: " << e.what() << endl;
+		cout << usage() << "\n\n";
+		exit(EXIT_FAILURE);
+	} catch (std::exception& e) {
+		cerr << "unexpected exception after cmd-line parsing: " << e.what() << endl;
+		exit(EXIT_FAILURE);
+	}
+}
 
 vector<po::options_description> TwoBodyParser::options() const noexcept {
 	std::vector<po::options_description> options;
@@ -27,7 +76,7 @@ vector<po::options_description> TwoBodyParser::options() const noexcept {
 	input.add_options()
 			("dof"     			  , po::value<string>()->required()								, "structure (DOF) file")
 			("receptor-pdb,r"     , po::value<string>()->default_value("receptorr.pdb")			, "pdb-file of receptor")
-			("ligand-pdb,l"       , po::value<string>()->default_value("ligandr.pdb")   			, "pdb-file of ligand")
+			("ligand-pdb,l"       , po::value<string>()->default_value("ligandr.pdb")   		, "pdb-file of ligand")
 			("grid,g"             , po::value<string>()->default_value("receptorgrid.grid")		, "receptor grid file")
 			("par,p"	          , po::value<string>()->default_value("attract.par")			, "attract forcefield parameter file")
 			("alphabet,a"		  , po::value<string>()->default_value("receptorgrid.alphabet")	, "receptor grid alphabet file");
@@ -53,6 +102,17 @@ vector<po::options_description> TwoBodyParser::options() const noexcept {
 
 
 	return options;
+}
+
+string TwoBodyParser::usage() const noexcept {
+	stringstream msg;
+	msg << "usage: gpuAttract sc --dof <file> [--config <file>] [-r <file>] [-l <file>] [-g <file>] [-p <file>] [-a <file>] [--prec <string>]";
+	msg << "[-c <int>] ";
+#ifdef CUDA
+	msg << "[-d <int>...] ";
+#endif
+	msg << "[--chunkSize <int>]";
+	return msg.str();
 }
 
 void TwoBodyParser::enforceRules(po::variables_map const& vm) const {
