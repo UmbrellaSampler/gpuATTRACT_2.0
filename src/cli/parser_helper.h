@@ -23,6 +23,11 @@ namespace as {
 
 	template<typename T>
 	void enforceUniqueness(boost::program_options::variables_map const& vm, std::string opt);
+
+	std::string argumentUsage(boost::program_options::options_description const& optsDesc) noexcept;
+
+	std::string extractFileName(std::string path) noexcept;
+
 }
 
 

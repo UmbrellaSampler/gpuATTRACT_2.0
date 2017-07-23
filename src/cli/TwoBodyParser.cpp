@@ -5,72 +5,22 @@
  *      Author: uwe
  */
 
-#include <iostream>
-#include <string>
-#include <fstream>
+
+#include <parser_helper.h>
 #include "TwoBodyParser.h"
-#include "CmdParserHelper.h"
 
 using namespace as;
 using namespace std;
 namespace po = boost::program_options;
 
-void TwoBodyParser::parse(int argc, char* argv[])  {
-	std::vector<po::options_description> opts = options();
-	po::variables_map vm;
-	try {
-		po::options_description cmdline_options;
-		for (auto const& opt: opts) {
-			cmdline_options.add(opt);
-		}
-
-		store(po::command_line_parser(std::min(argc, argc), argv).
-				  options(cmdline_options).run(), vm);
-
-
-		if (vm.count("help")) {
-			cout << usage() << endl << endl;
-			cout << cmdline_options << endl;
-			exit(EXIT_SUCCESS);
-		}
-
-		notify(vm);
-
-		if (vm.count("config")) {
-			string config_file = vm["config"].as<string>();
-			ifstream ifs(config_file.c_str());
-			if (!ifs)
-			{
-				throw po::error("cannot open config file: " + config_file + "\n");
-			}
-			else
-			{
-				store(parse_config_file(ifs, cmdline_options), vm);
-				notify(vm);
-			}
-		}
-		enforceRules(vm);
-		assigneArgs(vm);
-
-	} catch (po::error& e) {
-		cerr << "error: " << e.what() << endl;
-		cout << usage() << "\n\n";
-		exit(EXIT_FAILURE);
-	} catch (std::exception& e) {
-		cerr << "unexpected exception after cmd-line parsing: " << e.what() << endl;
-		exit(EXIT_FAILURE);
-	}
-}
-
-vector<po::options_description> TwoBodyParser::options() const noexcept {
-	std::vector<po::options_description> options;
+void TwoBodyParser::addOptions() noexcept {
 
 	po::options_description config("generic");
 	config.add_options()
-			("help", "print this help massage")
+			("help", "print this help message")
 			("config", po::value<string>(), "configuration file")
 			("prec", po::value<string>()->default_value("single"), "arithmetic precision ('single', 'double')");
-	options.push_back(config);
+	_optsDesc.add(config);
 
 	po::options_description input("input files");
 	input.add_options()
@@ -80,7 +30,7 @@ vector<po::options_description> TwoBodyParser::options() const noexcept {
 			("grid,g"             , po::value<string>()->default_value("receptorgrid.grid")		, "receptor grid file")
 			("par,p"	          , po::value<string>()->default_value("attract.par")			, "attract forcefield parameter file")
 			("alphabet,a"		  , po::value<string>()->default_value("receptorgrid.alphabet")	, "receptor grid alphabet file");
-	options.push_back(input);
+	_optsDesc.add(input);
 
 	po::options_description concurrency("concurrency");
 #ifndef CUDA
@@ -93,27 +43,25 @@ vector<po::options_description> TwoBodyParser::options() const noexcept {
 			("device,d", po::value<vector<int>>()->default_value({0}, "0"), "device ID of GPU (multiple times)")
 			("chunkSize", po::value<int>()->default_value(1000), "number of concurrently processed structures at the server");
 #endif
-	options.push_back(concurrency);
+	_optsDesc.add(concurrency);
 	po::options_description sim("simulation");
 	sim.add_options()
 			("dielec", po::value<string>()->default_value("variable"), "dielectric behavior ('variable', 'constant')")
 			("epsilon", po::value<double>()->default_value(15.0), "dielectric constant");
-	options.push_back(sim);
+	_optsDesc.add(sim);
 
-
-	return options;
 }
 
-string TwoBodyParser::usage() const noexcept {
-	stringstream msg;
-	msg << "usage: gpuAttract sc --dof <file> [--config <file>] [-r <file>] [-l <file>] [-g <file>] [-p <file>] [-a <file>] [--prec <string>]";
-	msg << "[-c <int>] ";
-#ifdef CUDA
-	msg << "[-d <int>...] ";
-#endif
-	msg << "[--chunkSize <int>]";
-	return msg.str();
-}
+//string TwoBodyParser::usage() const noexcept {
+//	stringstream msg;
+//	msg << "usage: gpuAttract sc --dof <file> [--config <file>] [-r <file>] [-l <file>] [-g <file>] [-p <file>] [-a <file>] [--prec <string>]";
+//	msg << "[-c <int>] ";
+//#ifdef CUDA
+//	msg << "[-d <int>...] ";
+//#endif
+//	msg << "[--chunkSize <int>] [--dielec] [--epsilon]";
+//	return msg.str();
+//}
 
 void TwoBodyParser::enforceRules(po::variables_map const& vm) const {
 	std::vector<string> mutualExlusiveArgs = {"numCPUs", "device"};

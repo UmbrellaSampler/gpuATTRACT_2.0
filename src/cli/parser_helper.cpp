@@ -5,8 +5,8 @@
  *      Author: uwe
  */
 
+#include <parser_helper.h>
 #include <sstream>
-#include "CmdParserHelper.h"
 
 using namespace std;
 namespace po = boost::program_options;
@@ -73,6 +73,44 @@ void enforceUniqueness(po::variables_map const& vm, std::string opt)  {
 		}
 	}
 }
+
+std::string argumentUsage(po::options_description const& optsDesc) noexcept {
+	(void) optsDesc;
+//	const auto& opts = optsDesc.options();
+//	std::stringstream usageMsg;
+//	for (const auto& opt : opts) {
+//		usageMsg << opt->canonical_display_name(0) << std::endl;
+//		usageMsg << opt->canonical_display_name(1) << std::endl;
+//		usageMsg << opt->canonical_display_name(2) << std::endl;
+//		usageMsg << opt->long_name() << std::endl;
+//		usageMsg << opt->format_name() << std::endl;
+//		usageMsg << opt->format_parameter() << std::endl;
+//		usageMsg << std::endl;
+//	}
+//	return usageMsg.str();
+
+	// decided not to print anything but just options. can be changed here.
+	return "[options]";
+}
+
+std::string extractFileName(std::string path) noexcept {
+	const size_t last_slash_idx = path.find_last_of("\\/");
+	if (std::string::npos != last_slash_idx)
+	{
+		path.erase(0, last_slash_idx + 1);
+	}
+
+	// Remove extension if present.
+	const size_t period_idx = path.rfind('.');
+	if (std::string::npos != period_idx)
+	{
+		path.erase(period_idx);
+	}
+
+	return path;
+}
+
+
 
 template
 void enforceAllowedValues(boost::program_options::variables_map const& vm,

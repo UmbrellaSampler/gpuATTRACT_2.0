@@ -18,6 +18,7 @@ public:
 	virtual ~ScoreParser() {};
 
 protected:
+	std::string appShortName() const noexcept override;
 
 };
 
