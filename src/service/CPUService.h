@@ -12,10 +12,12 @@
 
 namespace as {
 
-template<typename InputType, typename CommonType, typename ResultType>
-class CPUService : public Service<InputType,CommonType,ResultType> {
+//template<typename InputType, typename CommonType, typename ResultType>
+//class CPUService : public Service<InputType,CommonType,ResultType> {
+template<typename GenericTypes>
+class CPUService : public Service<GenericTypes> {
 protected:
-	using service_t = Service<InputType,CommonType,ResultType>;
+	using service_t = Service<GenericTypes>;
 public:
 
 	using typename service_t::input_t;

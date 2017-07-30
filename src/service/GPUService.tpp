@@ -17,8 +17,8 @@
 
 namespace as {
 
-template<typename InputType, typename CommonType, typename ResultType>
-void GPUService<InputType,CommonType,ResultType>::initAllocators() {
+template<typename GenericTypes>
+void GPUService<GenericTypes>::initAllocators() {
 	this->setInputAllocator(std::make_shared<HostPinnedAllocator<input_t>>());
 	this->setResultAllocator(std::make_shared<HostPinnedAllocator<result_t>>());
 }

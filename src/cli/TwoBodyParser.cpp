@@ -8,6 +8,7 @@
 
 #include <parser_helper.h>
 #include "TwoBodyParser.h"
+#include "parser_constants.h"
 
 using namespace as;
 using namespace std;
@@ -24,44 +25,31 @@ void TwoBodyParser::addOptions() noexcept {
 
 	po::options_description input("input files");
 	input.add_options()
-			("dof"     			  , po::value<string>()->required()								, "structure (DOF) file")
-			("receptor-pdb,r"     , po::value<string>()->default_value("receptorr.pdb")			, "pdb-file of receptor")
-			("ligand-pdb,l"       , po::value<string>()->default_value("ligandr.pdb")   		, "pdb-file of ligand")
-			("grid,g"             , po::value<string>()->default_value("receptorgrid.grid")		, "receptor grid file")
-			("par,p"	          , po::value<string>()->default_value("attract.par")			, "attract forcefield parameter file")
-			("alphabet,a"		  , po::value<string>()->default_value("receptorgrid.alphabet")	, "receptor grid alphabet file");
+			("dof"     			  , po::value<string>()->required()									, "structure (DOF) file")
+			("receptor-pdb,r"     , po::value<string>()->default_value(DEFAULT_RECEPTOR_PDB_FILE)	, "pdb-file of receptor")
+			("ligand-pdb,l"       , po::value<string>()->default_value(DEFAULT_LIGANG_PDB_FILE)   	, "pdb-file of ligand")
+			("grid,g"             , po::value<string>()->default_value(DEFAULT_RECEPTOR_GRID_FILE)	, "receptor grid file")
+			("par,p"	          , po::value<string>()->default_value(DEFAULT_PARAMETER_FILE)		, "attract forcefield parameter file")
+			("alphabet,a"		  , po::value<string>()->default_value(DEFAULT_GRID_ALPAHBET_FILE)	, "receptor grid alphabet file");
 	_optsDesc.add(input);
 
 	po::options_description concurrency("concurrency");
+
+	concurrency.add_options()
+			("numCPUs,c", po::value<int>()->default_value(DEFAULT_NUM_CPUS), "number of CPU threads for CPU mode")
 #ifndef CUDA
-	concurrency.add_options()
-			("numCPUs,c", po::value<int>()->default_value(1), "number of CPU threads for CPU mode")
-			("chunkSize", po::value<int>()->default_value(1000), "number of concurrently processed structures at the server");
-#else
-	concurrency.add_options()
-			("numCPUs,c", po::value<int>()->default_value(0), "number of CPU threads for CPU mode")
 			("device,d", po::value<vector<int>>()->default_value({0}, "0"), "device ID of GPU (multiple times)")
-			("chunkSize", po::value<int>()->default_value(1000), "number of concurrently processed structures at the server");
 #endif
+			("chunkSize", po::value<int>()->default_value(DEFAULT_CHUNK_SIZE), "number of concurrently processed structures at the server");
+
 	_optsDesc.add(concurrency);
 	po::options_description sim("simulation");
 	sim.add_options()
-			("dielec", po::value<string>()->default_value("variable"), "dielectric behavior ('variable', 'constant')")
-			("epsilon", po::value<double>()->default_value(15.0), "dielectric constant");
+			("dielec", po::value<string>()->default_value(DEFAULT_DIELEC_MODE), "dielectric behavior ('variable', 'constant')")
+			("epsilon", po::value<double>()->default_value(DEFAULT_EPSILON_CONSTANT), "dielectric constant");
 	_optsDesc.add(sim);
 
 }
-
-//string TwoBodyParser::usage() const noexcept {
-//	stringstream msg;
-//	msg << "usage: gpuAttract sc --dof <file> [--config <file>] [-r <file>] [-l <file>] [-g <file>] [-p <file>] [-a <file>] [--prec <string>]";
-//	msg << "[-c <int>] ";
-//#ifdef CUDA
-//	msg << "[-d <int>...] ";
-//#endif
-//	msg << "[--chunkSize <int>] [--dielec] [--epsilon]";
-//	return msg.str();
-//}
 
 void TwoBodyParser::enforceRules(po::variables_map const& vm) const {
 	std::vector<string> mutualExlusiveArgs = {"numCPUs", "device"};

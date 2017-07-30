@@ -63,10 +63,10 @@ class TypesConverter {
 
 
 template<typename REAL>
-class TypesConverter<DOF_6D_Impl<REAL>, Vector> {
+class TypesConverter<DOF_6D<REAL>, Vector> {
 public:
-	static DOF_6D_Impl<REAL> toFirst(Vector const& vec) {
-		DOF_6D_Impl<REAL> dof;
+	static DOF_6D<REAL> toFirst(Vector const& vec) {
+		DOF_6D<REAL> dof;
 		dof.ang.x = vec(0);
 		dof.ang.y = vec(1);
 		dof.ang.z = vec(2);
@@ -76,7 +76,7 @@ public:
 		return dof;
 	}
 
-	static Vector toSecond(DOF_6D_Impl<REAL> const& dof) {
+	static Vector toSecond(DOF_6D<REAL> const& dof) {
 		Vector vec(6);
 		vec  << dof.ang.x, dof.ang.y, dof.ang.z,
 				dof.pos.x, dof.pos.y , dof.pos.z;
@@ -85,22 +85,22 @@ public:
 };
 
 template<typename REAL>
-class TypesConverter<Vector, DOF_6D_Impl<REAL>> {
+class TypesConverter<Vector, DOF_6D<REAL>> {
 public:
-	static Vector toFirst(DOF_6D_Impl<REAL> const& dof) {
-		return TypesConverter<DOF_6D_Impl<REAL>, Vector>::toSecond(dof);
+	static Vector toFirst(DOF_6D<REAL> const& dof) {
+		return TypesConverter<DOF_6D<REAL>, Vector>::toSecond(dof);
 	}
 
-	static DOF_6D_Impl<REAL> toSecond(Vector const& vec) {
-		return TypesConverter<DOF_6D_Impl<REAL>, Vector>::toFirst(vec);
+	static DOF_6D<REAL> toSecond(Vector const& vec) {
+		return TypesConverter<DOF_6D<REAL>, Vector>::toFirst(vec);
 	}
 };
 
 template<typename REAL>
-class TypesConverter<Result_6D_Impl<REAL>, ObjGrad> {
+class TypesConverter<Result_6D<REAL>, ObjGrad> {
 public:
-	static Result_6D_Impl<REAL> toFirst(ObjGrad const& objGrad) {
-		Result_6D_Impl<REAL> enGrad;
+	static Result_6D<REAL> toFirst(ObjGrad const& objGrad) {
+		Result_6D<REAL> enGrad;
 		enGrad.E = objGrad.obj;
 		enGrad.ang.x = objGrad.grad(0);
 		enGrad.ang.y = objGrad.grad(1);
@@ -111,7 +111,7 @@ public:
 		return enGrad;
 	}
 
-	static ObjGrad toSecond (Result_6D_Impl<REAL> const& enGrad) {
+	static ObjGrad toSecond (Result_6D<REAL> const& enGrad) {
 		ObjGrad objGrad;
 		objGrad.obj = enGrad.E;
 		objGrad.grad = Vector(6);
@@ -123,15 +123,15 @@ public:
 };
 
 template<typename REAL>
-class TypesConverter<ObjGrad, Result_6D_Impl<REAL>> {
+class TypesConverter<ObjGrad, Result_6D<REAL>> {
 public:
 
-	static ObjGrad toFirst (Result_6D_Impl<REAL> const& enGrad) {
-		return TypesConverter<Result_6D_Impl<REAL>, ObjGrad>::toSecond(enGrad);
+	static ObjGrad toFirst (Result_6D<REAL> const& enGrad) {
+		return TypesConverter<Result_6D<REAL>, ObjGrad>::toSecond(enGrad);
 	}
 
-	static Result_6D_Impl<REAL> toSecond(ObjGrad const& objGrad) {
-		return TypesConverter<Result_6D_Impl<REAL>, ObjGrad>::toFirst(objGrad);
+	static Result_6D<REAL> toSecond(ObjGrad const& objGrad) {
+		return TypesConverter<Result_6D<REAL>, ObjGrad>::toFirst(objGrad);
 	}
 };
 

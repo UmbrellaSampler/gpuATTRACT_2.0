@@ -22,6 +22,7 @@ class Configurator_6D {
 	using real_t = typename service_t::real_t;
 	using dof_t = typename service_t::dof_t;
 	using common_t = typename service_t::common_t;
+	using result_t = typename service_t::result_t;
 public:
 	using server_t = Server<service_t>;
 

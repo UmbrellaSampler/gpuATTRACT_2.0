@@ -12,17 +12,17 @@ using namespace std;
 namespace as {
 
 template
-std::ostream& operator <<(std::ostream& outStream, DOF_6D_Impl<float> const& dof);
+std::ostream& operator <<(std::ostream& outStream, DOF_6D<float> const& dof);
 
 template
-std::ostream& operator <<(std::ostream& outStream, DOF_6D_Impl<double> const& dof);
+std::ostream& operator <<(std::ostream& outStream, DOF_6D<double> const& dof);
 
 
 template
-std::ostream& operator<< (std::ostream& s, Result_6D_Impl<float> const& enGrad);
+std::ostream& operator<< (std::ostream& s, Result_6D<float> const& enGrad);
 
 template
-std::ostream& operator<< (std::ostream& s, Result_6D_Impl<double> const& enGrad);
+std::ostream& operator<< (std::ostream& s, Result_6D<double> const& enGrad);
 
 }  // namespace as
 

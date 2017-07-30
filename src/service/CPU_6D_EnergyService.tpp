@@ -55,8 +55,6 @@ public:
 
 
 template<typename REAL>
-
-
 auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 
 	std::shared_ptr<Buffer> buffers = std::make_shared<Buffer>();

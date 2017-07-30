@@ -10,33 +10,42 @@
 
 #include "nativeTypesWrapper.h"
 #include "Vec3.h"
+#include "GenericTypes.h"
 
 namespace as {
 #ifndef __CUDACC__ // ostream is not available in nvcc
 template<typename REAL>
-struct DOF_6D_Impl;
+struct DOF_6D;
 
 template<typename REAL>
-std::ostream& operator<< (std::ostream& s, DOF_6D_Impl<REAL> const&);
+std::ostream& operator<< (std::ostream& s, DOF_6D<REAL> const&);
 
 template<typename REAL>
-struct Result_6D_Impl;
+struct Result_6D;
 
 template<typename REAL>
-std::ostream& operator<< (std::ostream& s, Result_6D_Impl<REAL> const& args);
+std::ostream& operator<< (std::ostream& s, Result_6D<REAL> const& args);
 
 #endif
 
 template<typename REAL>
-struct DOF_6D_Impl {
+struct DOF_6D {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 	vec3_t pos;
 	vec3_t ang;
 };
 
+struct Common {
+	id_t gridId;
+	id_t ligId;
+	id_t recId;
+	id_t tableId;
+	id_t paramsId;
+};
+
 template<typename REAL>
-struct Result_6D_Impl {
+struct Result_6D {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 	real_t E;
@@ -45,22 +54,7 @@ struct Result_6D_Impl {
 };
 
 template<typename REAL>
-struct Types_6D {
-	using real_t = typename TypeWrapper<REAL>::real_t;
-	using vec3_t = Vec3<real_t>;
-
-	using DOF = DOF_6D_Impl<real_t>;
-
-	struct Common {
-		id_t gridId;
-		id_t ligId;
-		id_t recId;
-		id_t tableId;
-		id_t paramsId;
-	};
-
-	using Result = Result_6D_Impl<REAL>;
-};
+using Types_6D = GenericTypes<DOF_6D<REAL>, Common, Result_6D<REAL>>;
 
 }  // namespace as
 

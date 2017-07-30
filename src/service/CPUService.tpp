@@ -15,8 +15,8 @@
 
 namespace as {
 
-template<typename InputType, typename CommonType, typename ResultType>
-auto CPUService<InputType,CommonType,ResultType>::createDistributor() -> distributor_t {
+template<typename GenericTypes>
+auto CPUService<GenericTypes>::createDistributor() -> distributor_t {
 	distributor_t fncObj = [] (common_t const* common, size_t numWorkers) {
 		(void)common;
 		std::vector<as::workerId_t> vec(numWorkers);
@@ -28,8 +28,8 @@ auto CPUService<InputType,CommonType,ResultType>::createDistributor() -> distrib
 
 }
 
-template<typename InputType, typename CommonType, typename ResultType>
-void CPUService<InputType,CommonType,ResultType>::initAllocators() {
+template<typename GenericTypes>
+void CPUService<GenericTypes>::initAllocators() {
 	this->setInputAllocator(std::make_shared<HostAllocator<input_t>>());
 	this->setResultAllocator(std::make_shared<HostAllocator<result_t>>());
 }

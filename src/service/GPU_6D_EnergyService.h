@@ -23,25 +23,31 @@ class DataManager;
 template<typename SERVICE>
 class Configurator_6D;
 
+// ToDo:: make others child of this
 template<typename REAL>
-class GPU_6D_EnergyService : public GPUService<typename Types_6D<REAL>::DOF, typename Types_6D<REAL>::Common,  typename Types_6D<REAL>::Result> {
+class GPU_6D_EnergyService : public GPUService<Types_6D<REAL>> {
 public:
-	using real_t = typename TypeWrapper<REAL>::real_t;
-	using dof_t = typename Types_6D<real_t>::DOF;
-	using common_t = typename Types_6D<real_t>::Common;
-	using result_t = typename Types_6D<real_t>::Result;
-public:
-	using typename GPUService<dof_t, common_t,  result_t>::distributor_t;
-	using service_t = GPUService<dof_t, common_t, result_t>;
-public:
+	using typename GPUService<Types_6D<REAL>>::service_t;
+
+	using typename TypeWrapper<REAL>::real_t;
+	//ToDo: refactor to input_t
+	using dof_t = typename service_t::input_t;
+	using typename service_t::common_t;
+	using typename service_t::result_t;
+
+
 
 	/* serves as a builder class*/
-	using configurator_t = Configurator_6D<GPU_6D_EnergyService<REAL>>;
+//	using configurator_t = Configurator_6D<GPU_6D_EnergyService<REAL>>;
+	using configurator_t = Configurator_6D<service_t>;
 
 	/* need public for instantiate the server in configurator */
-
 	using typename service_t::workItem_t;
 	using typename service_t::itemProcessor_t;
+	using typename service_t::distributor_t;
+
+//	GPU_6D_EnergyService(std::vector<int> const& deviceIds);
+	virtual ~GPU_6D_EnergyService() {};
 
 	distributor_t createDistributor() override;
 
@@ -55,6 +61,7 @@ private:
 	std::shared_ptr<DataManager> _dataMng;
 
 	size_t _workerId; // serves as counter for
+	std::vector<int> _deviceIds;
 
 
 	struct StageResource;

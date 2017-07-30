@@ -38,6 +38,11 @@
 
 namespace as {
 
+//template<typename REAL>
+//GPU_6D_EnergyService<REAL>::GPU_6D_EnergyService(std::vector<int> const& deviceIds) :
+//	_workerId(0), _deviceIds(deviceIds)
+//{}
+
 template<typename REAL>
 struct GPU_6D_EnergyService<REAL>::StageResource {
 private:

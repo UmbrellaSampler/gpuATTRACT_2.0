@@ -1,23 +1,23 @@
 /*
- * GPUService.h
+ * Service_6D_Energy.h
  *
- *  Created on: Sep 8, 2016
+ *  Created on: Jul 30, 2017
  *      Author: uwe
  */
 
-#ifndef SRC_GPUSERVICE_H_
-#define SRC_GPUSERVICE_H_
+#ifndef SRC_SERVICE_SERVICE_6D_ENERGY_H_
+#define SRC_SERVICE_SERVICE_6D_ENERGY_H_
 
-#ifdef CUDA
 
 #include "Service.h"
+#include "Types_6D.h"
 
 namespace as {
 
-template<typename GenericTypes>
-class GPUService : public Service<GenericTypes> {
+template<typename REAL>
+class Service_6D_Energy : public Service<Types_6D<REAL>> {
 protected:
-	using service_t = Service<GenericTypes>;
+	using service_t = Service<Types_6D<REAL>>;
 public:
 
 	using typename service_t::input_t;
@@ -28,21 +28,15 @@ public:
 	using typename service_t::itemProcessor_t;
 	using typename service_t::distributor_t;
 
-	virtual ~GPUService() {};
+	virtual ~Service_6D_Energy() {};
 
 	virtual itemProcessor_t createItemProcessor() = 0;
 
 	distributor_t createDistributor() = 0;
 
-	void initAllocators() override;
+	void initAllocators() = 0;
 
 };
 
-}  // namespace as
 
-#include "GPUService.tpp"
-
-#endif
-
-
-#endif /* SRC_GPUSERVICE_H_ */
+#endif /* SRC_SERVICE_SERVICE_6D_ENERGY_H_ */

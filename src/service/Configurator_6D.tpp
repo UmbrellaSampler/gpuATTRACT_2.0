@@ -25,6 +25,11 @@
 #include "DOFTransform.h"
 #include "nativeTypesMath.h"
 
+#include "CPU_6D_EnergyService.h"
+#ifdef CUDA
+#include "GPU_6D_EnergyService.h"
+#endif
+
 namespace as {
 
 template<typename SERVICE>
@@ -113,7 +118,20 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 #endif
 
 	/* init server and service*/
+//	std::shared_ptr<Service<dof_t, common_t, result_t>> service;
+//	if (std::is_same<service_t, CPU_6D_EnergyService<real_t>>::value) {
+//		service = std::make_shared<CPU_6D_EnergyService<real_t>>();
+//	}
+//#ifdef CUDA
+//	else if (std::is_same<service_t, GPU_6D_EnergyService<real_t>>::value){
+//		 service = std::make_shared<GPU_6D_EnergyService<real_t>>(args.deviceIds);
+//	}
+//#endif
+
+
+	//ToDo: create ServiceFactory with constructor for DeviceIds
 	std::shared_ptr<service_t> service = std::make_shared<service_t>();
+
 	service->initAllocators();
 	service->setDataManager(dataManager); // do not forget!
 	_server = std::unique_ptr<server_t>(new server_t(service));

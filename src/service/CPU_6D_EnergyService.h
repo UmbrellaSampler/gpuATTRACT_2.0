@@ -21,18 +21,21 @@ template<typename SERVICE>
 class Configurator_6D;
 
 template<typename REAL>
-class CPU_6D_EnergyService : public CPUService<typename Types_6D<REAL>::DOF, typename Types_6D<REAL>::Common,  typename Types_6D<REAL>::Result> {
+class CPU_6D_EnergyService : public CPUService<Types_6D<REAL>> {
 public:
-	using real_t = typename TypeWrapper<REAL>::real_t;
-	using dof_t = typename Types_6D<real_t>::DOF;
-	using common_t = typename Types_6D<real_t>::Common;
-	using result_t = typename Types_6D<real_t>::Result;
+	using typename CPUService<Types_6D<REAL>>::service_t;
+	using typename TypeWrapper<REAL>::real_t;
+	//ToDo: refactor to input_t
+	using dof_t = typename service_t::input_t;
+	using typename service_t::common_t;
+	using typename service_t::result_t;
 
 	/* serves as a builder class*/
-	using configurator_t = Configurator_6D<CPU_6D_EnergyService<REAL>>;
+//	using configurator_t = Configurator_6D<CPU_6D_EnergyService<REAL>>;
+	using configurator_t = Configurator_6D<service_t>;
 
 	/* need public for instantiate the server in configurator */
-	using service_t = CPUService<dof_t, common_t, result_t>;
+
 	using typename service_t::workItem_t;
 	using typename service_t::itemProcessor_t;
 

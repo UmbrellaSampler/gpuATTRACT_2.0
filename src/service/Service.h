@@ -21,15 +21,16 @@ class WorkItem;
 template<typename BufferType>
 class Allocator;
 
-template<typename InputType, typename CommonType, typename ResultType>
+template<typename GenericTypes>
 class Service {
 
 public:
 	virtual ~Service() {}
 
-	using input_t = InputType;
-	using common_t = CommonType;
-	using result_t = ResultType;
+	// Contract
+	using input_t = typename GenericTypes::input_t;
+	using common_t = typename GenericTypes::common_t;
+	using result_t = typename GenericTypes::result_t;
 
 	using workItem_t = WorkItem<input_t, common_t, result_t>;
 	using itemProcessor_t = std::function<bool(workItem_t*)>;
