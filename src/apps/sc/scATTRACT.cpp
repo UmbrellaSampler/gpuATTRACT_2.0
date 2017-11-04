@@ -5,27 +5,27 @@
  *      Author: uwe
  */
 
-#include "CPU_6D_EnergyService.h"
+#include <CPUEnergyService6D.h>
 #include "scATTRACT.tpp"
 
 #ifdef CUDA
-#include "GPU_6D_EnergyService.h"
+#include <GPUEnergyService6D.h>
 #endif
 
 namespace as {
 
 template
-class scATTRACT<CPU_6D_EnergyService<float>>;
+class scATTRACT<CPUEnergyService6D<float>>;
 
 template
-class scATTRACT<CPU_6D_EnergyService<double>>;
+class scATTRACT<CPUEnergyService6D<double>>;
 
 #ifdef CUDA
 template
-class scATTRACT<GPU_6D_EnergyService<float>>;
+class scATTRACT<GPUEnergyService6D<float>>;
 
 template
-class scATTRACT<GPU_6D_EnergyService<double>>;
+class scATTRACT<GPUEnergyService6D<double>>;
 #endif
 
 }  // namespace as

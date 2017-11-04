@@ -36,8 +36,10 @@ void TwoBodyParser::addOptions() noexcept {
 	po::options_description concurrency("concurrency");
 
 	concurrency.add_options()
-			("numCPUs,c", po::value<int>()->default_value(DEFAULT_NUM_CPUS), "number of CPU threads for CPU mode")
 #ifndef CUDA
+			("numCPUs,c", po::value<int>()->default_value(DEFAULT_NUM_CPUS), "number of CPU threads for CPU mode")
+#else
+			("numCPUs,c", po::value<int>()->default_value(0), "number of CPU threads for CPU mode")
 			("device,d", po::value<vector<int>>()->default_value({0}, "0"), "device ID of GPU (multiple times)")
 #endif
 			("chunkSize", po::value<int>()->default_value(DEFAULT_CHUNK_SIZE), "number of concurrently processed structures at the server");

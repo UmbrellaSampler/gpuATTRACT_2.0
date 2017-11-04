@@ -6,27 +6,16 @@
  */
 
 #include "ServerIncludes.h"
-#include "CPU_6D_EnergyService.h"
-
-#ifdef CUDA
-#include "GPU_6D_EnergyService.h"
-#endif
+#include "Types_6D.h"
 
 namespace as {
 
 template
-class Server<CPU_6D_EnergyService<float>>;
+class Server<Types_6D<float>>;
 
 template
-class Server<CPU_6D_EnergyService<double>>;
+class Server<Types_6D<double>>;
 
-#ifdef CUDA
-template
-class Server<GPU_6D_EnergyService<float>>;
-
-template
-class Server<GPU_6D_EnergyService<double>>;
-#endif
 
 } // namespace as
 

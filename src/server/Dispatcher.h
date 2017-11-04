@@ -11,6 +11,7 @@
 #include "Service.h"
 #include "Thread.h"
 #include "publicTypes.h"
+#include "GenericTypes.h"
 
 namespace as {
 
@@ -36,7 +37,7 @@ class Dispatcher : public Thread {
 	using workItem_t = WorkItem<InputType, CommonType, ResultType>;
 	using requestManager_t = RequestManager<InputType, CommonType, ResultType>;
 	using workerManager_t = WorkerManager<InputType, CommonType, ResultType>;
-	using distributor_t = typename Service<InputType, CommonType, ResultType>::distributor_t;
+	using distributor_t = typename Service<GenericTypes<InputType, CommonType, ResultType>>::distributor_t;
 public:
 
 	Dispatcher() :

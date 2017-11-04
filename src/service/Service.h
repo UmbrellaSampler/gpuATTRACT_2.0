@@ -25,7 +25,7 @@ template<typename GenericTypes>
 class Service {
 
 public:
-	virtual ~Service() {}
+	using service_t = Service<GenericTypes>;
 
 	// Contract
 	using input_t = typename GenericTypes::input_t;
@@ -36,6 +36,7 @@ public:
 	using itemProcessor_t = std::function<bool(workItem_t*)>;
 	using distributor_t = std::function<std::vector<workerId_t>(common_t const*, size_t)>;
 
+	virtual ~Service() {}
 
 	void setInputAllocator(std::shared_ptr<Allocator<input_t>> allocator) {
 		_inputAllocator = allocator;

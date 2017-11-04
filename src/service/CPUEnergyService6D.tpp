@@ -5,10 +5,8 @@
  *      Author: uwe
  */
 
-#ifndef SRC_CPU6DENERGYSERVICE_TPP_
-#define SRC_CPU6DENERGYSERVICE_TPP_
-
-#include "CPU_6D_EnergyService.h"
+#ifndef SRC_CPUENERGYSERVICE6D_TPP_
+#define SRC_CPUENERGYSERVICE6D_TPP_
 
 #include <cassert>
 #include "WorkerBuffer.h"
@@ -31,10 +29,17 @@
 // ToDo: remove
 #include <iostream>
 
+#include "CPUEnergyService6D.h"
+
 namespace as {
 
 template<typename REAL>
-class CPU_6D_EnergyService<REAL>::Buffer {
+CPUEnergyService6D<REAL>::CPUEnergyService6D(std::shared_ptr<DataManager> dataMng) :
+	CPUEnergyService<Types_6D<REAL>>(dataMng)
+{}
+
+template<typename REAL>
+class CPUEnergyService6D<REAL>::Buffer {
 public:
 
 	/**
@@ -55,11 +60,11 @@ public:
 
 
 template<typename REAL>
-auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
+auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 
 	std::shared_ptr<Buffer> buffers = std::make_shared<Buffer>();
 
-	itemProcessor_t fncObj = [this,buffers] (workItem_t* item) -> bool {
+	itemProcessor_t fncObj = [this, buffers] (workItem_t* item) -> bool {
 		assert(item->size() > 0);
 		const auto itemSize = item->size();
 
@@ -69,19 +74,19 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 		auto results = item->resultBuffer();
 
 		/* get DataItem pointers */
-		const auto grid = std::dynamic_pointer_cast<GridUnion<REAL>>(_dataMng->get(common->gridId)).get(); // _dataMng->get() returns shared_ptr<DataItem>
+		const auto grid = std::dynamic_pointer_cast<GridUnion<REAL>>(this->_dataMng->get(common->gridId)).get(); // _dataMng->get() returns shared_ptr<DataItem>
 		assert(grid != nullptr);
 
-		const auto lig = std::dynamic_pointer_cast<Protein<REAL>>(_dataMng->get(common->ligId)).get();
+		const auto lig = std::dynamic_pointer_cast<Protein<REAL>>(this->_dataMng->get(common->ligId)).get();
 		assert(lig != nullptr);
 
-		const auto rec = std::dynamic_pointer_cast<Protein<REAL>>(_dataMng->get(common->recId)).get();
+		const auto rec = std::dynamic_pointer_cast<Protein<REAL>>(this->_dataMng->get(common->recId)).get();
 		assert(rec != nullptr);
 
-		const auto table = std::dynamic_pointer_cast<ParamTable<REAL>>(_dataMng->get(common->tableId)).get();
+		const auto table = std::dynamic_pointer_cast<ParamTable<REAL>>(this->_dataMng->get(common->tableId)).get();
 		assert(table != nullptr);
 
-		const auto simParams = std::dynamic_pointer_cast<SimParam<REAL>>(_dataMng->get(common->paramsId)).get();
+		const auto simParams = std::dynamic_pointer_cast<SimParam<REAL>>(this->_dataMng->get(common->paramsId)).get();
 		assert(simParams != nullptr);
 
 
@@ -200,15 +205,4 @@ auto CPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 }  // namespace as
 
 
-#endif /* SRC_CPU6DENERGYSERVICE_TPP_ */
-
-// for debugging
-//
-//			size_t numDispl = lig->numAtoms();
-//			for (size_t i = 0; i < numDispl; ++i) {
-//				std::cout <<  i << " " << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
-//			}
-//			exit(1);
-//
-//			std::cout << enGrad << std::endl;
-//			exit(1);
+#endif /* SRC_CPUENERGYSERVICE6D_TPP_ */

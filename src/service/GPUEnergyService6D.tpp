@@ -5,13 +5,13 @@
  *      Author: uwe
  */
 
-#ifndef SRC_GPU_6D_ENERGYSERVICE_TPP_
-#define SRC_GPU_6D_ENERGYSERVICE_TPP_
+#ifndef SRC_SERVICE_GPUENERGYSERVICE6D_TPP_
+#define SRC_SERVICE_GPUENERGYSERVICE6D_TPP_
 
 #ifdef CUDA
 
 #include <nvToolsExt.h>
-#include "GPU_6D_EnergyService.h"
+#include "GPUEnergyService6D.h"
 
 #include <cassert>
 #include "WorkerBuffer.h"
@@ -38,15 +38,16 @@
 
 namespace as {
 
-//template<typename REAL>
-//GPU_6D_EnergyService<REAL>::GPU_6D_EnergyService(std::vector<int> const& deviceIds) :
-//	_workerId(0), _deviceIds(deviceIds)
-//{}
+template<typename REAL>
+GPUEnergyService6D<REAL>::GPUEnergyService6D(std::shared_ptr<DataManager> dataMng,
+		std::vector<int> const& deviceIds) :
+	GPUEnergyService<Types_6D<REAL>>::GPUEnergyService(dataMng), _workerId(0), _deviceIds(deviceIds)
+{}
 
 template<typename REAL>
-struct GPU_6D_EnergyService<REAL>::StageResource {
+struct GPUEnergyService6D<REAL>::StageResource {
 private:
-	using workItem_t = typename GPU_6D_EnergyService<REAL>::workItem_t;
+	using workItem_t = typename GPUEnergyService6D<REAL>::workItem_t;
 public:
 	d_GridUnion<REAL> grid;
 	d_Protein<REAL>* rec;
@@ -57,26 +58,26 @@ public:
 };
 
 template<typename REAL>
-auto GPU_6D_EnergyService<REAL>::createStageResource(workItem_t* item, unsigned const& deviceId) -> StageResource {
+auto GPUEnergyService6D<REAL>::createStageResource(workItem_t* item, unsigned const& deviceId) -> StageResource {
 	/* item pointers */
 //			const auto dofs = item->inputBuffer();
 	const auto common = item->common();
 //			auto results = item->resultBuffer();
 
 	/* get DataItem pointers */
-	auto grid = std::dynamic_pointer_cast<DeviceGridUnion<REAL>>(_dataMng->get(common->gridId, deviceId)).get(); // _dataMng->get() returns shared_ptr<DataItem>
+	auto grid = std::dynamic_pointer_cast<DeviceGridUnion<REAL>>(this->_dataMng->get(common->gridId, deviceId)).get(); // _dataMng->get() returns shared_ptr<DataItem>
 	assert(grid != nullptr);
 
-	auto lig = std::dynamic_pointer_cast<DeviceProtein<REAL>>(_dataMng->get(common->ligId, deviceId)).get();
+	auto lig = std::dynamic_pointer_cast<DeviceProtein<REAL>>(this->_dataMng->get(common->ligId, deviceId)).get();
 	assert(lig != nullptr);
 
-	auto rec = std::dynamic_pointer_cast<DeviceProtein<REAL>>(_dataMng->get(common->recId, deviceId)).get();
+	auto rec = std::dynamic_pointer_cast<DeviceProtein<REAL>>(this->_dataMng->get(common->recId, deviceId)).get();
 	assert(rec != nullptr);
 
-	auto table = std::dynamic_pointer_cast<DeviceParamTable<REAL>>(_dataMng->get(common->tableId, deviceId)).get();
+	auto table = std::dynamic_pointer_cast<DeviceParamTable<REAL>>(this->_dataMng->get(common->tableId, deviceId)).get();
 	assert(table != nullptr);
 
-	auto simParam = std::dynamic_pointer_cast<SimParam<REAL>>(_dataMng->get(common->paramsId)).get();
+	auto simParam = std::dynamic_pointer_cast<SimParam<REAL>>(this->_dataMng->get(common->paramsId)).get();
 	assert(simParam != nullptr);
 
 	StageResource stageResource;
@@ -91,9 +92,9 @@ auto GPU_6D_EnergyService<REAL>::createStageResource(workItem_t* item, unsigned 
 }
 
 template<typename REAL>
-class GPU_6D_EnergyService<REAL>::Private {
-	using dof_t = typename GPU_6D_EnergyService<REAL>::dof_t;
-	using workItem_t = typename GPU_6D_EnergyService<REAL>::workItem_t;
+class GPUEnergyService6D<REAL>::Private {
+	using dof_t = typename GPUEnergyService6D<REAL>::input_t;
+	using workItem_t = typename GPUEnergyService6D<REAL>::workItem_t;
 
 public:
 
@@ -456,18 +457,17 @@ public:
 };
 
 template<typename REAL>
-auto GPU_6D_EnergyService<REAL>::createDistributor() -> distributor_t {
+auto GPUEnergyService6D<REAL>::createDistributor() -> distributor_t {
 	distributor_t fncObj = [this] (common_t const* common, size_t numWorkers) {
 		(void)numWorkers;
 		std::vector<id_t> ids = {common->gridId, common->ligId, common->recId, common->tableId};
-		auto vec = _dataMng->getCommonDeviceIds(ids);
-		return vec;
+		return this->_dataMng->getCommonDeviceIds(ids);
 	};
 	return fncObj;
 }
 
 template<typename REAL>
-auto GPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
+auto GPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 
 	std::shared_ptr<Private> p = std::make_shared<Private>();
 	deviceId_t deviceId = _workerId++;
@@ -515,4 +515,4 @@ auto GPU_6D_EnergyService<REAL>::createItemProcessor() -> itemProcessor_t {
 
 #endif
 
-#endif /* SRC_GPU_6D_ENERGYSERVICE_TPP_ */
+#endif /* SRC_SERVICE_GPUENERGYSERVICE6D_TPP_ */

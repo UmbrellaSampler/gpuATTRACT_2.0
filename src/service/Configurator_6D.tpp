@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "Configurator_6D.h"
+
 #include "readFile.h"
 #include "DOF_6D.h"
 //#include "ServerIncludes.h"
@@ -24,16 +25,12 @@
 #include "DataManager.h"
 #include "DOFTransform.h"
 #include "nativeTypesMath.h"
-
-#include "CPU_6D_EnergyService.h"
-#ifdef CUDA
-#include "GPU_6D_EnergyService.h"
-#endif
+#include "ServiceFactory.h"
 
 namespace as {
 
 template<typename SERVICE>
-void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
+void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
@@ -76,7 +73,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 
 
 	/* init dof and result buffer */
-	_dofs = std::vector<dof_t>(DOF_molecules[1].size());
+	_dofs = std::vector<input_t>(DOF_molecules[1].size());
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
 		_dofs[i].pos = DOF_molecules[1][i].pos;
 		_dofs[i].ang = DOF_molecules[1][i].ang;
@@ -117,6 +114,19 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 	}
 #endif
 
+	ServiceType serviceType;
+	if (args.numCPUs > 0) {
+		serviceType = ServiceType::CPUEnergyService6D;
+	}
+#ifdef CUDA
+	else {
+		serviceType = ServiceType::GPUEnergyService6D;
+	}
+#endif
+
+
+
+
 	/* init server and service*/
 //	std::shared_ptr<Service<dof_t, common_t, result_t>> service;
 //	if (std::is_same<service_t, CPU_6D_EnergyService<real_t>>::value) {
@@ -129,11 +139,10 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 //#endif
 
 
-	//ToDo: create ServiceFactory with constructor for DeviceIds
-	std::shared_ptr<service_t> service = std::make_shared<service_t>();
+	//ToDo: create ServiceFactory with constructor for CmdArgs
+	std::shared_ptr<service_t> service = std::move(ServiceFactory::create<real_t, Types_6D>(serviceType, dataManager, args));
 
 	service->initAllocators();
-	service->setDataManager(dataManager); // do not forget!
 	_server = std::unique_ptr<server_t>(new server_t(service));
 	if (args.numCPUs > 0) {
 		_server->createWorkers(args.numCPUs);
@@ -144,7 +153,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 }
 
 template<typename SERVICE>
-void Configurator_6D<SERVICE>::finalize() {
+void Configurator_6D<SERVICE>::finalize() noexcept {
 
 }
 

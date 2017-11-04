@@ -10,40 +10,46 @@
 
 #include <memory>
 #include "CmdArgs.h"
+#include "Types_6D.h"
+#include "Service.h"
+
+//template<typename GenericTypes>
+//class Service;
 
 namespace as {
 
-template<typename SERVICE>
+template<typename GenericTypes>
 class Server;
 
-template<typename SERVICE>
+template<typename REAL>
 class Configurator_6D {
-	using service_t = SERVICE;
-	using real_t = typename service_t::real_t;
-	using dof_t = typename service_t::dof_t;
+	using service_t = Service<Types_6D<REAL>>;
+//	using service_t = SERVICE;
+	using input_t = typename service_t::input_t;
 	using common_t = typename service_t::common_t;
-	using result_t = typename service_t::result_t;
+//	using typename service_t::result_t;
 public:
-	using server_t = Server<service_t>;
+	using real_t = typename TypeWrapper<REAL>::real_t;
+	using server_t = Server<Types_6D<REAL>>;
 
-	std::vector<dof_t>& dofs() {
+	std::vector<input_t>& dofs() noexcept {
 		return _dofs;
 	}
 
-	std::shared_ptr<server_t> server() {
+	std::shared_ptr<server_t> server() noexcept {
 		return _server;
 	}
 
-	common_t& common() {
+	common_t& common() noexcept {
 		return _ids;
 	}
 
-	void init(CmdArgs const& args);
-	void finalize();
+	void init(CmdArgs const& args) noexcept;
+	void finalize() noexcept;
 private:
 
 	common_t _ids;
-	std::vector<dof_t> _dofs;
+	std::vector<input_t> _dofs;
 	std::shared_ptr<server_t> _server;
 
 };

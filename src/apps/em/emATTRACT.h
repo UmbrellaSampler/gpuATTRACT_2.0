@@ -10,16 +10,25 @@
 
 #include <memory>
 #include "App.h"
+#include "ConfiguratorTypeWrapper.h"
 
 namespace as {
 
-template<typename SERVICE>
+template<typename GenericTypes>
+class Service;
+
+template<typename GenericTypes>
 class emATTRACT : public App {
-	using real_t = typename SERVICE::real_t;
-	using configurator_t = typename SERVICE::configurator_t;
-	using dof_t = typename SERVICE::dof_t;
-	using common_t = typename SERVICE::common_t;
-	using result_t = typename SERVICE::result_t;
+	using dof_t = typename GenericTypes::input_t;
+	using common_t = typename GenericTypes::common_t;
+	using result_t = typename GenericTypes::result_t;
+
+	using configurator_t = typename ConfiguratorTypeWrapper<GenericTypes>::configurator_t;
+	using real_t = typename configurator_t::real_t;
+
+	using service_t = Service<GenericTypes>;
+
+
 	using server_t = typename configurator_t::server_t;
 public:
 	emATTRACT();

@@ -10,6 +10,7 @@
 
 template<typename InputType, typename CommonType, typename ResultType>
 class GenericTypes {
+public:
 	using input_t = InputType;
 	using common_t = CommonType;
 	using result_t = ResultType;

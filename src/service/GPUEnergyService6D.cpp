@@ -9,15 +9,15 @@
 
 #include "DeviceAllocator.tpp"
 #include "HostPinnedAllocator.tpp"
-#include "GPU_6D_EnergyService.tpp"
+#include "GPUEnergyService6D.tpp"
 
 namespace as {
 
 template
-class GPU_6D_EnergyService<float>;
+class GPUEnergyService6D<float>;
 
 template
-class GPU_6D_EnergyService<double>;
+class GPUEnergyService6D<double>;
 
 }  // namespace as
 

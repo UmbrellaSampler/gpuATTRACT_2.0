@@ -27,8 +27,8 @@
 
 namespace as {
 
-template<typename SERVER>
-class RequestHandler<SERVER>::Chunk {
+template<typename GenericTypes>
+class RequestHandler<GenericTypes>::Chunk {
 
 public:
 	request_t request() const {

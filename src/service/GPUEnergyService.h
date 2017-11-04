@@ -10,14 +10,14 @@
 
 #ifdef CUDA
 
-#include "Service.h"
+#include "EnergyService.h"
 
 namespace as {
 
 template<typename GenericTypes>
-class GPUService : public Service<GenericTypes> {
+class GPUEnergyService : public EnergyService<GenericTypes> {
 protected:
-	using service_t = Service<GenericTypes>;
+	using service_t = EnergyService<GenericTypes>;
 public:
 
 	using typename service_t::input_t;
@@ -28,7 +28,9 @@ public:
 	using typename service_t::itemProcessor_t;
 	using typename service_t::distributor_t;
 
-	virtual ~GPUService() {};
+	explicit GPUEnergyService(std::shared_ptr<DataManager> dataMng);
+
+	virtual ~GPUEnergyService() {};
 
 	virtual itemProcessor_t createItemProcessor() = 0;
 
@@ -40,7 +42,7 @@ public:
 
 }  // namespace as
 
-#include "GPUService.tpp"
+#include "GPUEnergyService.tpp"
 
 #endif
 

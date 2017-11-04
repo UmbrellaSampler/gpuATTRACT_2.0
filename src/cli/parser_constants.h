@@ -28,7 +28,7 @@ constexpr auto DEFAULT_GRID_ALPAHBET_FILE = "receptorgrid.alphabet";
 /**
  * Server context
  */
-constexpr int DEFAULT_NUM_CPUS = 1
+constexpr int DEFAULT_NUM_CPUS = 1;
 
 constexpr int DEFAULT_CHUNK_SIZE = 1000;
 

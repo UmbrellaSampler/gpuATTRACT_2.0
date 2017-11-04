@@ -18,8 +18,8 @@ template<typename REAL>
 class Service_6D_Energy : public Service<Types_6D<REAL>> {
 protected:
 	using service_t = Service<Types_6D<REAL>>;
-public:
 
+public:
 	using typename service_t::input_t;
 	using typename service_t::common_t;
 	using typename service_t::result_t;
@@ -30,13 +30,22 @@ public:
 
 	virtual ~Service_6D_Energy() {};
 
+	explicit Service_6D_Energy(std::shared_ptr<DataManager> dataMng) {
+		_dataMng = dataMng;
+	}
+
 	virtual itemProcessor_t createItemProcessor() = 0;
 
 	distributor_t createDistributor() = 0;
 
 	void initAllocators() = 0;
 
+private:
+	std::shared_ptr<DataManager> _dataMng;
+
 };
+
+} // namespace
 
 
 #endif /* SRC_SERVICE_SERVICE_6D_ENERGY_H_ */

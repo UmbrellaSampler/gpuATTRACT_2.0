@@ -16,10 +16,15 @@
 
 
 
-using namespace std;
 using namespace as;
 
 int main(int argc, char* argv[]) {
+
+#ifdef CUDA
+	std::cerr << "Using CUDA" << std::endl;
+#else
+	std::cerr << "Not Using CUDA" << std::endl;
+#endif
 
 	try {
 

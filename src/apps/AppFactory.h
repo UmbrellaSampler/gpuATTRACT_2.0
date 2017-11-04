@@ -10,14 +10,16 @@
 
 
 #include <memory>
-#include "CmdArgs.h"
+#include "AppType.h"
 
 namespace as {
 
 class App;
+class CmdArgs;
 
 class AppFactory {
 public:
+	AppFactory() = delete;
 	static std::unique_ptr<App> create(const CmdArgs& args);
 
 private:
