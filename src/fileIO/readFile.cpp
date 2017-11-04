@@ -165,7 +165,76 @@ std::shared_ptr<GridUnion<REAL>> createGridFromGridFile(std::string filename) {
 	return grid;
 }
 
+template<typename REAL>
+void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName) {
+	using namespace std;
+	int numModes= prot->numModes();
+	int numAtoms=prot->numAtoms();
 
+	vector<REAL> modeX;	vector<REAL> modeY;	vector<REAL> modeZ;
+	REAL modeVal[numModes];
+	REAL eigVal[numModes];
+	REAL *protModes=NULL;
+	protModes = new REAL[3*numModes*numAtoms];
+
+	bool changeMode=true;
+	bool isData=false;
+	int idxPos=0;
+	int idxLine=0;
+	int modeIdx=0;
+
+	vector<std::string> tokens;
+	string line;
+	ifstream modeFile(modeFileName);
+
+	if (!modeFile.is_open()){	perror(("error while opening file " + modeFileName).c_str());}
+
+	while(getline(modeFile, line)) {
+		if(!line.empty()){
+			tokens=line2Strings(line);
+			if(idxPos < numAtoms && changeMode==false){isData=true;}
+			else if(idxPos == numAtoms){isData=false;idxPos=0;}
+
+			if(changeMode == true && tokens.size() > 1){
+				modeIdx++;
+				if (modeIdx == stoi(tokens.at(0)) && (modeIdx <= numModes)) {
+					modeVal[modeIdx]=stof(tokens.at(1))*stof(tokens.at(1));
+					eigVal[modeIdx-1]=0;
+					//cout <<"# "<<modeVal[modeIdx]<< endl;
+					changeMode=false;
+				}
+			}
+			if(isData==true && tokens.size() == 3 ){
+				float x=stof(tokens.at(0));
+				float y=stof(tokens.at(1));
+				float z=stof(tokens.at(2));
+
+				eigVal[modeIdx-1]+=x*x+y*y+z*z;
+				protModes[numModes*idxPos+modeIdx-1]						=stof(tokens.at(0));///sqrt(eigVal[modeIdx-1]);
+				protModes[numAtoms*numModes+numModes*idxPos+modeIdx-1]		=stof(tokens.at(1));///sqrt(eigVal[modeIdx-1]);
+				protModes[2*numAtoms*numModes+numModes*idxPos+modeIdx-1]	=stof(tokens.at(2));///sqrt(eigVal[modeIdx-1]);
+
+				idxPos++;
+				if(idxPos==numAtoms){changeMode=true;}
+			}
+		}
+		idxLine++;
+	}
+	if (modeFile.bad()){	perror(("error while reading file " + modeFileName).c_str());}
+	modeFile.close();
+
+	modeX.insert(modeX.end(), modeY.begin(), modeY.end());
+	modeX.insert(modeX.end(), modeZ.begin(), modeZ.end());
+	for(int i=0;i<numAtoms;i++){
+		for(int mode=0;mode<numModes;mode++){
+			protModes[numModes*i+mode]						/=sqrt(eigVal[mode]);
+			protModes[numAtoms*numModes+numModes*i+mode]		/=sqrt(eigVal[mode]);
+			protModes[2*numAtoms*numModes+numModes*i+mode]	/=sqrt(eigVal[mode]);
+		}
+	}
+	REAL* protBufMode = prot->getOrCreateModePtr();
+	std::copy(protModes, protModes+ 3*numModes*numAtoms, protBufMode);
+}
 template<typename REAL>
 void readGridFromGridFile(std::shared_ptr<GridUnion<REAL>> gridUnion, std::string filename) {
 	/* original attract source used */
