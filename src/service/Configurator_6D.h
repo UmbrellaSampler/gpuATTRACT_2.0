@@ -5,8 +5,8 @@
  *      Author: uwe
  */
 
-#ifndef SRC_INIT_6D_H_
-#define SRC_INIT_6D_H_
+#ifndef SRC_CONFIGURATOR_6D_H_
+#define SRC_CONFIGURATOR_6D_H_
 
 #include <memory>
 #include "CmdArgs.h"

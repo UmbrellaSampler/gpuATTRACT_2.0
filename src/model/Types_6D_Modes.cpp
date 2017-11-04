@@ -1,4 +1,4 @@
-#include "Types_6D_modes.tpp"
+#include "Types_6D_Modes.tpp"
 
 using namespace std;
 

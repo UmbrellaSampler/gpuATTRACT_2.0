@@ -18,7 +18,7 @@
 
 #include <memory>
 #include "CmdArgs.h"
-#include "Types_6D_modes.h"
+#include "Types_6D_Modes.h"
 #include "Service.h"
 
 //template<typename GenericTypes>

@@ -140,7 +140,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	//ToDo: create ServiceFactory with constructor for CmdArgs
-	std::shared_ptr<service_t> service = std::move(ServiceFactory::create<real_t, Types_6D>(serviceType, dataManager, args));
+	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args)));
 
 	service->initAllocators();
 	_server = std::unique_ptr<server_t>(new server_t(service));

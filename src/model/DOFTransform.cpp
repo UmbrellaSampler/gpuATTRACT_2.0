@@ -26,6 +26,7 @@
 #include "nativeTypesWrapper.h"
 #include "DOFTransform.h"
 #include "Types_6D.h"
+#include "Types_6D_Modes.h"
 #include "matrixFunctions.h"
 
 namespace as {
@@ -94,6 +95,16 @@ void transformDOF_glob2rec(const std::vector<DOF_6D<float>>& dof_rec, std::vecto
 
 template
 void transformDOF_glob2rec(const std::vector<DOF_6D<double>>& dof_rec, std::vector<DOF_6D<double>>& dof_lig,
+			const Vec3<double>& pivot_rec, const Vec3<double>& pivot_lig,
+			bool centered_rec, bool centered_lig);
+
+template
+void transformDOF_glob2rec(const std::vector<DOF_6D_Modes<float>>& dof_rec, std::vector<DOF_6D_Modes<float>>& dof_lig,
+			const Vec3<float>& pivot_rec, const Vec3<float>& pivot_lig,
+			bool centered_rec, bool centered_lig);
+
+template
+void transformDOF_glob2rec(const std::vector<DOF_6D_Modes<double>>& dof_rec, std::vector<DOF_6D_Modes<double>>& dof_lig,
 			const Vec3<double>& pivot_rec, const Vec3<double>& pivot_lig,
 			bool centered_rec, bool centered_lig);
 

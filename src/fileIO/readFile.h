@@ -26,7 +26,7 @@
 #include <vector>
 #include "nativeTypesWrapper.h"
 #include "Types_6D.h"
-#include "Types_6D_modes.h"
+#include "Types_6D_Modes.h"
 
 namespace as {
 

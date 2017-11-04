@@ -11,7 +11,7 @@
 
 #include "CPUEnergyService.h"
 #include "publicTypes.h"
-#include "Types_6D_modes.h"
+#include "Types_6D_Modes.h"
 #include "nativeTypesWrapper.h"
 
 namespace as {

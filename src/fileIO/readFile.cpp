@@ -641,7 +641,7 @@ std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filena
 			while (line.compare(0,1, "#") != 0 && !file.eof()) {
 
 				if (i_molecules == 0) {
-					DOF_molecules.push_back(std::vector<DOF_6D<REAL>> ());
+					DOF_molecules.push_back(std::vector<DOF_6D_Modes<REAL>> ());
 				}
 
 				std::vector<DOF_6D_Modes<REAL>>& vec = DOF_molecules[i];
@@ -849,6 +849,12 @@ template
 void readProteinFromPDB(std::shared_ptr<Protein<float>> prot, std::string filename);
 
 template
+void readHMMode(std::shared_ptr<Protein<float>> prot, std::string modeFileName);
+
+template
+void readHMMode(std::shared_ptr<Protein<double>> prot, std::string modeFileName);
+
+template
 std::shared_ptr<Protein<double>> createProteinFromPDB(std::string filename);
 
 template
@@ -880,6 +886,12 @@ void readParamTableFromFile(std::shared_ptr<ParamTable<double>>, std::string fil
 
 template
 std::vector<std::vector<DOF_6D<float>>> readDOF_6D(std::string filename);
+
+template
+std::vector<std::vector<DOF_6D_Modes<double>>> readDOF_6D_Modes(std::string filename);
+
+template
+std::vector<std::vector<DOF_6D_Modes<float>>> readDOF_6D_Modes(std::string filename);
 
 template
 std::vector<std::vector<DOF_6D<double>>> readDOF_6D(std::string filename);
