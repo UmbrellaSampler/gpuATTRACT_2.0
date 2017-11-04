@@ -56,7 +56,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
-	std::vector<std::vector<DOF_6D<real_t>>> DOF_molecules = readDOF_6D<real_t>(args.dofName);
+	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = readDOF_6D<real_t>(args.dofName);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
@@ -99,6 +99,14 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	_ids.tableId = dataManager->add(paramTable);
 	_ids.paramsId = dataManager->add(simParam);
 
+
+
+	if(args.numModes > 0){
+			receptor->setNumModes(args.numModes);
+			ligand->setNumModes(args.numModes);
+			readHMMode<real_t>(receptor, args.recModesName);
+			readHMMode<real_t>(ligand, args.ligModesName);
+		}
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {
 		for (auto id : args.deviceIds) {

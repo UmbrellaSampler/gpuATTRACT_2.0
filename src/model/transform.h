@@ -43,6 +43,71 @@ void rotate_translate(
 	}
 }
 
+template<typename REAL>
+void rotate_translate(
+		REAL const* x,
+		REAL const* y,
+		REAL const* z,
+		Vec3<REAL> const& displacement,
+		Vec3<REAL> const& ang,
+		unsigned const& ligSize,
+		unsigned const& numModes,
+		REAL const* dlig,
+		REAL const* xModes,
+		REAL const* yModes,
+		REAL const* zModes,
+		REAL* xTr,
+		REAL* yTr,
+		REAL* zTr)
+{
+	const RotMat<REAL> rotMat = euler2rotmat(ang.x, ang.y, ang.z);
+	for (unsigned i = 0; i < ligSize; ++i) {
+		Vec3<REAL> posAtom(x[i], y[i], z[i]);
+
+		posAtom = rotMat*posAtom;
+		posAtom += displacement;
+		for(int mode=0;mode<numModes;mode++){
+			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
+			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
+			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];
+		}
+		xTr[i] = posAtom.x;
+		yTr[i] = posAtom.y;
+		zTr[i] = posAtom.z;
+	}
+}
+/**
+ * reduceModeForce rotates all forces into the ligand frame and sums it up for all Mode DOFs
+ *
+ */
+template<typename REAL>
+void reduceModeForce(
+		Vec3<REAL> const& ang,
+		const REAL* forceX,
+		const REAL* forceY,
+		const REAL* forceZ,
+		const REAL* modeX,
+		const REAL* modeY,
+		const REAL* modeZ,
+		unsigned const& numAtoms,
+		unsigned const& numModes,
+		REAL* result
+		)
+{
+
+	const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
+
+	for (unsigned i = 0; i < numAtoms; ++i) {
+		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
+		forceAtom = rotMatInv*forceAtom;
+		for(int mode=0;mode<numModes;mode++){
+				result[mode] -= forceAtom.x*modeX[i*numModes+mode]+forceAtom.y*modeY[i*numModes+mode]+forceAtom.z*modeZ[i*numModes+mode];
+		}
+	}
+}
+
+
+
 #ifdef CUDA
 
 template<typename REAL>
