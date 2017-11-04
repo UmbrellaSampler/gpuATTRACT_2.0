@@ -25,7 +25,7 @@
 #include "nativeTypesMath.h"
 #include "nativeTypesWrapper.h"
 #include "DOFTransform.h"
-#include "DOF_6D.h"
+#include "Types_6D.h"
 #include "matrixFunctions.h"
 
 namespace as {

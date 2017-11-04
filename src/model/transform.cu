@@ -9,7 +9,6 @@
 
 #include "Vec3.h"
 #include "RotMat.h"
-#include "Types_6D.h"
 #include "matrixFunctions.h"
 #include "macros.h"
 
@@ -20,7 +19,7 @@ __global__ void d_DOF2Pos(
 		REAL const* x,
 		REAL const* y,
 		REAL const* z,
-		typename Types_6D<REAL>::DOF* dofs,
+		DOF_6D<REAL>* dofs,
 		unsigned numAtoms,
 		unsigned numDOFs,
 		REAL* xTr,
@@ -60,7 +59,7 @@ void d_DOF2Pos(
 		REAL const* x,
 		REAL const* y,
 		REAL const* z,
-		typename Types_6D<REAL>::DOF* dofs,
+		DOF_6D<REAL>* dofs,
 		unsigned numAtoms,
 		unsigned numDOFs,
 		REAL* xTr,
@@ -90,7 +89,7 @@ void d_DOF2Pos<float>(
 		float const* x,
 		float const* y,
 		float const* z,
-		typename Types_6D<float>::DOF* dofs,
+		DOF_6D<float>* dofs,
 		unsigned numAtoms,
 		unsigned numDOFs,
 		float* xTr,
@@ -105,7 +104,7 @@ void d_DOF2Pos<double>(
 		double const* x,
 		double const* y,
 		double const* z,
-		typename Types_6D<double>::DOF* dofs,
+		DOF_6D<double>* dofs,
 		unsigned numAtoms,
 		unsigned numDOFs,
 		double* xTr,

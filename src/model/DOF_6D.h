@@ -12,15 +12,15 @@
 #include "Vec3.h"
 
 namespace as {
-
-template<typename REAL>
-class DOF_6D {
-	using real_t = typename TypeWrapper<REAL>::real_t;
-	using vec3_t = Vec3<real_t>;
-public:
-	vec3_t pos;
-	vec3_t ang;
-};
+//
+//template<typename REAL>
+//class DOF_6D {
+//	using real_t = typename TypeWrapper<REAL>::real_t;
+//	using vec3_t = Vec3<real_t>;
+//public:
+//	vec3_t pos;
+//	vec3_t ang;
+//};
 
 } // namespace
 

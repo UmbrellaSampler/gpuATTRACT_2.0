@@ -8,16 +8,17 @@
 #ifndef SRC_CPUSERVICE_H_
 #define SRC_CPUSERVICE_H_
 
-#include "Service.h"
+#include "EnergyService.h"
 
 namespace as {
 
 //template<typename InputType, typename CommonType, typename ResultType>
 //class CPUService : public Service<InputType,CommonType,ResultType> {
 template<typename GenericTypes>
-class CPUService : public Service<GenericTypes> {
+class CPUEnergyService : public EnergyService<GenericTypes> {
 protected:
-	using service_t = Service<GenericTypes>;
+public:
+	using typename EnergyService<GenericTypes>::service_t;
 public:
 
 	using typename service_t::input_t;
@@ -28,7 +29,8 @@ public:
 	using typename service_t::itemProcessor_t;
 	using typename service_t::distributor_t;
 
-	virtual ~CPUService() {};
+	explicit CPUEnergyService(std::shared_ptr<DataManager> dataMng);
+	virtual ~CPUEnergyService() {};
 
 	virtual itemProcessor_t createItemProcessor() = 0;
 
@@ -40,7 +42,7 @@ public:
 
 }  // namespace as
 
-#include "CPUService.tpp"
+#include "CPUEnergyService.tpp"
 
 
 #endif /* SRC_CPUSERVICE_H_ */

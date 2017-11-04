@@ -53,7 +53,7 @@ void d_DOF2Pos(
 		REAL const* x,
 		REAL const* y,
 		REAL const* z,
-		typename Types_6D<REAL>::DOF* dofs,
+		DOF_6D<REAL>* dofs,
 		unsigned ligSize,
 		unsigned numDOFs,
 		REAL* xTr,

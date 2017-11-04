@@ -10,11 +10,11 @@
 
 #include <functional>
 
-#include "CPUService.h"
+#include "../src/service/CPUEnergyService.h"
 
 namespace test {
 
-class Service_TimeOut : public as::CPUService<int, int, int> {
+class Service_TimeOut : public as::CPUEnergyService<int, int, int> {
 public:
 
 	itemProcessor_t createItemProcessor () override;

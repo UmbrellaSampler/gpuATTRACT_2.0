@@ -6,8 +6,8 @@
 
 namespace as {
 
-template<typename SERVER>
-void RequestHandler<SERVER>::Chunk::setResults(const std::vector<extEnGrad>& results) {
+template<typename GenericTypes>
+void RequestHandler<GenericTypes>::Chunk::setResults(const std::vector<extEnGrad>& results) {
 	auto iter = results.begin();
 	/* fill main list */
 	for (auto& pair : _cont ) {
@@ -36,8 +36,8 @@ void RequestHandler<SERVER>::Chunk::setResults(const std::vector<extEnGrad>& res
 	_LBcontRefs.clear();
 }
 
-template<typename SERVER>
-void RequestHandler<SERVER>::Chunk::checkLBconts() {
+template<typename GenericTypes>
+void RequestHandler<GenericTypes>::Chunk::checkLBconts() {
 	for (auto LBcontIter = _LBconts.begin();  LBcontIter != _LBconts.end();) {
 
 		if (LBcontIter->complete) {
@@ -53,8 +53,8 @@ void RequestHandler<SERVER>::Chunk::checkLBconts() {
 	}
 }
 
-template<typename SERVER>
-unsigned RequestHandler<SERVER>::Chunk::overAllSize() {
+template<typename GenericTypes>
+unsigned RequestHandler<GenericTypes>::Chunk::overAllSize() {
 	unsigned count = 0;
 	count += _cont.size();
 //	std::cerr << "overAllSize: " << _cont.size() << "     ";
@@ -67,8 +67,8 @@ unsigned RequestHandler<SERVER>::Chunk::overAllSize() {
 }
 
 //#define H_IO
-template<typename SERVER>
-void RequestHandler<SERVER>::Chunk::loadBalanceChunks (std::list<Chunk>& chunkList) {
+template<typename GenericTypes>
+void RequestHandler<GenericTypes>::Chunk::loadBalanceChunks (std::list<Chunk>& chunkList) {
 
 	assert(chunkList.size() > 1);
 	unsigned numObjects = 0;
@@ -168,8 +168,8 @@ void RequestHandler<SERVER>::Chunk::loadBalanceChunks (std::list<Chunk>& chunkLi
 	} // for
 }
 
-template<typename SERVER>
-double RequestHandler<SERVER>::Chunk::chunkSizeRatio (std::list<Chunk> const& chunkList) {
+template<typename GenericTypes>
+double RequestHandler<GenericTypes>::Chunk::chunkSizeRatio (std::list<Chunk> const& chunkList) {
 
 	auto fnc = [] (Chunk const& lhs, Chunk const& rhs) -> bool { return lhs.size() < rhs.size();} ;
 	auto minmax = std::minmax_element(chunkList.begin(), chunkList.end(), fnc);

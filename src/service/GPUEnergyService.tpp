@@ -12,13 +12,18 @@
 
 #include <vector>
 #include <numeric>
-#include "GPUService.h"
+#include "GPUEnergyService.h"
 #include "Allocator.h"
 
 namespace as {
 
 template<typename GenericTypes>
-void GPUService<GenericTypes>::initAllocators() {
+GPUEnergyService<GenericTypes>::GPUEnergyService(std::shared_ptr<DataManager> dataMng) :
+	EnergyService<GenericTypes>(dataMng)
+{}
+
+template<typename GenericTypes>
+void GPUEnergyService<GenericTypes>::initAllocators() {
 	this->setInputAllocator(std::make_shared<HostPinnedAllocator<input_t>>());
 	this->setResultAllocator(std::make_shared<HostPinnedAllocator<result_t>>());
 }

@@ -13,7 +13,10 @@
 #include "TorqueMat.h"
 #include "matrixFunctions.h"
 #include "nativeTypesWrapper.h"
+
+#ifdef CUDA
 #include "Types_6D.h"
+#endif
 
 namespace as {
 
@@ -39,7 +42,7 @@ PotForce<REAL> reducePotForce(
 	potForce.E = 0.0;
 	potForce.pos = Vec3<REAL>(0.0);
 
-	typename Types_6D<REAL>::Result res;
+	typename Types_6D<REAL>::result_t res;
 	res.E = potForce.E;
 	res.pos = potForce.pos;
 
@@ -147,9 +150,9 @@ void deviceReduce(
 template<typename REAL>
 void h_finalReduce(
 			const unsigned& numDOFs,
-			typename Types_6D<REAL>::DOF* dofs,
+			DOF_6D<REAL>* dofs,
 			const REAL* deviceOut,
-			typename Types_6D<REAL>::Result* enGrads)
+			Result_6D<REAL>* enGrads)
 {
 
 	for (unsigned i = 0; i < numDOFs; ++i)

@@ -9,11 +9,12 @@
 #define TEST_TEST_SERVICE_H_
 
 #include <gmock/gmock.h>
-#include "CPUService.h"
+
+#include "../src/service/CPUEnergyService.h"
 
 namespace test {
 
-class Service_Mock : public as::CPUService<int, int, int> {
+class Service_Mock : public as::CPUEnergyService<int, int, int> {
 public:
 
 	MOCK_METHOD0(createItemProcessor, std::function<bool(workItem_t*)> () );

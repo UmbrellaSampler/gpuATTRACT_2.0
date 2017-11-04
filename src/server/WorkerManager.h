@@ -16,7 +16,7 @@
 
 namespace as {
 
-template<typename InputType, typename CommonType, typename ResultType>
+template<typename GenericTypes>
 class Service;
 
 template<typename InputType, typename CommonType, typename ResultType>
@@ -24,7 +24,7 @@ class WorkItem;
 
 template<typename InputType, typename CommonType, typename ResultType>
 class WorkerManager {
-	using service_t = Service<InputType, CommonType, ResultType>;
+	using service_t = Service<GenericTypes<InputType, CommonType, ResultType>>;
 	using worker_t = Worker<InputType, CommonType, ResultType>;
 	using workItem_t = WorkItem<InputType, CommonType, ResultType>;
 public:

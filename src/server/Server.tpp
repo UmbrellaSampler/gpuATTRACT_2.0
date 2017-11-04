@@ -32,8 +32,8 @@
 
 namespace as {
 
-template<typename Service>
-Server<Service>::Server(std::shared_ptr<Service> service):
+template<typename GenericTypes>
+Server<GenericTypes>::Server(std::shared_ptr<service_t> service):
 	_itemSize(DEFAULT_ITEM_SIZE),
 	_waitTime(MAX_WAIT_MILLISECONDS),
 	_bufferMng(make_unique<BufferManager<input_t, result_t>>()),
@@ -51,28 +51,28 @@ Server<Service>::Server(std::shared_ptr<Service> service):
 	_dispatcher->setWorkerManager(_workerMng.get());
 	_dispatcher->setQueue(_requestQueue.get());
 	_dispatcher->start();
-};
+}
 
-template<typename Service>
-Server<Service>::Server():
-	Server(([]() -> std::shared_ptr<Service> {
-			std::shared_ptr<Service> service = std::make_shared<Service>();
-			service->initAllocators();
-			return service;
-		})()
-	)
-{};
+//template<typename GenericTypes>
+//Server<GenericTypes>::Server():
+//	Server(([]() -> std::shared_ptr<service_t> {
+//			std::shared_ptr<service_t> service = std::make_shared<service_t>();
+//			service->initAllocators();
+//			return service;
+//		})()
+//	)
+//{}
 
-template<typename Service> // needed for invalid application of 'sizeof' compiler error messages
-Server<Service>::~Server()
+template<typename GenericTypes> // needed for invalid application of 'sizeof' compiler error messages
+Server<GenericTypes>::~Server()
 {
 	_dispatcher->signalTerminate();
 	_dispatcher->join();
 
-};
+}
 
-template<typename Service>
-void Server<Service>::setService(std::shared_ptr<Service> const& service) {
+template<typename GenericTypes>
+void Server<GenericTypes>::setService(std::shared_ptr<service_t> const& service) {
 	if (service.get() == nullptr) {
 		throw std::invalid_argument("Invalid service (nullptr).");
 	}
@@ -87,22 +87,22 @@ void Server<Service>::setService(std::shared_ptr<Service> const& service) {
 
 }
 
-template<typename Service>
-void Server<Service>::createWorkers(unsigned number) {
+template<typename GenericTypes>
+void Server<GenericTypes>::createWorkers(unsigned number) {
 	assert(_service != nullptr);
 	_workerMng->createWorkers(number);
 }
 
-template<typename Service>
-void Server<Service>::setItemSize(size_t itemSize) {
+template<typename GenericTypes>
+void Server<GenericTypes>::setItemSize(size_t itemSize) {
 	if(itemSize == 0) {
 		throw std::invalid_argument("Item size must be greater than zero.");
 	}
 	_itemSize = itemSize;
 }
 
-template<typename Service>
-void Server<Service>::submit(request_t& request) {
+template<typename GenericTypes>
+void Server<GenericTypes>::submit(request_t& request) {
 
 	/* Client */
 	{
@@ -125,16 +125,16 @@ void Server<Service>::submit(request_t& request) {
 
 }
 
-template<typename Service>
-void Server<Service>::attachServerBuffers(request_t const* request) {
+template<typename GenericTypes>
+void Server<GenericTypes>::attachServerBuffers(request_t const* request) {
 	ServerBuffers<input_t, result_t>* buffers = _requestMng->buffers(request);
 	auto& bufferSize = buffers->size;
 	buffers->inputBuffer = _bufferMng->getInputBuffer(bufferSize);
 	buffers->resultBuffer = _bufferMng->getResultBuffer(bufferSize);
 }
 
-template<typename Service>
-void Server<Service>::copyRequestBuffer(request_t const* request) {
+template<typename GenericTypes>
+void Server<GenericTypes>::copyRequestBuffer(request_t const* request) {
 	ServerBuffers<input_t, result_t>* buffers = _requestMng->buffers(request);
 	const auto& bufferSize = buffers->size;
 	assert(bufferSize == request->size());
@@ -143,8 +143,8 @@ void Server<Service>::copyRequestBuffer(request_t const* request) {
 	std::copy(origBuffer, origBuffer + bufferSize, serverBuffer);
 }
 
-template<typename Service>
-void Server<Service>::createWorkItemsAndPush(request_t const* request) {
+template<typename GenericTypes>
+void Server<GenericTypes>::createWorkItemsAndPush(request_t const* request) {
 	ServerBuffers<input_t, result_t> const* buffers = _requestMng->buffers(request);
 	auto const& requestSize = buffers->size;
 	common_t* common = _requestMng->common(request);
@@ -155,8 +155,8 @@ void Server<Service>::createWorkItemsAndPush(request_t const* request) {
 
 
 
-template<typename Service>
-void Server<Service>::wait(request_t const& request, result_t* clientBuffer)
+template<typename GenericTypes>
+void Server<GenericTypes>::wait(request_t const& request, result_t* clientBuffer)
 {
 	if (!_requestMng->isValid(&request) || clientBuffer == nullptr) {
 		throw std::invalid_argument("Either request has not been submitted or clientBuffer invalid (nullptr).");
@@ -175,8 +175,8 @@ void Server<Service>::wait(request_t const& request, result_t* clientBuffer)
 	_requestMng->removeRequest(&request);
 }
 
-template<typename Service>
-void Server<Service>::synchronizeWith(request_t const* request) {
+template<typename GenericTypes>
+void Server<GenericTypes>::synchronizeWith(request_t const* request) {
 	unsigned count = 0;
 	bool processed;
 	while (!(processed = _requestMng->isProcessed(request)) && count < _waitTime) {
@@ -189,8 +189,8 @@ void Server<Service>::synchronizeWith(request_t const* request) {
 	}
 }
 
-template<typename Service>
-void Server<Service>::returnServerBuffers(request_t const* request) {
+template<typename GenericTypes>
+void Server<GenericTypes>::returnServerBuffers(request_t const* request) {
 	ServerBuffers<input_t, result_t> const* buffers = _requestMng->buffers(request);
 	auto const& size = buffers->size;
 	if (size > 0) {
@@ -199,8 +199,8 @@ void Server<Service>::returnServerBuffers(request_t const* request) {
 	}
 }
 
-template<typename Service>
-void Server<Service>::copyResultBuffer(request_t const* request, result_t* clientBuffer) {
+template<typename GenericTypes>
+void Server<GenericTypes>::copyResultBuffer(request_t const* request, result_t* clientBuffer) {
 	ServerBuffers<input_t, result_t> const* buffers = _requestMng->buffers(request);
 	auto const& size = buffers->size;
 	if (size > 0) {
@@ -209,8 +209,8 @@ void Server<Service>::copyResultBuffer(request_t const* request, result_t* clien
 	}
 }
 
-template<typename Service>
-void Server<Service>::configureBufferAllocators() {
+template<typename GenericTypes>
+void Server<GenericTypes>::configureBufferAllocators() {
 	if (_service->getInputAllocator() == nullptr ||
 		_service->getResultAllocator() == nullptr) {
 		throw std::invalid_argument("Invalid service allocators (nullptr).");

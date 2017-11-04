@@ -19,27 +19,27 @@
 
 namespace as {
 
-template<typename SERVICE>
-emATTRACT<SERVICE>::emATTRACT() : _config(new configurator_t()) {}
+template<typename GenericTypes>
+emATTRACT<GenericTypes>::emATTRACT() : _config(new configurator_t()) {}
 
-template<typename SERVICE>
-void emATTRACT<SERVICE>::init(CmdArgs const& args) {
+template<typename GenericTypes>
+void emATTRACT<GenericTypes>::init(CmdArgs const& args) {
 	_config->init(args);
 }
 
-template<typename SERVICE>
-void emATTRACT<SERVICE>::finalize() {
+template<typename GenericTypes>
+void emATTRACT<GenericTypes>::finalize() {
 	_config->finalize();
 }
 
-template<typename SERVICE>
-void emATTRACT<SERVICE>::run() {
+template<typename GenericTypes>
+void emATTRACT<GenericTypes>::run() {
 
 	auto& dofs = _config->dofs();
 	auto server = _config->server();
 	auto& common = _config->common();
 
-	RequestHandler<server_t> requestHandler = RequestHandler<server_t>::newBuilder()
+	RequestHandler<GenericTypes> requestHandler = RequestHandler<GenericTypes>::newBuilder()
 			.withServer(server)
 			.withCommon(common)
 			.withDofs(dofs)

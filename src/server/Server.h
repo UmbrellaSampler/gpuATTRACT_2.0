@@ -11,6 +11,8 @@
 #include <memory>
 #include <set>
 
+#include "Service.h"
+
 namespace as {
 
 template<typename InputType, typename CommonType, typename ResultType>
@@ -31,34 +33,35 @@ class Dispatcher;
 template<typename InputType, typename CommonType, typename ResultType>
 class WorkerManager;
 
-template<class T>
+template<typename T>
 class ThreadSafeQueue;
 
 constexpr unsigned DEFAULT_ITEM_SIZE = 100;
 constexpr unsigned MAX_WAIT_MILLISECONDS = 20000;
 
-template<typename Service>
+template<typename GenericTypes>
 class Server {
 public:
-	using input_t = typename Service::input_t;
-	using result_t = typename Service::result_t;
-	using common_t = typename Service::common_t;
+	using service_t = Service<GenericTypes>;
+	using input_t = typename GenericTypes::input_t;
+	using result_t = typename GenericTypes::result_t;
+	using common_t = typename GenericTypes::common_t;
 
-	using workItem_t = typename Service::workItem_t;
+	using workItem_t = typename service_t::workItem_t;
 
 	using request_t = Request<input_t, common_t>;
 
-	Server();
-	explicit Server(std::shared_ptr<Service> service);
+//	Server();
+	explicit Server(std::shared_ptr<service_t> service);
 	Server(Server const&) = default;
 
 	~Server();
 
-	std::shared_ptr<Service> service() noexcept {
+	std::shared_ptr<service_t> service() noexcept {
 		return _service;
 	}
 
-	void setService(std::shared_ptr<Service> const& service);
+	void setService(std::shared_ptr<service_t> const& service);
 
 	void createWorkers(unsigned number);
 
@@ -86,7 +89,7 @@ private:
 	void returnServerBuffers(request_t const*);
 	void copyResultBuffer(request_t const*, result_t*);
 
-	std::shared_ptr<Service> _service;
+	std::shared_ptr<service_t> _service;
 	size_t _itemSize;
 	unsigned _waitTime;
 

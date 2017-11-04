@@ -9,27 +9,16 @@
 #include "RequestHandler.tpp"
 #include "Server.h"
 #include "Request.h"
-#include "CPU_6D_EnergyService.h"
+#include "Types_6D.h"
 
-#ifdef CUDA
-#include "GPU_6D_EnergyService.h"
-#endif
 
 namespace as {
 
 template
-class RequestHandler<Server<CPU_6D_EnergyService<float>>>;
+class RequestHandler<Types_6D<float>>;
 
 template
-class RequestHandler<Server<CPU_6D_EnergyService<double>>>;
-
-#ifdef CUDA
-template
-class RequestHandler<Server<GPU_6D_EnergyService<float>>>;
-
-template
-class RequestHandler<Server<GPU_6D_EnergyService<double>>>;
-#endif
+class RequestHandler<Types_6D<double>>;
 
 }  // namespace as
 

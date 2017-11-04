@@ -25,7 +25,7 @@
 #include <memory>
 #include <vector>
 #include "nativeTypesWrapper.h"
-#include "DOF_6D.h"
+#include "Types_6D.h"
 
 namespace as {
 

@@ -5,8 +5,6 @@
 #include <cassert>
 #include <algorithm>
 
-#include "nvToolsExt.h"
-
 #include "Chunk.h"
 #include "RequestHandler.h"
 
@@ -22,8 +20,8 @@ using std::endl;
 
 namespace as {
 
-template<typename SERVER>
-RequestHandler<SERVER>::RequestHandler(std::shared_ptr<extServer> server,
+template<typename GenericTypes>
+RequestHandler<GenericTypes>::RequestHandler(std::shared_ptr<extServer> server,
 			unsigned numConcurrentObjects,
 			unsigned numChunks,
 			unsigned minChunkSize,
@@ -40,8 +38,8 @@ RequestHandler<SERVER>::RequestHandler(std::shared_ptr<extServer> server,
 	init(solverName, dofs);
 }
 
-template<typename SERVER>
-void RequestHandler<SERVER>::init(std::string const& solverName, std::vector<extDOF> const& dofs) {
+template<typename GenericTypes>
+void RequestHandler<GenericTypes>::init(std::string const& solverName, std::vector<extDOF> const& dofs) {
 	std::unique_ptr<SolverFactory> factory(new SolverFactoryImpl);
 
 	/* Fill the object array */
@@ -100,8 +98,8 @@ void RequestHandler<SERVER>::init(std::string const& solverName, std::vector<ext
 
 //#define H_IO
 
-template<typename SERVER>
-void RequestHandler<SERVER>::run() {
+template<typename GenericTypes>
+void RequestHandler<GenericTypes>::run() {
 
 	_collectedRequests.reserve(_chunkList.begin()->size());
 	_collectedResults.reserve(_chunkList.begin()->size());
@@ -110,17 +108,11 @@ void RequestHandler<SERVER>::run() {
 
 	/* initial loop: start solvers and collect first requests and submit*/
 	for (auto& chunk : _chunkList) {
-		nvtxRangePushA("Processing");
 		for (auto& obj : chunk.getContainer()) {
 			SharedSolver& solver = obj.second;
 			solver->start();
 			_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(solver->getState()));
 		}
-		nvtxRangePop();
-
-		nvtxRangePushA("Submit");
-//		int reqId = as::server_submit(*_server, _collectedRequests.data(), _collectedRequests.size(),
-//				_serverOpt.gridId, _serverOpt.recId, _serverOpt.ligId, _serverOpt.useMode);
 
 		request_t request(_collectedRequests.data(), _collectedRequests.size(), _common);
 		try {
@@ -130,7 +122,6 @@ void RequestHandler<SERVER>::run() {
 			exit(EXIT_FAILURE);
 		}
 
-		nvtxRangePop();
 		chunk.setFetchSize(chunk.size());
 		chunk.setRequest(request);
 
@@ -163,14 +154,12 @@ void RequestHandler<SERVER>::run() {
 
 
 					/* Wait for requests */
-					nvtxRangePushA("Waiting");
 					try {
 						_server->wait(chunk.request(), _collectedResults.data());
 					} catch (std::exception &e) {
 						cerr << "Error while waiting for request to finish: " << e.what() << std::endl;
 						exit(EXIT_FAILURE);
 					}
-					nvtxRangePop();
 
 					/* Assigne results */
 					chunk.setResults(_collectedResults);
@@ -180,7 +169,6 @@ void RequestHandler<SERVER>::run() {
 			chunk.checkLBconts();
 
 			/* Process chunk and remove converged structures */
-			nvtxRangePushA("Processing");
 			auto iter = chunk.getContainer().begin();
 			iter = chunk.getContainer().begin();
 
@@ -218,14 +206,12 @@ void RequestHandler<SERVER>::run() {
 				}
 
 			}
-			nvtxRangePop();
 			assert(iter == chunk.getContainer().end());
 
 			chunk.setFetchSize(chunk.size());
 
 			/* submit request */
 			if (_collectedRequests.size() > 0) { // there is still something to submit
-				nvtxRangePushA("Submit");
 				request_t request(_collectedRequests.data(), _collectedRequests.size(), _common);
 				try {
 					_server->submit(request);
@@ -233,8 +219,6 @@ void RequestHandler<SERVER>::run() {
 					cerr << "Error while submitting request: " << e.what() << std::endl;
 					exit(EXIT_FAILURE);
 				}
-
-				nvtxRangePop();
 				chunk.setRequest(request);
 			}
 
@@ -249,8 +233,8 @@ void RequestHandler<SERVER>::run() {
 
 }
 
-template<typename SERVER>
-auto RequestHandler<SERVER>::getResultStates() noexcept -> std::vector<extDOF>  {
+template<typename GenericTypes>
+auto RequestHandler<GenericTypes>::getResultStates() noexcept -> std::vector<extDOF>  {
 	std::vector<extDOF> stateVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
 		stateVec[i] = TypesConverter<extDOF,Vector>::toFirst(_finishedObjects[i]->getState());
@@ -258,8 +242,8 @@ auto RequestHandler<SERVER>::getResultStates() noexcept -> std::vector<extDOF>  
 	return stateVec;
 }
 
-template<typename SERVER>
-auto RequestHandler<SERVER>::getResultEnGrads() noexcept -> std::vector<extEnGrad> {
+template<typename GenericTypes>
+auto RequestHandler<GenericTypes>::getResultEnGrads() noexcept -> std::vector<extEnGrad> {
 	std::vector<extEnGrad> enGradVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
 		enGradVec[i] = TypesConverter<extEnGrad, ObjGrad>::toFirst(_finishedObjects[i]->getObjective());
@@ -267,8 +251,8 @@ auto RequestHandler<SERVER>::getResultEnGrads() noexcept -> std::vector<extEnGra
 	return enGradVec;
 }
 
-template<typename SERVER>
-auto RequestHandler<SERVER>::getStatistics() noexcept -> std::vector<std::unique_ptr<Statistic>> {
+template<typename GenericTypes>
+auto RequestHandler<GenericTypes>::getStatistics() noexcept -> std::vector<std::unique_ptr<Statistic>> {
 	std::vector<std::unique_ptr<Statistic>> statisticVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
 		statisticVec[i] = _finishedObjects[i]->getStats();

@@ -12,8 +12,8 @@
 
 namespace as {
 
-template<typename SERVER>
-class RequestHandler<SERVER>::Builder {
+template<typename GenericTypes>
+class RequestHandler<GenericTypes>::Builder {
 private:
 	std::shared_ptr<extServer> _server;
 	unsigned _numConcurrentObjects = DEFAULT_MAX_CONCURRENT_OBJECTS;

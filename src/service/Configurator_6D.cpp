@@ -14,18 +14,10 @@
 namespace as {
 
 template
-class Configurator_6D<CPU_6D_EnergyService<float>>;
+class Configurator_6D<float>;
 
 template
-class Configurator_6D<CPU_6D_EnergyService<double>>;
-
-#ifdef CUDA
-template
-class Configurator_6D<GPU_6D_EnergyService<float>>;
-
-template
-class Configurator_6D<GPU_6D_EnergyService<double>>;
-#endif
+class Configurator_6D<double>;
 
 }  // namespace as
 

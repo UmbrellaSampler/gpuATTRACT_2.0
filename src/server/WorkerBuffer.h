@@ -19,7 +19,7 @@ public:
 
 	WorkerBuffer() : _buffers(0), _bufferSize(0) {}
 
-	WorkerBuffer(size_t numBuffers, size_t size) : _buffers(numBuffers), _bufferSize(size) {
+	WorkerBuffer(std::size_t numBuffers, std::size_t size) : _buffers(numBuffers), _bufferSize(size) {
 		auto alloc = ALLOC();
 		for (auto& buffer : _buffers) {
 			buffer = alloc.allocate(size);
@@ -70,17 +70,17 @@ public:
 		return get(4);
 	}
 
-	size_t numBuffers() const noexcept {
+	std::size_t numBuffers() const noexcept {
 		return _buffers.size();
 	}
 
-	size_t bufferSize() const noexcept {
+	std::size_t bufferSize() const noexcept {
 		return _bufferSize;
 	}
 
 private:
 	std::vector<REAL*> _buffers;
-	size_t _bufferSize;
+	std::size_t _bufferSize;
 };
 
 }  // namespace as

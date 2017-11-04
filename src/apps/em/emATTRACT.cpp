@@ -5,29 +5,17 @@
  *      Author: uwe
  */
 
-#include "CPU_6D_EnergyService.h"
 #include "emATTRACT.tpp"
 #include "Chunk.h"
-
-#ifdef CUDA
-#include "GPU_6D_EnergyService.h"
-#endif
+#include "Types_6D.h"
 
 namespace as {
 
 template
-class emATTRACT<CPU_6D_EnergyService<float>>;
+class emATTRACT<Types_6D<float>>;
 
 template
-class emATTRACT<CPU_6D_EnergyService<double>>;
-
-#ifdef CUDA
-template
-class emATTRACT<GPU_6D_EnergyService<float>>;
-
-template
-class emATTRACT<GPU_6D_EnergyService<double>>;
-#endif
+class emATTRACT<Types_6D<double>>;
 
 }  // namespace as
 

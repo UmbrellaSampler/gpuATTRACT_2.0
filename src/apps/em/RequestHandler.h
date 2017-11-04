@@ -26,12 +26,16 @@
 #include <list>
 #include <memory>
 
+
 namespace as {
+
+template<typename GenericTypes>
+class Server;
 
 class SolverBase;
 struct Statistic;
 
-template<typename SERVER>
+template<typename GenericTypes>
 class RequestHandler {
 	class Builder;
 	class Chunk;
@@ -42,16 +46,16 @@ public:
 	static constexpr unsigned DEFAULT_MIN_CHUNK_SIZE = 10; // minimum chunksize that is worth to work with
 
 private:
-	using extDOF = typename SERVER::input_t;
-	using extEnGrad = typename SERVER::result_t;
-	using common_t = typename SERVER::common_t;
-	using extServer = SERVER;
+	using extDOF = typename GenericTypes::input_t;
+	using extEnGrad = typename GenericTypes::result_t;
+	using common_t = typename GenericTypes::common_t;
+	using extServer = Server<GenericTypes>;
 	using SharedSolver = std::shared_ptr<SolverBase>;
 	using ObjMap = std::map<unsigned, SharedSolver>;
 	using ObjMapIter = ObjMap::iterator;
 //	using ChunkIter = typename Chunk::iterator;
 
-	using request_t = typename SERVER::request_t;
+	using request_t = typename extServer::request_t;
 
 	std::shared_ptr<extServer> _server;
 	const unsigned _numConcurrentObjects;
