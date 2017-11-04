@@ -616,6 +616,70 @@ std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename) {
 }
 
 template<typename REAL>
+std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filename) {
+	using namespace std;
+	using namespace as;
+
+	std::vector<std::vector<DOF_6D_Modes<REAL>>> DOF_molecules;
+
+	ifstream file(filename);
+
+	string line;
+	int i_molecules = 0;
+	if (file.is_open()) {
+		while (!file.eof()) {
+
+			getline(file, line);
+
+
+			if (!line.compare(0,1, "#")) { // 0 == true
+				continue;
+			}
+
+			/* read all dofs until the next "#" */
+			unsigned i = 0;
+			while (line.compare(0,1, "#") != 0 && !file.eof()) {
+
+				if (i_molecules == 0) {
+					DOF_molecules.push_back(std::vector<DOF_6D<REAL>> ());
+				}
+
+				std::vector<DOF_6D_Modes<REAL>>& vec = DOF_molecules[i];
+				DOF_6D_Modes<REAL> dof ;
+				{
+					stringstream stream(line);
+					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
+						>> dof.pos.x >> dof.pos.y >> dof.pos.z
+						>> dof.modes[0] >> dof.modes[1] >> dof.modes[2]
+						>> dof.modes[3] >> dof.modes[4] >> dof.modes[5]
+						>> dof.modes[6] >> dof.modes[7] >> dof.modes[8] >> dof.modes[9];
+				}
+				vec.push_back(dof);
+
+				++i;
+				getline(file, line);
+			}
+			/* check if i equals the number of molecules == DOF_molecules.size(),
+			 * otherwise we miss a molecule in the definition */
+			if (i != DOF_molecules.size()) {
+				errorDOFFormat(filename);
+				cerr << "The DOF definition is incomplete at #" << i_molecules << "." << endl;
+						exit(EXIT_FAILURE);
+			}
+			++i_molecules;
+		}
+	} else {
+		cerr << "Error: Failed to open file " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	file.close();
+
+	return DOF_molecules;
+
+}
+
+template<typename REAL>
 DOFHeader<REAL> readDOFHeader(std::string filename) {
 	using namespace std;
 	using vec3_t = Vec3<REAL>;

@@ -24,12 +24,14 @@ constexpr auto DEFAULT_LIGANG_PDB_FILE = "ligandr.pdb";
 constexpr auto DEFAULT_RECEPTOR_GRID_FILE = "receptorgrid.grid";
 constexpr auto DEFAULT_PARAMETER_FILE = "attract.par";
 constexpr auto DEFAULT_GRID_ALPAHBET_FILE = "receptorgrid.alphabet";
+constexpr auto DEFAULT_MODE_RECEPTOR_FILE = "modesReceptor.dat";
+constexpr auto DEFAULT_MODE_LIGAND_FILE = "modesLigand.dat";
 
 /**
  * Server context
  */
 constexpr int DEFAULT_NUM_CPUS = 1;
-
+constexpr int DEFAULT_NUM_MODES = 0;
 constexpr int DEFAULT_CHUNK_SIZE = 1000;
 
 /**

@@ -23,6 +23,9 @@ public:
 	std::string recName;
 	std::string paramsName;
 	std::string alphabetName;
+	int numModes;
+	std::string recModesName;
+	std::string ligModesName;
 	int numCPUs;
 	std::vector<int> deviceIds;
 	int chunkSize;
