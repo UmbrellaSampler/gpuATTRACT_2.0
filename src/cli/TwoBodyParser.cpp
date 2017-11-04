@@ -31,7 +31,7 @@ void TwoBodyParser::addOptions() noexcept {
 			("grid,g"             , po::value<string>()->default_value(DEFAULT_RECEPTOR_GRID_FILE)	, "receptor grid file")
 			("par,p"	          , po::value<string>()->default_value(DEFAULT_PARAMETER_FILE)		, "attract forcefield parameter file")
 			("alphabet,a"		  , po::value<string>()->default_value(DEFAULT_GRID_ALPAHBET_FILE)	, "receptor grid alphabet file");
-			("modl,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
+			("modl,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand");
 			("modr,mr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor");
 	_optsDesc.add(input);
 

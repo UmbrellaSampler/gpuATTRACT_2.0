@@ -70,6 +70,9 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
 		_dofs[i].pos = DOF_molecules[1][i].pos;
 		_dofs[i].ang = DOF_molecules[1][i].ang;
+		for(int mode=0; mode < ligand->numModes();mode++){
+			_dofs[i].modes[mode] = DOF_molecules[1][i].modes[mode];}
+
 	}
 
 	/* apply pivoting to proteins */
@@ -107,6 +110,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 			readHMMode<real_t>(receptor, args.recModesName);
 			readHMMode<real_t>(ligand, args.ligModesName);
 		}
+
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {
 		for (auto id : args.deviceIds) {
@@ -141,7 +145,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	//ToDo: create ServiceFactory with constructor for CmdArgs
-	std::shared_ptr<service_t> service = std::move(ServiceFactory::create<real_t, Types_6D>(serviceType, dataManager, args));
+	std::shared_ptr<service_t> service = std::move(ServiceFactory::create<real_t, Types_6D_Modes>(serviceType, dataManager, args));
 
 	service->initAllocators();
 	_server = std::unique_ptr<server_t>(new server_t(service));

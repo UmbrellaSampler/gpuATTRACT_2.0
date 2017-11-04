@@ -29,7 +29,7 @@
 // ToDo: remove
 #include <iostream>
 
-#include "CPUEnergyService6D.h"
+#include "CPUEnergyService6DModes.h"
 
 namespace as {
 

@@ -27,6 +27,7 @@ class PotForce {
 public:
 	real_t E;
 	vec3_t pos;
+	real_t modes[10];
 };
 
 

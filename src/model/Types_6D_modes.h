@@ -37,7 +37,7 @@ struct DOF_6D_Modes {
 	real_t modes[10];
 };
 
-struct Common {
+struct Common_Modes {
 	id_t gridId;
 	id_t ligId;
 	id_t recId;
@@ -56,7 +56,7 @@ struct Result_6D_Modes {
 };
 
 template<typename REAL>
-using Types_6D_Modes = GenericTypes<DOF_6D_Modes<REAL>, Common, Result_6D_Modes<REAL>>;
+using Types_6D_Modes = GenericTypes<DOF_6D_Modes<REAL>, Common_Modes, Result_6D_Modes<REAL>>;
 
 }  // namespace as
 

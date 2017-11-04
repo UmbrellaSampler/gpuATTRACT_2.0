@@ -11,7 +11,7 @@
 
 #include "CPUEnergyService.h"
 #include "publicTypes.h"
-#include "Types_6D_Modes.h"
+#include "Types_6D_modes.h"
 #include "nativeTypesWrapper.h"
 
 namespace as {
@@ -27,7 +27,7 @@ public:
 	using typename service_t::input_t;
 	using typename service_t::common_t;
 	using typename service_t::result_t;
-	using configurator_t = Configurator_6D<real_t>;
+	using configurator_t = Configurator_6D_Modes<real_t>;
 
 	/* need public for instantiate the server in configurator */
 
