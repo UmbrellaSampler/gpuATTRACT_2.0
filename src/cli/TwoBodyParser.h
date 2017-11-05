@@ -24,7 +24,7 @@ protected:
 
 	virtual void addOptions() noexcept override;
 	void enforceRules(boost::program_options::variables_map const& vm) const override;
-	void assigneArgs(boost::program_options::variables_map const& vm) noexcept override;
+	void assignArgs(boost::program_options::variables_map const& vm) noexcept override;
 
 };
 

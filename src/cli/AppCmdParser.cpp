@@ -43,7 +43,7 @@ void AppCmdParser::parse(int argc, char* argv[])  {
 			}
 		}
 		enforceRules(vm);
-		assigneArgs(vm);
+		assignArgs(vm);
 
 	} catch (po::error& e) {
 		std::cerr << "error: " << e.what() << std::endl;
