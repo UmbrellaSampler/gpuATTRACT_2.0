@@ -14,28 +14,47 @@
  * Application context
  */
 constexpr auto APP_SHORT_NAME_SC = "sc";
+constexpr auto APP_SHORT_NAME_EM = "em";
 
 /**
  * Two body docking context
  */
 
-constexpr auto DEFAULT_RECEPTOR_PDB_FILE = "receptorr.pdb";
-constexpr auto DEFAULT_LIGANG_PDB_FILE = "ligandr.pdb";
-constexpr auto DEFAULT_RECEPTOR_GRID_FILE = "receptorgrid.grid";
-constexpr auto DEFAULT_PARAMETER_FILE = "attract.par";
-constexpr auto DEFAULT_GRID_ALPAHBET_FILE = "receptorgrid.alphabet";
+/* Input Files */
+constexpr auto FILE_DEFAULT_RECEPTOR_PDB = "receptorr.pdb";
+constexpr auto FILE_DEFAULT_LIGANG_PDB = "ligandr.pdb";
+constexpr auto FILE_DEFAULT_RECEPTOR_GRID = "receptorgrid.grid";
+constexpr auto FILE_DEFAULT_PARAMETER = "attract.par";
+constexpr auto FILE_DEFAULT_GRID_ALPAHBET = "receptorgrid.alphabet";
+
+/* Generic */
+constexpr auto GENERIC_DEFAULT_PRECISION = "single";
+constexpr auto GENERIC_ALLOWED_PRECISION = {"single", "double"};
+
+/* Simulation */
+constexpr auto SIM_DEFAULT_DIELEC = "variable";
+constexpr auto SIM_ALLOWED_DIELEC = {"variable", "constant"};
+constexpr auto SIM_DEFAULT_EPSILON = 15.0;
 
 /**
  * Server context
  */
-constexpr int DEFAULT_NUM_CPUS = 1;
+constexpr int SERVER_DEFAULT_NUM_CPUS = 1;
+constexpr int SERVER_DEFAULT_CHUNK_SIZE = 1000;
+constexpr int SERVER_DEFAULT_DEVICE_ID = 0;
 
-constexpr int DEFAULT_CHUNK_SIZE = 1000;
+/**
+ * EM
+ */
+constexpr auto EM_DEFAULT_SOLVER = "VA13";
+constexpr auto EM_ALLOWED_SOLVERS = {"VA13", "BFGS"};
+constexpr auto EM_DEFAULT_CONCURRENCY = 20000;
+constexpr auto EM_DEFAULT_NUM_CHUNKS = 2;
+
+
 
 /**
  * Simulation context
  */
-constexpr auto DEFAULT_DIELEC_MODE = "variable";
-constexpr double DEFAULT_EPSILON_CONSTANT = 15.0;
 
 #endif /* SRC_CLI_PARSER_CONSTANTS_H_ */

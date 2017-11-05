@@ -17,18 +17,29 @@ namespace as {
 class CmdArgs {
 public:
 	AppType app;
+
+	/* Input Files */
 	std::string dofName;
 	std::string gridName;
 	std::string ligName;
 	std::string recName;
 	std::string paramsName;
 	std::string alphabetName;
+
+	/* Concurrency */
 	int numCPUs;
 	std::vector<int> deviceIds;
 	int chunkSize;
+
+	/* Simulation */
 	std::string precision;
 	std::string dielec;
 	double epsilon;
+
+	/* Minimization */
+	std::string solver;
+	int maxConcurrency;
+	int numChunks;
 
 	friend std::ostream& operator<<(std::ostream& s, CmdArgs const& args);
 };

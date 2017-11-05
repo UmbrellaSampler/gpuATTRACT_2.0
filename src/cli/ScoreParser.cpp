@@ -5,15 +5,8 @@
  *      Author: uwe
  */
 
-#include <sstream>
-
 #include "ScoreParser.h"
 #include "parser_constants.h"
-
-
-using namespace as;
-using namespace std;
-namespace po = boost::program_options;
 
 namespace as {
 

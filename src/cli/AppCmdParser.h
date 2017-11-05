@@ -26,7 +26,7 @@ protected:
 
 	virtual void addOptions() noexcept = 0;
 	virtual void enforceRules(boost::program_options::variables_map const& vm) const = 0;
-	virtual void assigneArgs(boost::program_options::variables_map const& vm) noexcept = 0;
+	virtual void assignArgs(boost::program_options::variables_map const& vm) noexcept = 0;
 
 private:
 	std::string usage() const noexcept;

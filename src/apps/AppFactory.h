@@ -23,17 +23,8 @@ public:
 	static std::unique_ptr<App> create(const CmdArgs& args);
 
 private:
-	enum class Platform {
-		CPU,
-		GPU,
-		unspecified
-	};
-
 	template<typename REAL>
-	static std::unique_ptr<App> create(AppType appType, Platform p);
-
-
-
+	static std::unique_ptr<App> create(AppType appType);
 };
 
 }  // namespace as

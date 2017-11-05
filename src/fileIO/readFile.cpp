@@ -51,6 +51,12 @@ static void errorDOFFormat(std::string filename) {
 			<< ". DOF-Format is not supported." << std::endl;
 }
 
+/**
+ * Converts a line in pdb-file to list of column entries
+ *
+ * @param line:
+ * @return list of pdb column entries
+ */
 static std::vector<std::string> pdbLine2Strings(std::string const& line) {
 	using namespace std;
 	istringstream iss(line);
