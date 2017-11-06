@@ -26,6 +26,7 @@ private:
 	enum class Platform {
 		CPU,
 		GPU,
+		CPUModes,
 		unspecified
 	};
 

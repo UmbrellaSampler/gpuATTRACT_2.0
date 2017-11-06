@@ -6,6 +6,7 @@
  */
 
 #include <CPUEnergyService6D.h>
+#include <CPUEnergyService6DModes.h>
 #include "scATTRACT.tpp"
 
 #ifdef CUDA
@@ -19,6 +20,12 @@ class scATTRACT<CPUEnergyService6D<float>>;
 
 template
 class scATTRACT<CPUEnergyService6D<double>>;
+
+template
+class scATTRACT<CPUEnergyService6DModes<float>>;
+
+template
+class scATTRACT<CPUEnergyService6DModes<double>>;
 
 #ifdef CUDA
 template

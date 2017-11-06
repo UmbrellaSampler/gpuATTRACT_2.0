@@ -10,6 +10,7 @@
 #include "scATTRACT.h"
 #include "CmdArgs.h"
 #include <CPUEnergyService6D.h>
+#include <CPUEnergyService6DModes.h>
 
 #ifdef CUDA
 #include <GPUEnergyService6D.h>
@@ -23,7 +24,10 @@ std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
 
 	Platform p = Platform::unspecified;
 	if (args.numCPUs > 0) {
-		p = Platform::CPU;
+		if (args.numModes > 0){
+			p = Platform::CPUModes;}
+		else{
+			p = Platform::CPU;}
 	} else if (args.deviceIds.size() > 0) {
 		p = Platform::GPU;
 	}
@@ -35,6 +39,7 @@ std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
 	} else {
 		throw std::invalid_argument("unknown precision specification: " + args.precision);
 	}
+
 
 	return app;
 }
@@ -52,6 +57,9 @@ std::unique_ptr<App> AppFactory::create(AppType appType, Platform p) {
 		switch (p) {
 			case Platform::CPU:
 				app = std::unique_ptr<App> (new scATTRACT<CPUEnergyService6D<REAL>>());
+				break;
+			case Platform::CPUModes:
+				app = std::unique_ptr<App> (new scATTRACT<CPUEnergyService6DModes<REAL>>());
 				break;
 #ifdef CUDA
 			case Platform::GPU:
