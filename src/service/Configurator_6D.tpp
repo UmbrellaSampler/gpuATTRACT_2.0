@@ -68,6 +68,22 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
+
+	/* apply pivoting to proteins */
+		if(h.auto_pivot) {
+			if (!h.pivots.empty()) {
+				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
+			}
+			h.pivots.push_back(receptor->pivot());
+			h.pivots.push_back(ligand->pivot());
+		} else {
+			if (h.pivots.size() != 2) {
+				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
+			}
+			receptor->pivotize(h.pivots[0]);
+			ligand->pivotize(h.pivots[1]);
+		}
+
 	/* transform ligand dofs assuming that the receptor is always centered in the origin */
 	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
 
@@ -79,20 +95,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 		_dofs[i].ang = DOF_molecules[1][i].ang;
 	}
 
-	/* apply pivoting to proteins */
-	if(h.auto_pivot) {
-		if (!h.pivots.empty()) {
-			throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
-		}
-		h.pivots.push_back(receptor->pivot());
-		h.pivots.push_back(ligand->pivot());
-	} else {
-		if (h.pivots.size() != 2) {
-			throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
-		}
-		receptor->pivotize(h.pivots[0]);
-		ligand->pivotize(h.pivots[1]);
-	}
+
 
 	/* apply grid displacement */
 	auto pivot = h.pivots[0];

@@ -41,7 +41,7 @@ void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& do
 	assert(dof_rec.size() == dof_lig.size());
 
 	// center ligand dofs by the respective ligand pivot
-	if (centered_lig == false) {
+	if ( centered_lig == false ) {
 		for (auto& dof : dof_lig) {
 			dof.pos.x += pivot_lig.x;
 			dof.pos.y += pivot_lig.y;
@@ -51,7 +51,7 @@ void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& do
 
 	/* shift ligand dofs by receptor pivot */
 	if (centered_rec == false) {
-		if (!(pivot_rec == Vec3<REAL>(0.0f))) {
+		if (!(pivot_rec == Vec3<REAL> (0.0f))) {
 			for (auto& dof : dof_lig) {
 				dof.pos.x -= pivot_rec.x;
 				dof.pos.y -= pivot_rec.y;
