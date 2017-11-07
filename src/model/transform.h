@@ -80,31 +80,6 @@ void rotate_translate(
  * reduceModeForce rotates all forces into the ligand frame and sums it up for all Mode DOFs
  *
  */
-template<typename REAL>
-void reduceModeForce(
-		Vec3<REAL> const& ang,
-		const REAL* forceX,
-		const REAL* forceY,
-		const REAL* forceZ,
-		const REAL* modeX,
-		const REAL* modeY,
-		const REAL* modeZ,
-		unsigned const& numAtoms,
-		unsigned const& numModes,
-		REAL* result
-		)
-{
-
-	const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
-
-	for (unsigned i = 0; i < numAtoms; ++i) {
-		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
-		forceAtom = rotMatInv*forceAtom;
-		for(int mode=0;mode<numModes;mode++){
-				result[mode] -= forceAtom.x*modeX[i*numModes+mode]+forceAtom.y*modeY[i*numModes+mode]+forceAtom.z*modeZ[i*numModes+mode];
-		}
-	}
-}
 
 
 
