@@ -24,7 +24,7 @@ CUDA ?= ON
 
 SOURCE_FOLDERS = $(shell find $(SOURCE_DIR) -maxdepth 2 -type d)
 
-LIBS_TEST = 
+LIBS_TEST = -L$(GTESTDIR)
 ifeq ($(TEST), OFF)
 #	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp" -and -not -path "*emATTRACT*")
 	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp")
@@ -32,11 +32,13 @@ ifeq ($(TEST), OFF)
 	VPATH = $(foreach d, $(SOURCE_FOLDERS), $d:)
 else ifeq ($(TEST), ON)
 	BINARY = "$(NAME)_TEST"
-	EXCLUDE = main.cpp
+	EXCLUDE = main.cpp	
 	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp" -and -not -name "$(EXCLUDE)") \
-		$(shell find $(SOURCE_DIR_TEST) -name "*.cpp")
+		$(shell find $(SOURCE_DIR_TEST) -name "*.cpp")		
 	LIBS_TEST = -lgtest -lgmock
-	VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR):$(SOURCE_DIR)/fileIO
+	#VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR):$(SOURCE_DIR)/fileIO
+	VPATH = $(foreach d, $(SOURCE_FOLDERS), $d:):$(SOURCE_DIR_TEST)
+	
 endif
 
 OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))
@@ -57,7 +59,7 @@ else
 endif
 
 CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
-INCLUDES = $(foreach d, $(SOURCE_FOLDERS), -I$d)
+INCLUDES = $(foreach d, $(SOURCE_FOLDERS), -I$d) #-I/usr/include/
 #INCLUDES = -I$(CURDIR)/src -I$(CURDIR)/src/fileIO 
 LDFLAGS = #-L...
 LIBS = -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_coroutine -lboost_context -lboost_system
@@ -67,7 +69,7 @@ ifeq ($(CUDA), ON)
 	OFLAGS += -DCUDA
 	LDFLAGS += -L$(CUDADIR)/lib64 -Wno-deprecated-gpu-targets
 	LIBS += -lcudart -lnvToolsExt
-	INCLUDES += -I$(CUDADIR)/include -I/usr/local/cuda/include
+	INCLUDES += -I$(CUDADIR)/include 
 	LXX = /usr/local/cuda/bin/nvcc
 else
 	LXX = ${CXX}
@@ -110,7 +112,7 @@ endif
 
 
 
-$(BINARY): $(OBJECTS)
+$(BINARY): $(OBJECTS)	
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC/NVCC C++ Linker'
 	$(LXX) $(LDFLAGS) -o $@ $^ $(LIBS)

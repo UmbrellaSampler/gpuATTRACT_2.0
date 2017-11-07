@@ -170,6 +170,18 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 					lig->numAtoms()
 			); // OK
 
+			reduceModeForce(
+					dof.ang,
+					buffers->h_potLig.getX(),
+					buffers->h_potLig.getY(),
+					buffers->h_potLig.getZ(),
+					lig->xModes(),
+					lig->yModes(),
+					lig->zModes(),
+					lig->numAtoms(),
+					lig->numModes(),
+					redPotForce.modes
+					);
 //			// Debug
 //			REAL x = redPotForce.pos.x;
 //			REAL y = redPotForce.pos.y;
