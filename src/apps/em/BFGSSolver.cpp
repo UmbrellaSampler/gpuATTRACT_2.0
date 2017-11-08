@@ -111,7 +111,7 @@ void as::BFGSSolver::run(coro_t::caller_type& ca) {
 				theta = 0.8 * sBs / (sBs - ys);
 			}
 			y = theta * y  +  (1.0-theta)*Bs;
-			assert(!isnan(theta) || !isinf(theta));
+			assert(!std::isnan(theta) || !std::isinf(theta));
 
 			ys = y.dot(s);
 		}
