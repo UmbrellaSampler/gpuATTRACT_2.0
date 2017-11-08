@@ -68,17 +68,6 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
-	/* transform ligand dofs assuming that the receptor is always centered in the origin */
-	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
-
-
-	/* init dof and result buffer */
-	_dofs = std::vector<input_t>(DOF_molecules[1].size());
-	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
-		_dofs[i].pos = DOF_molecules[1][i].pos;
-		_dofs[i].ang = DOF_molecules[1][i].ang;
-	}
-
 	/* apply pivoting to proteins */
 	if(h.auto_pivot) {
 		if (!h.pivots.empty()) {
@@ -93,6 +82,19 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 		receptor->pivotize(h.pivots[0]);
 		ligand->pivotize(h.pivots[1]);
 	}
+
+	/* transform ligand dofs assuming that the receptor is always centered in the origin */
+	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
+
+
+	/* init dof and result buffer */
+	_dofs = std::vector<input_t>(DOF_molecules[1].size());
+	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
+		_dofs[i].pos = DOF_molecules[1][i].pos;
+		_dofs[i].ang = DOF_molecules[1][i].ang;
+	}
+
+
 
 	/* apply grid displacement */
 	auto pivot = h.pivots[0];
