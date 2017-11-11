@@ -34,7 +34,7 @@ namespace as {
 
 
 template<typename REAL>
-void test_readReferencePosiotions(REAL* referencePosX,REAL* referencePosY,REAL* referencePosZ, std::string positionFileName, int numAtoms) {
+void test_readReferencePositions(REAL* referencePosX,REAL* referencePosY,REAL* referencePosZ, std::string positionFileName, int numAtoms) {
 	using namespace std;
 
 	vector<REAL> posX;	vector<REAL> posY;	vector<REAL> posZ;
@@ -61,28 +61,46 @@ void test_readReferencePosiotions(REAL* referencePosX,REAL* referencePosY,REAL* 
 
 
 template<typename REAL>
-void test_readDOF( DOF_6D_Modes<REAL> testDof,std::string dofFileName, int numModes){
+void test_readDOF( DOF_6D_Modes<REAL> *testDof,std::string dofFileName, int numModes){
 	using namespace std;
 	fstream dofFile(dofFileName);
 	string line;
 	vector<std::string> tokens;
-	bool receptor=false;
-	bool natom=false;
+
+	bool read=false;
 	int dofidx=0;
 	if (!dofFile.is_open()){	perror(("error while opening file " + dofFileName).c_str());}
 	while(getline(dofFile, line)) {
 		if(!line.empty()){
 
 			tokens=line2Strings(line);
-			if(tokens.at(0).compare("#")==0){dofidx++;}
-			if (dofidx==1){for(int mode=0;mode<numModes;mode++){testDof->modes[mode]=tokens.at(mode+1);}}
-			if (dofidx==2){testDof->pos.x=tokens.at(1);testDof->pos.y=tokens.at(2);testDof->pos.z=tokens.at(3);}
-			if (dofidx==3){testDof->ang.x=tokens.at(1);testDof->ang.y=tokens.at(2);testDof->ang.z=tokens.at(3);}
-			}
+			if(tokens.at(0).compare("#")==0){dofidx++;read=true;}
+			if(tokens.at(0).compare("###")==0){read=false;}
+			if (dofidx==1 && read==true){for(int mode=0;mode<numModes;mode++){testDof->modes[mode]=stof(tokens.at(mode+1));}}
+			if (dofidx==2 && read==true){testDof->pos.x=stof(tokens.at(1));testDof->pos.y=stof(tokens.at(2));testDof->pos.z=stof(tokens.at(3));}
+			if (dofidx==3 && read==true){testDof->ang.x=stof(tokens.at(1));testDof->ang.y=stof(tokens.at(2));testDof->ang.z=stof(tokens.at(3));}
+		std::cout <<"asfd"<<std::endl;
+		}
 		}
 	if (dofFile.bad()){	perror(("error while reading file " + dofFileName).c_str());}
 	dofFile.close();
 }
+
+
+template
+void test_readReferencePositions(float* referencePosX,float* referencePosY,float* referencePosZ, std::string positionFileName, int numAtoms) ;
+
+
+template
+void test_readReferencePositions(double* referencePosX,double* referencePosY,double* referencePosZ, std::string positionFileName, int numAtoms) ;
+
+
+
+template
+void test_readDOF( DOF_6D_Modes<float> *testDof,std::string dofFileName, int numModes);
+
+template
+void test_readDOF( DOF_6D_Modes<double> *testDof,std::string dofFileName, int numModes);
 
 }
 #endif /* TEST_TRANSFORMATION_H_ */

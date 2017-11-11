@@ -5,7 +5,20 @@
 
 namespace as {
 
-//TEST(a,s) {
+TEST(a,s) {
+
+
+DOF_6D_Modes<float> testDof;
+std::string dofFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/1_dofLigand.dat";
+string configFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/1_config.dat";
+string referenceModeFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/1_writtenLigandModes.dat";
+string modeFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/input/modesLigand.dat";
+
+test_readDOF<float>( &testDof,dofFileName, 5);
+
+std::cout<<testDof<<std::endl;
+
+
 
 
 //	rotate_translate<float>(
@@ -24,7 +37,7 @@ namespace as {
 //			REAL* yTr,
 //			REAL* zTr)
 
-//}
+}
 
 
 
