@@ -87,7 +87,7 @@ void test_readReferenceModes(REAL *referenceModes, std::string modeFileName, int
 	vector<REAL> modeX;	vector<REAL> modeY;	vector<REAL> modeZ;
 	REAL modeVal[numModes];
 	REAL eigVal[numModes];
-	protModes = new REAL[3*numModes*numAtoms];
+
 
 	bool changeMode=true;
 	bool isData=false;
