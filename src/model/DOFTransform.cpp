@@ -28,6 +28,7 @@
 #include "Types_6D.h"
 #include "Types_6D_Modes.h"
 #include "matrixFunctions.h"
+#include <iostream>
 
 namespace as {
 
@@ -52,8 +53,12 @@ void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& do
 	/* shift ligand dofs by receptor pivot */
 	if (centered_rec == false) {
 		if (!(pivot_rec == Vec3<REAL> (0.0f))) {
+			// muesste nicht der pivot ligand wie in der originalversion abgezogen werden??
 			for (auto& dof : dof_lig) {
-				dof.pos.x -= pivot_rec.x;
+				//dof.pos.x -= pivot_rec.x;
+				//dof.pos.y -= pivot_rec.y;
+				//dof.pos.z -= pivot_rec.z;
+				dof.pos.x -= pivot_lig.x;
 				dof.pos.y -= pivot_rec.y;
 				dof.pos.z -= pivot_rec.z;
 			}
