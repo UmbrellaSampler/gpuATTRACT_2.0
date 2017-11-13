@@ -12,7 +12,7 @@ TEST(ReadModefunction, ckecksmodeconversion) {
 	string referenceModeFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/1_writtenLigandModes.dat";
 	string modeFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/input/modesLigand.dat";
 
-	readConfig( &testConfig, configFileName);
+	test_readConfig( &testConfig, configFileName);
 
 	float* referenceModes;
 	int numModes=5;
@@ -21,7 +21,7 @@ TEST(ReadModefunction, ckecksmodeconversion) {
 	int count=0,c1=0;
 	referenceModes=(float*) malloc(3*testConfig.numAtomsLigand*numModes*sizeof(float));
 	test_readReferenceModes(referenceModes,  referenceModeFileName, testConfig.numAtomsLigand, numModes);
-	std::cout<<"test"<<std::endl;
+	//std::cout<<"test"<<std::endl;
 
 	std::shared_ptr<Protein<float>> testProt = std::make_shared<Protein<float>>();
 	testProt->setNumAtoms(testConfig.numAtomsLigand);
@@ -46,7 +46,7 @@ TEST(ReadModefunction, ckecksmodeconversion) {
 		}
 	}
 
-	std::cout<< 3*c1<<" "<<count<<std::endl;
+	//std::cout<< 3*c1<<" "<<count<<std::endl;
 	free(referenceModes);
 }
 

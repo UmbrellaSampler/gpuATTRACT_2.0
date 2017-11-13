@@ -39,7 +39,6 @@ void test_readReferencePositions(REAL* referencePosX,REAL* referencePosY,REAL* r
 
 	vector<REAL> posX;	vector<REAL> posY;	vector<REAL> posZ;
 
-
 	vector<std::string> tokens;
 	string line;
 	ifstream positionFile(positionFileName);
@@ -79,7 +78,7 @@ void test_readDOF( DOF_6D_Modes<REAL> *testDof,std::string dofFileName, int numM
 			if (dofidx==1 && read==true){for(int mode=0;mode<numModes;mode++){testDof->modes[mode]=stof(tokens.at(mode+1));}}
 			if (dofidx==2 && read==true){testDof->pos.x=stof(tokens.at(1));testDof->pos.y=stof(tokens.at(2));testDof->pos.z=stof(tokens.at(3));}
 			if (dofidx==3 && read==true){testDof->ang.x=stof(tokens.at(1));testDof->ang.y=stof(tokens.at(2));testDof->ang.z=stof(tokens.at(3));}
-		std::cout <<"asfd"<<std::endl;
+
 		}
 		}
 	if (dofFile.bad()){	perror(("error while reading file " + dofFileName).c_str());}

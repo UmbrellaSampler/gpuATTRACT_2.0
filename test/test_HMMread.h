@@ -40,7 +40,7 @@ static std::vector<std::string> line2Strings(std::string const& line) {
 
 
 template<typename REAL>
-void readConfig( testProteinConfig<REAL> *testconfig,std::string configFileName){
+void test_readConfig( testProteinConfig<REAL> *testconfig,std::string configFileName){
 	using namespace std;
 	fstream configFile(configFileName);
 	string line;
@@ -72,7 +72,7 @@ void readConfig( testProteinConfig<REAL> *testconfig,std::string configFileName)
 			}
 		}
 	}
-	std::cout<<testconfig->numAtomsReceptor<<"\n"<<testconfig->numAtomsLigand<<"\n"<<testconfig->pivotLigand.x<<"\n"<<testconfig->pivotLigand.y<<"\n"<<testconfig->pivotLigand.z<<std::endl;
+	//std::cout<<testconfig->numAtomsReceptor<<"\n"<<testconfig->numAtomsLigand<<"\n"<<testconfig->pivotLigand.x<<"\n"<<testconfig->pivotLigand.y<<"\n"<<testconfig->pivotLigand.z<<std::endl;
 }
 
 
@@ -81,7 +81,7 @@ void readConfig( testProteinConfig<REAL> *testconfig,std::string configFileName)
 
 
 template<typename REAL>
-void test_readReferenceModes(REAL *referenceModes, std::string modeFileName, int numAtoms, int numModes) {
+void test_readReferenceModes( REAL *referenceModes, std::string modeFileName, int numAtoms, int numModes) {
 	using namespace std;
 
 	vector<REAL> modeX;	vector<REAL> modeY;	vector<REAL> modeZ;
@@ -138,16 +138,16 @@ void test_readReferenceModes(REAL *referenceModes, std::string modeFileName, int
 }
 
 template
-void test_readReferenceModes(float *referenceModes, std::string modeFileName, int numAtoms, int numModes);
+void test_readReferenceModes( float *referenceModes, std::string modeFileName, int numAtoms, int numModes);
 
 template
-void test_readReferenceModes(double *referenceModes, std::string modeFileName, int numAtoms, int numModes);
+void test_readReferenceModes( double *referenceModes, std::string modeFileName, int numAtoms, int numModes);
 
 template
-void readConfig( testProteinConfig<float> *testconfig,std::string configFileName);
+void test_readConfig( testProteinConfig<float> *testconfig,std::string configFileName);
 
 template
-void readConfig( testProteinConfig<double> *testconfig,std::string configFileName);
+void test_readConfig( testProteinConfig<double> *testconfig,std::string configFileName);
 
 template
 struct testProteinConfig<float>;
