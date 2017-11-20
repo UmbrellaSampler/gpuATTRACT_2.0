@@ -105,7 +105,7 @@ std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename);
  * reads and returns a vector of dofs for each molecule with Modes
  */
 template<typename REAL>
-std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filename);
+std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filename, int numModes);
 
 template<typename REAL>
 class DOFHeader {

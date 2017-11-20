@@ -31,6 +31,13 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	auto grid = createGridFromGridFile<real_t>(args.gridName);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 
+	if(args.numModes > 0){
+				receptor->setNumModes(args.numModes);
+				ligand->setNumModes(args.numModes);
+				readHMMode<real_t>(receptor, args.recModesName);
+				readHMMode<real_t>(ligand, args.ligModesName);
+			}
+
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
 		simParam->dielec = Dielec::variable;
@@ -56,7 +63,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
-	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = readDOF_6D_Modes<real_t>(args.dofName);
+	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = readDOF_6D_Modes<real_t>(args.dofName,args.numModes);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
@@ -85,7 +92,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
 		_dofs[i].pos = DOF_molecules[1][i].pos;
 		_dofs[i].ang = DOF_molecules[1][i].ang;
-		for(int mode=0; mode < ligand->numModes();mode++){
+		_dofs[i].numModes= DOF_molecules[1][i].numModes;
+		for(int mode=0; mode < DOF_molecules[1][i].numModes;mode++){
 			_dofs[i].modes[mode] = DOF_molecules[1][i].modes[mode];}
 
 	}
@@ -106,12 +114,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 
-	if(args.numModes > 0){
-			receptor->setNumModes(args.numModes);
-			ligand->setNumModes(args.numModes);
-			readHMMode<real_t>(receptor, args.recModesName);
-			readHMMode<real_t>(ligand, args.ligModesName);
-		}
+
 
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {

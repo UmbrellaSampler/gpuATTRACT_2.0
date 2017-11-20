@@ -32,7 +32,7 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D_Modes<REAL> const& dof)
 	outStream 	<< setw(w) << "DOF"
 				<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z
 				<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z
-				<<modeStream;
+				<< modeStream;
 
 	outStream.precision(precisionSetting);
 	outStream.flags(flagSettings);

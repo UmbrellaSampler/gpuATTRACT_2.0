@@ -616,7 +616,7 @@ std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename) {
 }
 
 template<typename REAL>
-std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filename) {
+std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filename, int numModes) {
 	using namespace std;
 	using namespace as;
 
@@ -646,13 +646,12 @@ std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filena
 
 				std::vector<DOF_6D_Modes<REAL>>& vec = DOF_molecules[i];
 				DOF_6D_Modes<REAL> dof ;
+				dof.numModes=numModes;
 				{
 					stringstream stream(line);
 					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
-						>> dof.pos.x >> dof.pos.y >> dof.pos.z
-						>> dof.modes[0] >> dof.modes[1] >> dof.modes[2]
-						>> dof.modes[3] >> dof.modes[4] >> dof.modes[5]
-						>> dof.modes[6] >> dof.modes[7] >> dof.modes[8] >> dof.modes[9];
+						>> dof.pos.x >> dof.pos.y >> dof.pos.z;
+					for (int i=0; i< dof.numModes; i++){stream >>dof.modes[i];}
 				}
 				vec.push_back(dof);
 
@@ -888,10 +887,10 @@ template
 std::vector<std::vector<DOF_6D<float>>> readDOF_6D(std::string filename);
 
 template
-std::vector<std::vector<DOF_6D_Modes<double>>> readDOF_6D_Modes(std::string filename);
+std::vector<std::vector<DOF_6D_Modes<double>>> readDOF_6D_Modes(std::string filename, int numModes);
 
 template
-std::vector<std::vector<DOF_6D_Modes<float>>> readDOF_6D_Modes(std::string filename);
+std::vector<std::vector<DOF_6D_Modes<float>>> readDOF_6D_Modes(std::string filename, int numModes);
 
 template
 std::vector<std::vector<DOF_6D<double>>> readDOF_6D(std::string filename);
