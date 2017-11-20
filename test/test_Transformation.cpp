@@ -11,7 +11,13 @@
 
 namespace as {
 
-TEST(a,s) {
+// this test uses a dataset (DOFS and coordinates before and after deformation and transformation)
+//from the CPU version of attract.
+/**
+ * it then compares the result of the new rotate_translate function to the reference values of the old version
+ */
+TEST(Transformation_check,compares_if_data_is_transformed_and_deformed_right) {
+	//preparation of data
 	int numModes=5;
 	using namespace std;
 	DOF_6D_Modes<float> DofLig;
@@ -25,7 +31,6 @@ TEST(a,s) {
 	std::shared_ptr<Protein<float>> testLigand = createProteinFromPDB<float>("/home/glenn/Documents/Masterthesis/testfolder/1AVX/input/ligandr.pdb") ;
 
 	float* referenceModes= new float[3*testConfig.numAtomsLigand*numModes];
-	//std::shared_ptr<Protein<float>> testLigand = std::make_shared<Protein<float>>();
 
 	float epsilon=0.01;
 	CompareData<float> PosX(testConfig.numAtomsLigand,epsilon);
@@ -46,14 +51,13 @@ TEST(a,s) {
 	float* inputPos=testLigand->getOrCreatePosPtr();
 
 	test_readReferenceModes<float>(referenceModes,  TEST_LIG_MODE_FILE_NAME,  testConfig.numAtomsLigand, numModes);
-	//test_readReferencePositions<float>(testLigand->xPos(), testLigand->yPos(), testLigand->zPos(), TEST_LIG_POSITION_FILE_NAME, testConfig.numAtomsLigand);
 	test_readReferencePositions<float>(PosX.referenceData(), PosY.referenceData(), PosZ.referenceData(), TEST_LIG_TRANSFORMED_POSITION_FILE_NAME, testConfig.numAtomsLigand);
 
 
+
+	//testing transformation of coordinates
 	testLigand->auto_pivotize();
-	cout <<testLigand->xPos()[0]<<endl;
 	transformDOF_glob2rec(testDofRec, testDofLig, testConfig.pivotReceptor, testConfig.pivotLigand, centeredReceptor, centeredLigand);
-	cout <<testLigand->pivot()<<endl;
 	rotate_translate(
 		testLigand->xPos(),
 		testLigand->yPos(),
@@ -66,16 +70,11 @@ TEST(a,s) {
 		referenceModes,
 		referenceModes+testConfig.numAtomsLigand,
 		referenceModes+2*testConfig.numAtomsLigand,
-		testConfig.pivotLigand,
 		PosX.testData(),
 		PosY.testData(),
 		PosZ.testData());
 
-	for(int i=0;i<testConfig.numAtomsLigand;i++){
-		//cout <<PosX.testData()[i]<<" "<<PosY.testData()[i]<<PosZ.testData()[i]<<endl;
-		//cout <<PosX.referenceData()[i]<<" "<<PosY.referenceData()[i]<<PosZ.referenceData()[i]<<endl;
-		}
-
+	//evaluation
 	PosX.evaluateDifference();
 	PosY.evaluateDifference();
 	PosZ.evaluateDifference();

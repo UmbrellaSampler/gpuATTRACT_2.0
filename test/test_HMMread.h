@@ -72,7 +72,6 @@ void test_readConfig( testProteinConfig<REAL> *testconfig,std::string configFile
 			}
 		}
 	}
-	//std::cout<<testconfig->numAtomsReceptor<<"\n"<<testconfig->numAtomsLigand<<"\n"<<testconfig->pivotLigand.x<<"\n"<<testconfig->pivotLigand.y<<"\n"<<testconfig->pivotLigand.z<<std::endl;
 }
 
 
@@ -113,7 +112,6 @@ void test_readReferenceModes( REAL *referenceModes, std::string modeFileName, in
 				if (modeIdx == stoi(tokens.at(0)) && (modeIdx <= numModes)) {
 					modeVal[modeIdx]=stof(tokens.at(1))*stof(tokens.at(1));
 					eigVal[modeIdx-1]=0;
-					//cout <<"# "<<modeVal[modeIdx]<< endl;
 					changeMode=false;
 				}
 			}

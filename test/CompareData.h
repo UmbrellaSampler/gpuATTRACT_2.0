@@ -20,6 +20,19 @@ struct evalData{
 	evalData(int dataSize) : index(new int[dataSize]), data(new REAL[dataSize]),size(dataSize) {}
 };
 
+/**
+ * CompareData is used to compare two arrays of size m_dataSize of type REAL.
+ * This way it can be easily checked weather to arrays are the same and if not by how much they differ.
+ * Wrong values can easily be identified.
+ *
+ * The method "evaluateDifference()"
+ * compares each element of each array and checks weather the difference is within the value of epsilon.
+ * If this is not the case the reference values and testvalues are written to the m_result of type evalData
+ *
+ * Via method writeResultToFile the Data can easily be written to file.
+ *
+ *
+ */
 template <typename REAL>
 class CompareData{
 private:
@@ -30,25 +43,10 @@ private:
 	evalData<REAL> m_result;
 //int dataSize,
 public:
-	 //explicit MyArray(std::size_t s) : buf(new float[s]), size(s) { }
+
 	explicit CompareData(const int s, REAL epsilon): m_dataSize(s),m_result(s),m_referenceData(new REAL[s]),m_testData(new REAL[s])
 	{
-		//:m_dataSize(dataSize){
-		//m_dataSize=s;
-		 //m_referenceData=new REAL[m_dataSize];
-		 //m_testData=
-//		 m_result.index=new int[m_dataSize];
-//		 m_result.data=new REAL[m_dataSize];
 		m_epsilon=epsilon;
-
-//		for(int i=0;i<m_dataSize;i++){
-//			m_result.index[i]=(float)i;
-//						//std::cout <<i<<std::endl;
-//						}
-//
-//		for(int i=0;i<m_dataSize;i++){
-//				std::cout <<m_result.index[i]<<endl;
-//				}
 	}
 	~CompareData(){
 			delete [] m_referenceData;
@@ -73,15 +71,15 @@ public:
 
 
 
-	void evaluateRatio(){
-		int numFailure=0;
-		float ratio;
-		for(int i=0;i<m_dataSize;i++){
-			ratio=m_testData[i]/m_referenceData[i];
-			if (!(1-m_epsilon < ratio && 1+m_epsilon >ratio)){	m_result.data[numFailure]=ratio;	m_result.index[numFailure]=i;  numFailure++;}
-		}
-		m_result.size=numFailure;
-	}
+//	void evaluateRatio(){
+//		int numFailure=0;
+//		float ratio;
+//		for(int i=0;i<m_dataSize;i++){
+//			ratio=m_testData[i]/m_referenceData[i];
+//			if (!(1-m_epsilon < ratio && 1+m_epsilon >ratio)){	m_result.data[numFailure]=ratio;	m_result.index[numFailure]=i;  numFailure++;}
+//		}
+//		m_result.size=numFailure;
+//	}
 
 
 	void evaluateDifference(){
@@ -94,15 +92,7 @@ public:
 			m_result.size=numFailure;
 		}
 
-	void evaluateExact(){
-		int numFailure=0;
-		float ratio;
-		for(int i=0;i<m_dataSize;i++){
-			ratio=m_testData[i]/m_referenceData[i];
-			if ( !(ratio == 1.0)){	m_result.data[numFailure]=ratio;	m_result.index[numFailure]=i;	numFailure++;}
-		}
-		m_result.size=numFailure;
-		}
+
 
 	float getAccuracy(){
 		return ((float)m_dataSize-(float)m_result.size)/(float)m_dataSize;
@@ -130,7 +120,7 @@ public:
 		myfile << "#" << m_epsilon <<endl;
 
 		myfile << "## result" << endl;
-		myfile << "### indices \t ratio(testdata/referencedata\t testData\t referenceData"<< endl;
+		myfile << "### indices \t delta(testdata - referencedata\t testData\t referenceData"<< endl;
 
 		for(int i=0;i<m_result.size;i++){
 			myfile << m_result.index[i] << "\t" << m_result.data[i]<< "  " <<  m_testData[m_result.index[i]]<< "   " << m_referenceData[m_result.index[i]] << endl;

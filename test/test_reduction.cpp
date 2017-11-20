@@ -4,15 +4,15 @@
 namespace as{
 
 
-TEST(z,s){
+TEST(Reduction,checks_for_right_reduction_of_allforces){
 	int numModes=5;
 	testProteinConfig<float> testConfig;
 	test_readConfig<float>( &testConfig,TEST_CONFIG_FILE_NAME);
 	DOF_6D_Modes<float> DofLig;
+
 	float* forceX=new float[testConfig.numAtomsLigand];
 	float* forceY=new float[testConfig.numAtomsLigand];
 	float* forceZ=new float[testConfig.numAtomsLigand];
-
 
 	float* posX=new float[testConfig.numAtomsLigand];
 	float* posY=new float[testConfig.numAtomsLigand];
@@ -25,10 +25,9 @@ TEST(z,s){
 	float* modes=new float[3*numModes*testConfig.numAtomsLigand];
 
 
-
 	test_readReferencePositions<float>(posX, posY, posZ, TEST_LIG_TRANSFORMED_POSITION_FILE_NAME, testConfig.numAtomsLigand);
 	test_readReferencePositions<float>(origposX, origposY, origposZ, TEST_LIG_POSITION_FILE_NAME, testConfig.numAtomsLigand);
-	test_readReferenceModes<float>(modes,  TEST_LIG_MODE_FILE_NAME,  testConfig.numAtomsLigand, numModes);
+	test_readReferenceModes<float>(modes,  TEST_LIG_CONVERTEDMODE_FILE_NAME,  testConfig.numAtomsLigand, numModes);
 
 	test_readDOF(&DofLig, TEST_LIG_DOF_FILE_NAME, numModes);
 	test_readReferenceForce(forceX,forceY,forceZ, TEST_LIG_FORCE_FILE_NAME, testConfig.numAtomsLigand);
@@ -39,7 +38,7 @@ TEST(z,s){
 			forceZ,
 			forceX,
 			testConfig.numAtomsLigand
-	); // OK
+	);
 
 
 	reduceModeForce(
@@ -56,7 +55,9 @@ TEST(z,s){
 			);
 
 	Result_6D_Modes<float> enGrad;
+	enGrad.numModes=numModes;
 	for( int mode=0;mode<numModes;mode++){
+
 		enGrad.modes[mode]=redPotForce.modes[mode];}
 	enGrad.E = redPotForce.E;
 	enGrad.pos = redPotForce.pos;
@@ -71,9 +72,12 @@ TEST(z,s){
 			testConfig.numAtomsLigand,
 			DofLig.ang
 	); // OK
+
+	//print Gradients
 	std::cout<<enGrad<<std::endl;
 
 
+	//detete data
 	delete [] forceX;
 	delete [] forceY;
 	delete [] forceZ;
@@ -85,7 +89,6 @@ TEST(z,s){
 	delete [] origposX;
 	delete [] origposY;
 	delete [] origposZ;
-
 
 	delete [] modes;
 }

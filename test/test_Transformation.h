@@ -68,6 +68,7 @@ void test_readDOF( DOF_6D_Modes<REAL> *testDof,std::string dofFileName, int numM
 
 	bool read=false;
 	int dofidx=0;
+	testDof->numModes=5;
 	if (!dofFile.is_open()){	perror(("error while opening file " + dofFileName).c_str());}
 	while(getline(dofFile, line)) {
 		if(!line.empty()){

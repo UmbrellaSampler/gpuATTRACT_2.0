@@ -101,6 +101,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			const auto& dof = dofs[i];
 			auto& enGrad = results[i];
 
+
 			rotate_translate(
 				lig->xPos(),
 				lig->yPos(),
@@ -113,7 +114,6 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->xModes(),
 				lig->yModes(),
 				lig->zModes(),
-				lig->pivot(),
 				buffers->h_trafoLig.getX(),//output
 				buffers->h_trafoLig.getY(),
 				buffers->h_trafoLig.getZ()

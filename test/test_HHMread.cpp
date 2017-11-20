@@ -1,36 +1,43 @@
 #include <gmock/gmock.h>
 #include "test_HMMread.h"
 #include "test_ReferenceData.h"
+#include "CompareData.h"
 
 namespace as {
 
 
+// this TEST checks weather the modes of a Protein are read and converted just like in the old attract version
 TEST(ReadModefunction, ckecksmodeconversion) {
+	//data is read and prepared such it can be fed to readHMMmode()
 
 	using namespace std;
+	int numModes=5;
+	float e=0.01;
+	float* referenceModes;
+	float xmode,ymode,zmode;
+	int count=0,c1=0;
+
 	testProteinConfig<float> testConfig;
+
 	string configFileName=TEST_CONFIG_FILE_NAME;
-	string referenceModeFileName=TEST_LIG_MODE_FILE_NAME;
-	string modeFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/input/modesLigand.dat";
+	string referenceModeFileName=TEST_LIG_CONVERTEDMODE_FILE_NAME;
+	string modeFileName=TEST_LIG_MODE_FILE_NAME;
 
 	test_readConfig( &testConfig, configFileName);
 
-	float* referenceModes;
-	int numModes=5;
-	float e=0.01;
-	float xmode,ymode,zmode;
-	int count=0,c1=0;
 	referenceModes=(float*) malloc(3*testConfig.numAtomsLigand*numModes*sizeof(float));
-	test_readReferenceModes(referenceModes,  referenceModeFileName, testConfig.numAtomsLigand, numModes);
-	//std::cout<<"test"<<std::endl;
 
+	test_readReferenceModes(referenceModes,  referenceModeFileName, testConfig.numAtomsLigand, numModes);
 	std::shared_ptr<Protein<float>> testProt = std::make_shared<Protein<float>>();
 	testProt->setNumAtoms(testConfig.numAtomsLigand);
 	testProt->setNumModes(numModes);
 
+
+	//readHMMode function is tested
 	readHMMode(testProt,modeFileName);
 
 
+	//data is evaluated and printed if not within a cerrain ratio
 	int numAtoms=testConfig.numAtomsLigand;
 	for(int i=0;i<numAtoms;i++){
 		for(int mode=0;mode<numModes;mode++){
@@ -47,7 +54,6 @@ TEST(ReadModefunction, ckecksmodeconversion) {
 		}
 	}
 
-	//std::cout<< 3*c1<<" "<<count<<std::endl;
 	free(referenceModes);
 }
 

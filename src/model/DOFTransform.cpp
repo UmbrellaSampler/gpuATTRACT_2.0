@@ -54,6 +54,7 @@ void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& do
 	if (centered_rec == false) {
 		if (!(pivot_rec == Vec3<REAL> (0.0f))) {
 			for (auto& dof : dof_lig) {
+				//changed this so it is consitent with the old attract version
 				//dof.pos.x -= pivot_rec.x;
 				//dof.pos.y -= pivot_rec.y;
 				//dof.pos.z -= pivot_rec.z;
@@ -64,11 +65,16 @@ void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& do
 		}
 	}
 
-
+	for (auto& dof : dof_lig) {
+		dof.pos.x += pivot_lig.x;
+		dof.pos.y += pivot_lig.y;
+		dof.pos.z += pivot_lig.z;
+	}
 
 	/* rotate ligand into receptor frame and shift ligand by receptor dofs*/
 	for (unsigned j = 0; j < dof_lig.size(); ++j) {
 		const vec3_t& pos_rec = dof_rec[j].pos;
+
 		if (pos_rec.x != 0.0f || pos_rec.y != 0.0f || pos_rec.z != 0.0f ) {
 			vec3_t& pos_lig = dof_lig[j].pos;
 			pos_lig = pos_lig - pos_rec;

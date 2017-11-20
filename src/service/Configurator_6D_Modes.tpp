@@ -32,11 +32,11 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 
 	if(args.numModes > 0){
-				receptor->setNumModes(args.numModes);
-				ligand->setNumModes(args.numModes);
-				readHMMode<real_t>(receptor, args.recModesName);
-				readHMMode<real_t>(ligand, args.ligModesName);
-			}
+		receptor->setNumModes(args.numModes);
+		ligand->setNumModes(args.numModes);
+		readHMMode<real_t>(receptor, args.recModesName);
+		readHMMode<real_t>(ligand, args.ligModesName);
+	}
 
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
@@ -94,8 +94,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		_dofs[i].ang = DOF_molecules[1][i].ang;
 		_dofs[i].numModes= DOF_molecules[1][i].numModes;
 		for(int mode=0; mode < DOF_molecules[1][i].numModes;mode++){
-			_dofs[i].modes[mode] = DOF_molecules[1][i].modes[mode];}
-
+			_dofs[i].modes[mode] = 0.0;}
 	}
 
 
