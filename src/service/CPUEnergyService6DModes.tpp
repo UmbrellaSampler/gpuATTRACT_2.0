@@ -113,6 +113,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->xModes(),
 				lig->yModes(),
 				lig->zModes(),
+				lig->pivot(),
 				buffers->h_trafoLig.getX(),//output
 				buffers->h_trafoLig.getY(),
 				buffers->h_trafoLig.getZ()
@@ -196,6 +197,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					redPotForce.modes
 					);
 
+			for( int mode=0;mode<lig->numModes();mode++){	enGrad.modes[mode]=redPotForce.modes[mode];}
 			enGrad.E = redPotForce.E;
 			enGrad.pos = redPotForce.pos;
 

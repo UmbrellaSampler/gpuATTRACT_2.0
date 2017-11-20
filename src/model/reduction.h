@@ -13,6 +13,7 @@
 #include "TorqueMat.h"
 #include "matrixFunctions.h"
 #include "nativeTypesWrapper.h"
+#include <iostream>
 
 #ifdef CUDA
 #include "Types_6D.h"
@@ -114,6 +115,7 @@ void reduceModeForce(
 	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
 	//rotate forces into ligand frame
 	const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
+	for( int i=0; i<numModes;i++){result[i]=0;}
 
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
@@ -122,6 +124,7 @@ void reduceModeForce(
 				result[mode] -= forceAtom.x*modeX[i*numModes+mode]+forceAtom.y*modeY[i*numModes+mode]+forceAtom.z*modeZ[i*numModes+mode];
 		}
 	}
+
 }
 
 inline bool isPow2(unsigned int x)

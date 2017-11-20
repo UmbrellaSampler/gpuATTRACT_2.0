@@ -10,7 +10,7 @@
 
 #include <ostream>
 #include <iomanip>
-
+#include <sstream>
 #include "Types_6D_Modes.h"
 
 namespace as {
@@ -26,12 +26,13 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D_Modes<REAL> const& dof)
 	outStream.precision(3);
 
 	int w = 13;
+	ostringstream modeStream;
+	for(int i=0;i<dof.numModes;i++){modeStream<< setw(w) << dof.modes[i];}
+
 	outStream 	<< setw(w) << "DOF"
 				<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z
 				<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z
-				<< setw(w) << dof.modes[0] << setw(w) << dof.modes[1] << setw(w) << dof.modes[2]
-				<< setw(w) << dof.modes[3] << setw(w) << dof.modes[4] << setw(w) << dof.modes[5]
-				<< setw(w) << dof.modes[6] << setw(w) << dof.modes[7] << setw(w) << dof.modes[8]<< setw(w) << dof.modes[9];
+				<<modeStream;
 
 	outStream.precision(precisionSetting);
 	outStream.flags(flagSettings);
@@ -58,12 +59,14 @@ std::ostream& operator<<(std::ostream& s, Result_6D_Modes<REAL> const& enGrad) {
 	s.setf(ios::scientific);
 	s.precision(8);
 	int width = 20;
+
+	ostringstream modeStream;
+	for(int i=0;i<enGrad.numModes;i++){modeStream<< setw(width) << enGrad.modes[i];}
+
 	s << " Gradients: "
 			<< setw(width) << enGrad.ang.x  << setw(width) << enGrad.ang.y  << setw(width) << enGrad.ang.z
 			<< setw(width) << enGrad.pos.x  << setw(width) << enGrad.pos.y  << setw(width) << enGrad.pos.z
-			<< setw(width) << enGrad.modes[0] << setw(width) << enGrad.modes[1] << setw(width) << enGrad.modes[2]
-			<< setw(width) << enGrad.modes[3] << setw(width) << enGrad.modes[4] << setw(width) << enGrad.modes[5]
-			<< setw(width) << enGrad.modes[6] << setw(width) << enGrad.modes[7] << setw(width) << enGrad.modes[8]<< setw(width) << enGrad.modes[9];
+			<< modeStream;
 	s.unsetf(ios::scientific);
 
 	s.precision(precisionSetting);

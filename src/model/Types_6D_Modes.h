@@ -35,6 +35,7 @@ struct DOF_6D_Modes {
 	vec3_t pos;
 	vec3_t ang;
 	real_t modes[10];
+	unsigned int numModes;
 };
 
 struct Common_Modes {
@@ -53,6 +54,7 @@ struct Result_6D_Modes {
 	vec3_t pos;
 	vec3_t ang;
 	real_t modes[10];
+	unsigned int numModes;
 };
 
 template<typename REAL>

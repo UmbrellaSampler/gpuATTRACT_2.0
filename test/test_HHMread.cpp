@@ -1,5 +1,6 @@
 #include <gmock/gmock.h>
 #include "test_HMMread.h"
+#include "test_ReferenceData.h"
 
 namespace as {
 
@@ -8,8 +9,8 @@ TEST(ReadModefunction, ckecksmodeconversion) {
 
 	using namespace std;
 	testProteinConfig<float> testConfig;
-	string configFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/1_config.dat";
-	string referenceModeFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/1_writtenLigandModes.dat";
+	string configFileName=TEST_CONFIG_FILE_NAME;
+	string referenceModeFileName=TEST_LIG_MODE_FILE_NAME;
 	string modeFileName="/home/glenn/Documents/Masterthesis/testfolder/1AVX/input/modesLigand.dat";
 
 	test_readConfig( &testConfig, configFileName);

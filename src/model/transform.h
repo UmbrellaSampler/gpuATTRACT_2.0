@@ -56,6 +56,7 @@ void rotate_translate(
 		REAL const* xModes,
 		REAL const* yModes,
 		REAL const* zModes,
+		Vec3<REAL> const& pivotLig,
 		REAL* xTr,
 		REAL* yTr,
 		REAL* zTr)
@@ -64,13 +65,16 @@ void rotate_translate(
 	for (unsigned i = 0; i < ligSize; ++i) {
 		Vec3<REAL> posAtom(x[i], y[i], z[i]);
 
-		posAtom = rotMat*posAtom;
-		posAtom += displacement;
+
+
 		for(int mode=0;mode<numModes;mode++){
 			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
 			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
 			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];
 		}
+		posAtom = rotMat*posAtom;
+		posAtom += displacement;
+		posAtom += pivotLig;
 		xTr[i] = posAtom.x;
 		yTr[i] = posAtom.y;
 		zTr[i] = posAtom.z;

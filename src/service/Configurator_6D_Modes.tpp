@@ -65,6 +65,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 			if (!h.pivots.empty()) {
 				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
 			}
+			receptor->auto_pivotize();
+			ligand->auto_pivotize();
 			h.pivots.push_back(receptor->pivot());
 			h.pivots.push_back(ligand->pivot());
 		} else {

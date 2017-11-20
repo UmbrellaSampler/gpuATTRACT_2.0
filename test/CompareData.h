@@ -24,7 +24,7 @@ template <typename REAL>
 class CompareData{
 private:
 	REAL* m_referenceData;
-	REAL* m_testData=(REAL*) malloc(875*sizeof(REAL));;
+	REAL* m_testData;//=(REAL*) malloc(875*sizeof(REAL));;
 	int m_dataSize;
 	REAL m_epsilon;
 	evalData<REAL> m_result;
@@ -130,10 +130,10 @@ public:
 		myfile << "#" << m_epsilon <<endl;
 
 		myfile << "## result" << endl;
-		myfile << "### indices \t ratio(testdata/referencedata"<< endl;
+		myfile << "### indices \t ratio(testdata/referencedata\t testData\t referenceData"<< endl;
 
 		for(int i=0;i<m_result.size;i++){
-			myfile << m_result.index[i] << "\t" << m_result.data[i] << endl;
+			myfile << m_result.index[i] << "\t" << m_result.data[i]<< "  " <<  m_testData[m_result.index[i]]<< "   " << m_referenceData[m_result.index[i]] << endl;
 		}
 		myfile.close();
 
