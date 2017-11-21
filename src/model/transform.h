@@ -75,6 +75,7 @@ void rotate_translate(
 		xTr[i] = posAtom.x;
 		yTr[i] = posAtom.y;
 		zTr[i] = posAtom.z;
+
 	}
 }
 /**

@@ -16,7 +16,7 @@ const string INPUT_DATA_PATH="/home/glenn/Documents/Masterthesis/testfolder/1AVX
 //In this folder the evaluation of the new units is saved. For example the evalution of error of coordinate-transformation is saved in this folder
 const string EVALUATION_DATA_PATH="/home/glenn/Documents/Masterthesis/testfolder/1AVX/evaluation/";
 //This folder contains data which was extracted fromt the original attract and can be used to test new units
-const string TEST_DATA_PATH="/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/dataset_02/";
+const string TEST_DATA_PATH="/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/dataset_03_modes/";
 
 
 // the following data was extracted during one cycle of transformation and reduction

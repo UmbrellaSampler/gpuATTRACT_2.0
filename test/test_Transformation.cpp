@@ -27,11 +27,16 @@ TEST(Transformation_check,compares_if_data_is_transformed_and_deformed_right) {
 	bool centeredReceptor= false;
 	bool centeredLigand= true;
 
+
+	float* inputposX=new float[testConfig.numAtomsLigand];
+	float* inputposY=new float[testConfig.numAtomsLigand];
+	float* inputposZ=new float[testConfig.numAtomsLigand];
+
 	test_readConfig<float>( &testConfig,TEST_CONFIG_FILE_NAME);
-	std::shared_ptr<Protein<float>> testLigand = createProteinFromPDB<float>("/home/glenn/Documents/Masterthesis/testfolder/1AVX/input/ligandr.pdb") ;
+	//std::shared_ptr<Protein<float>> testLigand = createProteinFromPDB<float>("/home/glenn/Documents/Masterthesis/testfolder/1AVX/input/ligandr.pdb") ;
 
 	float* referenceModes= new float[3*testConfig.numAtomsLigand*numModes];
-
+	test_readReferencePositions<float>(inputposX, inputposY, inputposZ ,TEST_LIG_POSITION_FILE_NAME, testConfig.numAtomsLigand);
 	float epsilon=0.01;
 	CompareData<float> PosX(testConfig.numAtomsLigand,epsilon);
 	CompareData<float> PosY(testConfig.numAtomsLigand,epsilon);
@@ -47,29 +52,29 @@ TEST(Transformation_check,compares_if_data_is_transformed_and_deformed_right) {
 
 
 
-	testLigand->setNumModes(numModes);
-	float* inputPos=testLigand->getOrCreatePosPtr();
+	//testLigand->setNumModes(numModes);
+	//float* inputPos=testLigand->getOrCreatePosPtr();
 
-	test_readReferenceModes<float>(referenceModes,  TEST_LIG_MODE_FILE_NAME,  testConfig.numAtomsLigand, numModes);
+	test_readReferenceModes<float>(referenceModes,  TEST_LIG_CONVERTEDMODE_FILE_NAME,  testConfig.numAtomsLigand, numModes);
 	test_readReferencePositions<float>(PosX.referenceData(), PosY.referenceData(), PosZ.referenceData(), TEST_LIG_TRANSFORMED_POSITION_FILE_NAME, testConfig.numAtomsLigand);
 
 
 
 	//testing transformation of coordinates
-	testLigand->auto_pivotize();
-	transformDOF_glob2rec(testDofRec, testDofLig, testConfig.pivotReceptor, testConfig.pivotLigand, centeredReceptor, centeredLigand);
+	//testLigand->auto_pivotize();
+	//transformDOF_glob2rec(testDofRec, testDofLig, testConfig.pivotReceptor, testConfig.pivotLigand, centeredReceptor, centeredLigand);
 	rotate_translate(
-		testLigand->xPos(),
-		testLigand->yPos(),
-		testLigand->zPos(),
+			inputposX,
+			inputposY,
+			inputposZ,
 		testDofLig.at(0).pos,
 		testDofLig.at(0).ang,
 		testConfig.numAtomsLigand,
 		numModes,
 		testDofLig.at(0).modes,
 		referenceModes,
-		referenceModes+testConfig.numAtomsLigand,
-		referenceModes+2*testConfig.numAtomsLigand,
+		referenceModes+numModes*testConfig.numAtomsLigand,
+		referenceModes+2*numModes*testConfig.numAtomsLigand,
 		PosX.testData(),
 		PosY.testData(),
 		PosZ.testData());
@@ -84,6 +89,11 @@ TEST(Transformation_check,compares_if_data_is_transformed_and_deformed_right) {
 	PosZ.writeResultToFile(EVALUATION_DATA_PATH+"transform_posz.dat");
 
 	delete [] referenceModes;
+
+	delete [] inputposX;
+	delete [] inputposY;
+	delete [] inputposZ;
+
 }
 
 

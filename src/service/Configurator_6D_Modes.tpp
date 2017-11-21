@@ -20,6 +20,7 @@
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
 
+
 namespace as {
 
 template<typename SERVICE>
@@ -94,13 +95,15 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		_dofs[i].ang = DOF_molecules[1][i].ang;
 		_dofs[i].numModes= DOF_molecules[1][i].numModes;
 		for(int mode=0; mode < DOF_molecules[1][i].numModes;mode++){
-			_dofs[i].modes[mode] = 0.0;}
+			_dofs[i].modes[mode] = DOF_molecules[1][i].modes[mode];
+		}
 	}
 
 
 
 	/* apply grid displacement */
 	auto pivot = h.pivots[0];
+
 	grid->translate(-make_real3(pivot.x,pivot.y,pivot.z));
 
 	/* add items to dataMng */
