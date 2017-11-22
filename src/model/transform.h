@@ -43,6 +43,35 @@ void rotate_translate(
 	}
 }
 
+
+template<typename REAL>
+void mode_translate(
+		REAL const* x,
+		REAL const* y,
+		REAL const* z,
+		unsigned const& atomsize,
+		unsigned const& numModes,
+		REAL const* dlig,
+		REAL const* xModes,
+		REAL const* yModes,
+		REAL const* zModes,
+		REAL* xTr,
+		REAL* yTr,
+		REAL* zTr)
+{
+	for (unsigned i = 0; i < atomSize; ++i) {
+		Vec3<REAL> posAtom(x[i], y[i], z[i]);
+		for(int mode=0;mode<numModes;mode++){
+			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
+			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
+			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];
+		}
+		xTr[i] = posAtom.x;
+		yTr[i] = posAtom.y;
+		zTr[i] = posAtom.z;
+	}
+}
+
 #ifdef CUDA
 
 template<typename REAL>

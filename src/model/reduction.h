@@ -96,6 +96,31 @@ Vec3<REAL> reduceTorque(
 	return result;
 }
 
+template<typename REAL>
+void reduceModeForce(
+		const REAL* forceX,
+		const REAL* forceY,
+		const REAL* forceZ,
+		const REAL* modeX,
+		const REAL* modeY,
+		const REAL* modeZ,
+		unsigned const& numAtoms,
+		unsigned const& numModes,
+		REAL* result
+		)
+{
+	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
+	//rotate forces into ligand frame
+
+	for( int i=0; i<numModes;i++){result[i]=0;}
+	for (unsigned i = 0; i < numAtoms; ++i) {
+		for(int mode=0;mode<numModes;mode++){
+				result[mode] -= forceX[i]*modeX[i*numModes+mode]+forceY[i]*modeY[i*numModes+mode]+forceZ[i]*modeZ[i*numModes+mode];
+		}
+	}
+}
+
+
 inline bool isPow2(unsigned int x)
 {
     return ((x&(x-1))==0);
