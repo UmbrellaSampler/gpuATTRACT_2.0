@@ -7,6 +7,7 @@
 
 #include "ServerIncludes.h"
 #include "Types_6D.h"
+#include "Types_6D_Modes.h"
 
 namespace as {
 
@@ -15,6 +16,12 @@ class Server<Types_6D<float>>;
 
 template
 class Server<Types_6D<double>>;
+
+template
+class Server<Types_6D_Modes<float>>;
+
+template
+class Server<Types_6D_Modes<double>>;
 
 
 } // namespace as

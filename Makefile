@@ -24,7 +24,7 @@ CUDA ?= ON
 
 SOURCE_FOLDERS = $(shell find $(SOURCE_DIR) -maxdepth 2 -type d)
 
-LIBS_TEST = 
+
 ifeq ($(TEST), OFF)
 #	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp" -and -not -path "*emATTRACT*")
 	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp")
@@ -57,17 +57,17 @@ else
 endif
 
 CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
-INCLUDES = $(foreach d, $(SOURCE_FOLDERS), -I$d)
+INCLUDES = $(foreach d, $(SOURCE_FOLDERS), -I$d) 
 #INCLUDES = -I$(CURDIR)/src -I$(CURDIR)/src/fileIO 
-LDFLAGS = #-L...
-LIBS = -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_coroutine -lboost_context -lboost_system
+LDFLAGS =  #-L...
+LIBS =  -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_coroutine -lboost_context -lboost_system
 
 
 ifeq ($(CUDA), ON)
 	OFLAGS += -DCUDA
 	LDFLAGS += -L$(CUDADIR)/lib64 -Wno-deprecated-gpu-targets
 	LIBS += -lcudart -lnvToolsExt
-	INCLUDES += -I$(CUDADIR)/include
+	INCLUDES += -I$(CUDADIR)/include 
 	LXX = /usr/local/cuda/bin/nvcc
 else
 	LXX = ${CXX}
@@ -110,7 +110,7 @@ endif
 
 
 
-$(BINARY): $(OBJECTS)
+$(BINARY): $(OBJECTS)	
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC/NVCC C++ Linker'
 	$(LXX) $(LDFLAGS) -o $@ $^ $(LIBS)

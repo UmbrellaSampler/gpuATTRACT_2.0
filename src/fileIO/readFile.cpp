@@ -171,7 +171,76 @@ std::shared_ptr<GridUnion<REAL>> createGridFromGridFile(std::string filename) {
 	return grid;
 }
 
+template<typename REAL>
+void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName) {
+	using namespace std;
+	int numModes= prot->numModes();
+	int numAtoms=prot->numAtoms();
 
+	vector<REAL> modeX;	vector<REAL> modeY;	vector<REAL> modeZ;
+	REAL modeVal[numModes];
+	REAL eigVal[numModes];
+	REAL *protModes=NULL;
+	protModes = new REAL[3*numModes*numAtoms];
+
+	bool changeMode=true;
+	bool isData=false;
+	int idxPos=0;
+	int idxLine=0;
+	int modeIdx=0;
+
+	vector<std::string> tokens;
+	string line;
+	ifstream modeFile(modeFileName);
+
+	if (!modeFile.is_open()){	perror(("error while opening file " + modeFileName).c_str());}
+
+	while(getline(modeFile, line)) {
+		if(!line.empty()){
+			tokens=line2Strings(line);
+			if(idxPos < numAtoms && changeMode==false){isData=true;}
+			else if(idxPos == numAtoms){isData=false;idxPos=0;}
+
+			if(changeMode == true && tokens.size() > 1){
+				modeIdx++;
+				if (modeIdx == stoi(tokens.at(0)) && (modeIdx <= numModes)) {
+					modeVal[modeIdx]=stof(tokens.at(1))*stof(tokens.at(1));
+					eigVal[modeIdx-1]=0;
+					//cout <<"# "<<modeVal[modeIdx]<< endl;
+					changeMode=false;
+				}
+			}
+			if(isData==true && tokens.size() == 3 ){
+				float x=stof(tokens.at(0));
+				float y=stof(tokens.at(1));
+				float z=stof(tokens.at(2));
+
+				eigVal[modeIdx-1]+=x*x+y*y+z*z;
+				protModes[numModes*idxPos+modeIdx-1]						=stof(tokens.at(0));///sqrt(eigVal[modeIdx-1]);
+				protModes[numAtoms*numModes+numModes*idxPos+modeIdx-1]		=stof(tokens.at(1));///sqrt(eigVal[modeIdx-1]);
+				protModes[2*numAtoms*numModes+numModes*idxPos+modeIdx-1]	=stof(tokens.at(2));///sqrt(eigVal[modeIdx-1]);
+
+				idxPos++;
+				if(idxPos==numAtoms){changeMode=true;}
+			}
+		}
+		idxLine++;
+	}
+	if (modeFile.bad()){	perror(("error while reading file " + modeFileName).c_str());}
+	modeFile.close();
+
+	modeX.insert(modeX.end(), modeY.begin(), modeY.end());
+	modeX.insert(modeX.end(), modeZ.begin(), modeZ.end());
+	for(int i=0;i<numAtoms;i++){
+		for(int mode=0;mode<numModes;mode++){
+			protModes[numModes*i+mode]						/=sqrt(eigVal[mode]);
+			protModes[numAtoms*numModes+numModes*i+mode]		/=sqrt(eigVal[mode]);
+			protModes[2*numAtoms*numModes+numModes*i+mode]	/=sqrt(eigVal[mode]);
+		}
+	}
+	REAL* protBufMode = prot->getOrCreateModePtr();
+	std::copy(protModes, protModes+ 3*numModes*numAtoms, protBufMode);
+}
 template<typename REAL>
 void readGridFromGridFile(std::shared_ptr<GridUnion<REAL>> gridUnion, std::string filename) {
 	/* original attract source used */
@@ -553,6 +622,74 @@ std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename) {
 }
 
 template<typename REAL>
+std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filename, int numModes) {
+	using namespace std;
+	using namespace as;
+
+	std::vector<std::vector<DOF_6D_Modes<REAL>>> DOF_molecules;
+
+	ifstream file(filename);
+
+	string line;
+	int i_molecules = 0;
+	REAL tmpMode;
+	if (file.is_open()) {
+		while (!file.eof()) {
+
+			getline(file, line);
+
+
+			if (!line.compare(0,1, "#")) { // 0 == true
+				continue;
+			}
+
+			/* read all dofs until the next "#" */
+			unsigned i = 0;
+			while (line.compare(0,1, "#") != 0 && !file.eof()) {
+
+				if (i_molecules == 0) {
+					DOF_molecules.push_back(std::vector<DOF_6D_Modes<REAL>> ());
+				}
+
+				std::vector<DOF_6D_Modes<REAL>>& vec = DOF_molecules[i];
+				DOF_6D_Modes<REAL> dof ;
+				dof.numModes=numModes;
+				{
+					stringstream stream(line);
+					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
+						>> dof.pos.x >> dof.pos.y >> dof.pos.z;
+					for (int i=0; i< dof.numModes; i++){
+						stream >> tmpMode;
+						if(std::isnan(tmpMode)){	dof.modes[i]=0.0;}
+						else{						dof.modes[i]=tmpMode;}
+					}
+				}
+				vec.push_back(dof);
+
+				++i;
+				getline(file, line);
+			}
+			/* check if i equals the number of molecules == DOF_molecules.size(),
+			 * otherwise we miss a molecule in the definition */
+			if (i != DOF_molecules.size()) {
+				errorDOFFormat(filename);
+				cerr << "The DOF definition is incomplete at #" << i_molecules << "." << endl;
+						exit(EXIT_FAILURE);
+			}
+			++i_molecules;
+		}
+	} else {
+		cerr << "Error: Failed to open file " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	file.close();
+
+	return DOF_molecules;
+
+}
+
+template<typename REAL>
 DOFHeader<REAL> readDOFHeader(std::string filename) {
 	using namespace std;
 	using vec3_t = Vec3<REAL>;
@@ -722,6 +859,12 @@ template
 void readProteinFromPDB(std::shared_ptr<Protein<float>> prot, std::string filename);
 
 template
+void readHMMode(std::shared_ptr<Protein<float>> prot, std::string modeFileName);
+
+template
+void readHMMode(std::shared_ptr<Protein<double>> prot, std::string modeFileName);
+
+template
 std::shared_ptr<Protein<double>> createProteinFromPDB(std::string filename);
 
 template
@@ -753,6 +896,12 @@ void readParamTableFromFile(std::shared_ptr<ParamTable<double>>, std::string fil
 
 template
 std::vector<std::vector<DOF_6D<float>>> readDOF_6D(std::string filename);
+
+template
+std::vector<std::vector<DOF_6D_Modes<double>>> readDOF_6D_Modes(std::string filename, int numModes);
+
+template
+std::vector<std::vector<DOF_6D_Modes<float>>> readDOF_6D_Modes(std::string filename, int numModes);
 
 template
 std::vector<std::vector<DOF_6D<double>>> readDOF_6D(std::string filename);

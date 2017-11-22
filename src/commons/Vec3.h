@@ -195,7 +195,7 @@ public:
 	}
 
 	__host__ __device__
-	bool operator==(const Vec3& rhs) const {
+	bool operator==(const Vec3 &rhs) const {
 		if (x != rhs.x)
 			return false;
 		if (y != rhs.y)
