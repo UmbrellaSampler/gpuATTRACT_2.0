@@ -119,6 +119,31 @@ void reduceModeForce(
 		}
 	}
 }
+/**
+ * @brief: this function corrects for strong mode interaction.
+ * In case that high forces are acting the Proteins the mode tend to intoduce too much deformation.
+ * Adding an exponential term which is of higher order (harmonic not enough) which is multiplied by the forceconstant for each mode corrects for this.
+ * The old version uses either exp=3 or exp=4.
+ * The forceconstant is the magnitude of the modevector for each mode.
+ */
+template<typename REAL>
+void correctModeForce(
+		const REAL* modeForceConstant,
+		unsigned const& numAtoms,
+		unsigned const& numModes,
+		REAL* delta
+		)
+{
+	const REAL factor=4.0;
+	const int exp=4;
+	REAL counterForce;
+
+	for(int mode=0; mode<numModes; mode++){
+		counterForce=factor*modeForceConstant[mode]*pow(delta[mode],exp);
+		delta[mode]=delta[mode]+counterForce;
+	}
+
+}
 
 
 inline bool isPow2(unsigned int x)

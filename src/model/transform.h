@@ -45,7 +45,7 @@ void rotate_translate(
 
 
 template<typename REAL>
-void mode_translate(
+void mode_deformation(
 		REAL const* x,
 		REAL const* y,
 		REAL const* z,
