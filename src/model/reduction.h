@@ -95,7 +95,12 @@ Vec3<REAL> reduceTorque(
 
 	return result;
 }
-
+/*
+ * @bief: reduceModeForce is essentially a dot product of the force vector and the modevector resulting in the effective force from the modes.
+ * IMPORTANT: 1. the forces used have to be rotated such that they are the corresponding coordinatesystem.
+ * 2. after the forces have been reduced they have to corrected by correctModeforce
+ *
+ */
 template<typename REAL>
 void reduceModeForce(
 		const REAL* forceX,
@@ -124,7 +129,7 @@ void reduceModeForce(
  * In case that high forces are acting the Proteins the mode tend to intoduce too much deformation.
  * Adding an exponential term which is of higher order (harmonic not enough) which is multiplied by the forceconstant for each mode corrects for this.
  * The old version uses either exp=3 or exp=4.
- * The forceconstant is the magnitude of the modevector for each mode.
+ * The forceconstant correspoonds to the magnitude of the modevector for each mode.
  */
 template<typename REAL>
 void correctModeForce(

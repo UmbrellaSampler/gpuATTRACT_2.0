@@ -43,7 +43,10 @@ void rotate_translate(
 	}
 }
 
-
+/*
+ *
+ * @brief: mode_deformation adds the deformation of the ligand or receptor due to the modes.
+ */
 template<typename REAL>
 void mode_deformation(
 		REAL const* x,
