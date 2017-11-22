@@ -115,6 +115,8 @@ public:
 
 	REAL* getOrCreateModePtr();
 
+	REAL* getOrCreateModeForcePtr();
+
 	void setTag(tag_t tag) {
 		_tag = tag;
 	}
@@ -127,9 +129,11 @@ public:
 		_numModes = num;
 	}
 
+
 	void setNumMappedTypes(unsigned num) {
 		_numMappedTypes = num;
 	}
+
 
 	//TODO: refactor the pivotize functions to non-members
 	void pivotize(vec3_t pivot);
@@ -156,6 +160,7 @@ protected:
 
 	unsigned _numModes; /** number of modes */
 	REAL* _modes; /** normal mode deformation vectors */
+	REAL* _modeForceConstant;
 };
 
 }

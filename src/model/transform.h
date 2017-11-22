@@ -49,7 +49,7 @@ void mode_deformation(
 		REAL const* x,
 		REAL const* y,
 		REAL const* z,
-		unsigned const& atomsize,
+		unsigned const& numAtoms,
 		unsigned const& numModes,
 		REAL const* dlig,
 		REAL const* xModes,
@@ -59,7 +59,7 @@ void mode_deformation(
 		REAL* yTr,
 		REAL* zTr)
 {
-	for (unsigned i = 0; i < atomSize; ++i) {
+	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> posAtom(x[i], y[i], z[i]);
 		for(int mode=0;mode<numModes;mode++){
 			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];

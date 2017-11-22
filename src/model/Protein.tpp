@@ -114,6 +114,18 @@ REAL* Protein<REAL>::getOrCreateModePtr() {
 }
 
 template<typename REAL>
+REAL* Protein<REAL>::getOrCreateModeForcePtr() {
+	if (_modes == nullptr) {
+		if (_numModes == 0) {
+			throw std::runtime_error("getOrCreateModePtr(): the number of Modes must be set before");
+		}
+
+		_modeForceConstant = new REAL[_numModes];
+	}
+	return _modeForceConstant;
+}
+
+template<typename REAL>
 void Protein<REAL>::pivotize(vec3_t pivot) {
 	if (_pivot != vec3_t(0,0,0)) {
 		undoPivoting();

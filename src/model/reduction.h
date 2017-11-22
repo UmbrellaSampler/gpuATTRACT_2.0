@@ -142,7 +142,6 @@ void correctModeForce(
 		counterForce=factor*modeForceConstant[mode]*pow(delta[mode],exp);
 		delta[mode]=delta[mode]+counterForce;
 	}
-
 }
 
 
