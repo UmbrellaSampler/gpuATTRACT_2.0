@@ -17,7 +17,7 @@
 #include "DOFTransform.h"
 #include "Protein.h"
 #include "readFile.h"
-#include "reduction.h"
+#include "reduction_modes.h"
 
 template<typename REAL>
 void test_readReferenceForce(REAL* referenceForceX,REAL* referenceForceY,REAL* referenceForceZ, std::string positionFileName, int numAtoms) {

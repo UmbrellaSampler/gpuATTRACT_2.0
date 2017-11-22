@@ -44,7 +44,7 @@ void scATTRACT<GenericTypes>::run() {
 	server->wait(request, results.data());
 
 	for (result_t const res : results) {
-	//	std::cout << res << std::endl;
+		std::cout << res << std::endl;
 	}
 
 }

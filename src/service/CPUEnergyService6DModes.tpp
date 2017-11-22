@@ -22,7 +22,7 @@
 #include "transform.h"
 #include "interpolation.h"
 #include "neighborlist.h"
-#include "reduction.h"
+#include "reduction_modes.h"
 #include "matrixFunctions.h"
 #include "RotMat.h"
 
@@ -168,7 +168,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			}
 ////			exit(EXIT_SUCCESS);
 
-			PotForce<REAL> redPotForce = reducePotForce(
+			PotForce_Modes<REAL> redPotForce = reducePotForce<REAL,PotForce_Modes<REAL>>(
 					buffers->h_potLig.getX(),
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),

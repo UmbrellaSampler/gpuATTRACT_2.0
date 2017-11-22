@@ -8,12 +8,13 @@
 #ifndef SRC_REDUCTION_H_
 #define SRC_REDUCTION_H_
 
-#include "Vec3.h"
+
 #include "Torque.h"
 #include "TorqueMat.h"
 #include "matrixFunctions.h"
 #include "nativeTypesWrapper.h"
 #include <iostream>
+
 
 #ifdef CUDA
 #include "Types_6D.h"
@@ -28,19 +29,20 @@ class PotForce {
 public:
 	real_t E;
 	vec3_t pos;
-	real_t modes[10];
 };
 
 
 constexpr float ForceLim = 1.0e18;
 
-template<typename REAL>
-PotForce<REAL> reducePotForce(
+
+
+template<typename REAL, typename RETURNTYPE>
+RETURNTYPE reducePotForce(
 		REAL const* fx, REAL const* fy, REAL const* fz,
 		REAL const* energy,
 		unsigned const& numAtoms)
 {
-	PotForce<REAL> potForce;
+	RETURNTYPE potForce;
 	potForce.E = 0.0;
 	potForce.pos = Vec3<REAL>(0.0);
 
@@ -72,6 +74,9 @@ PotForce<REAL> reducePotForce(
 	return potForce;
 }
 
+
+
+
 template<typename REAL>
 Vec3<REAL> reduceTorque(
 		REAL const* x, REAL const* y, REAL const* z, // unrotated protein coordinates x,y,z !!!
@@ -98,34 +103,7 @@ Vec3<REAL> reduceTorque(
 	return result;
 }
 
-template<typename REAL>
-void reduceModeForce(
-		Vec3<REAL> const& ang,
-		const REAL* forceX,
-		const REAL* forceY,
-		const REAL* forceZ,
-		const REAL* modeX,
-		const REAL* modeY,
-		const REAL* modeZ,
-		unsigned const& numAtoms,
-		unsigned const& numModes,
-		REAL* result
-		)
-{
-	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
-	//rotate forces into ligand frame
-	const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
-	for( int i=0; i<numModes;i++){result[i]=0;}
 
-	for (unsigned i = 0; i < numAtoms; ++i) {
-		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
-		forceAtom = rotMatInv*forceAtom;
-		for(int mode=0;mode<numModes;mode++){
-				result[mode] -= forceAtom.x*modeX[i*numModes+mode]+forceAtom.y*modeY[i*numModes+mode]+forceAtom.z*modeZ[i*numModes+mode];
-		}
-	}
-
-}
 
 inline bool isPow2(unsigned int x)
 {

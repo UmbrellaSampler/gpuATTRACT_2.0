@@ -8,6 +8,7 @@
 #ifndef SRC_MODEL_TYPES_6D_MODES_H_
 #define SRC_MODEL_TYPES_6D_MODES_H_
 
+#include "Types_6D_Config.h"
 #include "nativeTypesWrapper.h"
 #include "Vec3.h"
 #include "GenericTypes.h"
@@ -34,7 +35,7 @@ struct DOF_6D_Modes {
 	using vec3_t = Vec3<real_t>;
 	vec3_t pos;
 	vec3_t ang;
-	real_t modes[10];
+	real_t modes[MODES_LIGAND_MAX_NUMBER];
 	unsigned int numModes;
 };
 
@@ -53,7 +54,7 @@ struct Result_6D_Modes {
 	real_t E;
 	vec3_t pos;
 	vec3_t ang;
-	real_t modes[10];
+	real_t modes[MODES_LIGAND_MAX_NUMBER];
 	unsigned int numModes;
 };
 
