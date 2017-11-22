@@ -26,6 +26,7 @@
 #include <vector>
 #include "nativeTypesWrapper.h"
 #include "Types_6D.h"
+#include "Types_6D_Modes.h"
 
 namespace as {
 
@@ -43,6 +44,12 @@ class ParamTable;
  */
 template<typename REAL>
 std::shared_ptr<Protein<REAL>> createProteinFromPDB (std::string filename);
+
+/*
+ ** @brief: reads Modes from Modes files
+ */
+template<typename REAL>
+void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName);
 
 /*
  ** @brief: as above but user provides Protein pointer.
@@ -92,6 +99,13 @@ std::vector<AttractEnGrad> readEnGradFromFile(std::string filename);
  */
 template<typename REAL>
 std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename);
+
+
+/**
+ * reads and returns a vector of dofs for each molecule with Modes
+ */
+template<typename REAL>
+std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filename, int numModes);
 
 template<typename REAL>
 class DOFHeader {

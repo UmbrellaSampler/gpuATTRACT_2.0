@@ -25,8 +25,11 @@ public:
 	std::string recName;
 	std::string paramsName;
 	std::string alphabetName;
-
+	std::string recModesName;
+	std::string ligModesName;
+ 
 	/* Concurrency */
+  int numModes;
 	int numCPUs;
 	std::vector<int> deviceIds;
 	int chunkSize;

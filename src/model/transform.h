@@ -43,6 +43,48 @@ void rotate_translate(
 	}
 }
 
+template<typename REAL>
+void rotate_translate(
+		REAL const* x,
+		REAL const* y,
+		REAL const* z,
+		Vec3<REAL> const& displacement,
+		Vec3<REAL> const& ang,
+		unsigned const& ligSize,
+		unsigned const& numModes,
+		REAL const* dlig,
+		REAL const* xModes,
+		REAL const* yModes,
+		REAL const* zModes,
+		REAL* xTr,
+		REAL* yTr,
+		REAL* zTr)
+{
+	const RotMat<REAL> rotMat = euler2rotmat(ang.x, ang.y, ang.z);
+	for (unsigned i = 0; i < ligSize; ++i) {
+		Vec3<REAL> posAtom(x[i], y[i], z[i]);
+
+		for(int mode=0;mode<numModes;mode++){
+			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
+			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
+			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];
+		}
+		posAtom = rotMat*posAtom;
+		posAtom += displacement;
+
+		xTr[i] = posAtom.x;
+		yTr[i] = posAtom.y;
+		zTr[i] = posAtom.z;
+
+	}
+}
+/**
+ * reduceModeForce rotates all forces into the ligand frame and sums it up for all Mode DOFs
+ *
+ */
+
+
+
 #ifdef CUDA
 
 template<typename REAL>

@@ -1,12 +1,12 @@
 /*
- * CPUEnergyService.tpp
+ * CPUEnergyService6DModes.tpp
  *
- *  Created on: Aug 11, 2016
- *      Author: uwe
+ *  Created on: Nov 4, 2017
+ *      Author: glenn
  */
 
-#ifndef SRC_CPUENERGYSERVICE6D_TPP_
-#define SRC_CPUENERGYSERVICE6D_TPP_
+#ifndef SRC_CPUENERGYSERVICE6DMODES_TPP_
+#define SRC_CPUENERGYSERVICE6DMODES_TPP_
 
 #include <cassert>
 #include "WorkerBuffer.h"
@@ -22,24 +22,24 @@
 #include "transform.h"
 #include "interpolation.h"
 #include "neighborlist.h"
-#include "reduction.h"
+#include "reduction_modes.h"
 #include "matrixFunctions.h"
 #include "RotMat.h"
 
 // ToDo: remove
 #include <iostream>
 
-#include "CPUEnergyService6D.h"
+#include "CPUEnergyService6DModes.h"
 
 namespace as {
 
 template<typename REAL>
-CPUEnergyService6D<REAL>::CPUEnergyService6D(std::shared_ptr<DataManager> dataMng) :
-	CPUEnergyService<Types_6D<REAL>>(dataMng)
+CPUEnergyService6DModes<REAL>::CPUEnergyService6DModes(std::shared_ptr<DataManager> dataMng) :
+	CPUEnergyService<Types_6D_Modes<REAL>>(dataMng)
 {}
 
 template<typename REAL>
-class CPUEnergyService6D<REAL>::Buffer {
+class CPUEnergyService6DModes<REAL>::Buffer {
 public:
 
 	/**
@@ -60,7 +60,7 @@ public:
 
 
 template<typename REAL>
-auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
+auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 	std::shared_ptr<Buffer> buffers = std::make_shared<Buffer>();
 
@@ -101,16 +101,22 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 			const auto& dof = dofs[i];
 			auto& enGrad = results[i];
 
+
 			rotate_translate(
-					lig->xPos(),
-					lig->yPos(),
-					lig->zPos(),
-					dof.pos,
-					dof.ang,
-					lig->numAtoms(),
-					buffers->h_trafoLig.getX(), // output
-					buffers->h_trafoLig.getY(),
-					buffers->h_trafoLig.getZ()
+				lig->xPos(),
+				lig->yPos(),
+				lig->zPos(),
+				dof.pos,
+				dof.ang,
+				lig->numAtoms(),
+				lig->numModes(),
+				dof.modes,
+				lig->xModes(),
+				lig->yModes(),
+				lig->zModes(),
+				buffers->h_trafoLig.getX(),//output
+				buffers->h_trafoLig.getY(),
+				buffers->h_trafoLig.getZ()
 			); // OK
 
 			// Debug
@@ -136,7 +142,7 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 //			exit(EXIT_SUCCESS);
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
 //			for(size_t i = 0; i < 20; ++i) {
-//				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
+				//std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
 //			}
 //			exit(EXIT_SUCCESS);
 
@@ -162,14 +168,13 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 //			}
 ////			exit(EXIT_SUCCESS);
 
-			PotForce<REAL> redPotForce = reducePotForce<REAL,PotForce<REAL>>(
+			PotForce_Modes<REAL> redPotForce = reducePotForce<REAL,PotForce_Modes<REAL>>(
 					buffers->h_potLig.getX(),
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),
 					buffers->h_potLig.getW(),
 					lig->numAtoms()
 			); // OK
-
 
 //			// Debug
 //			REAL x = redPotForce.pos.x;
@@ -178,6 +183,21 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 //			REAL E = redPotForce.E;
 //			std::cout << x << " " << y << " " << z << " " << E << std::endl;
 
+
+			reduceModeForce(
+					dof.ang,
+					buffers->h_potLig.getX(),
+					buffers->h_potLig.getY(),
+					buffers->h_potLig.getZ(),
+					lig->xModes(),
+					lig->yModes(),
+					lig->zModes(),
+					lig->numAtoms(),
+					lig->numModes(),
+					redPotForce.modes
+					);
+
+			for( int mode=0;mode<lig->numModes();mode++){	enGrad.modes[mode]=redPotForce.modes[mode];}
 			enGrad.E = redPotForce.E;
 			enGrad.pos = redPotForce.pos;
 
@@ -206,4 +226,6 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 }  // namespace as
 
 
-#endif /* SRC_CPUENERGYSERVICE6D_TPP_ */
+
+
+#endif /* CPUENERGYSERVICE6DMODES_TPP_ */

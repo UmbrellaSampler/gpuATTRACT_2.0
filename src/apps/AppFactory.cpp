@@ -11,6 +11,7 @@
 #include "emATTRACT.h"
 #include "CmdArgs.h"
 
+
 namespace as {
 
 std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
@@ -23,6 +24,7 @@ std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
 	} else {
 		throw std::invalid_argument("unknown precision specification: " + args.precision);
 	}
+
 
 	return app;
 }

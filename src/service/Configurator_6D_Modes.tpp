@@ -1,17 +1,10 @@
-/*
- * Configurator_6D.tpp
- *
- *  Created on: Aug 17, 2016
- *      Author: uwe
- */
-
-#ifndef SRC_CONFIGURATOR_6D_TPP_
-#define SRC_CONFIGURATOR_6D_TPP_
+#ifndef SRC_CONFIGURATOR_6D_MODES_TPP_
+#define SRC_CONFIGURATOR_6D_MODES_TPP_
 
 #include <exception>
 #include <vector>
 
-#include "Configurator_6D.h"
+#include "Configurator_6D_Modes.h"
 
 #include "readFile.h"
 #include "DOF_6D.h"
@@ -27,16 +20,24 @@
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
 
+
 namespace as {
 
 template<typename SERVICE>
-void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
+void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
 	auto ligand = createProteinFromPDB<real_t>(args.ligName);
 	auto grid = createGridFromGridFile<real_t>(args.gridName);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
+
+	if(args.numModes > 0){
+		receptor->setNumModes(args.numModes);
+		ligand->setNumModes(args.numModes);
+		readHMMode<real_t>(receptor, args.recModesName);
+		readHMMode<real_t>(ligand, args.ligModesName);
+	}
 
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
@@ -63,28 +64,26 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
-	std::vector<std::vector<DOF_6D<real_t>>> DOF_molecules = readDOF_6D<real_t>(args.dofName);
+	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = readDOF_6D_Modes<real_t>(args.dofName,args.numModes);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
-
-
 	/* apply pivoting to proteins */
-  if(h.auto_pivot) {
-    if (!h.pivots.empty()) {
-      throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
-    }
-    receptor->auto_pivotize();
-    ligand->auto_pivotize();
-    h.pivots.push_back(receptor->pivot());
-    h.pivots.push_back(ligand->pivot());
-  } else {
-    if (h.pivots.size() != 2) {
-      throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
-    }
-    receptor->pivotize(h.pivots[0]);
-    ligand->pivotize(h.pivots[1]);
-  }
+		if(h.auto_pivot) {
+			if (!h.pivots.empty()) {
+				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
+			}
+			receptor->auto_pivotize();
+			ligand->auto_pivotize();
+			h.pivots.push_back(receptor->pivot());
+			h.pivots.push_back(ligand->pivot());
+		} else {
+			if (h.pivots.size() != 2) {
+				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
+			}
+			receptor->pivotize(h.pivots[0]);
+			ligand->pivotize(h.pivots[1]);
+		}
 	/* transform ligand dofs assuming that the receptor is always centered in the origin */
 	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
 
@@ -94,13 +93,18 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
 		_dofs[i].pos = DOF_molecules[1][i].pos;
 		_dofs[i].ang = DOF_molecules[1][i].ang;
+		_dofs[i].numModes= DOF_molecules[1][i].numModes;
+		for(int mode=0; mode < DOF_molecules[1][i].numModes;mode++){
+			_dofs[i].modes[mode] = DOF_molecules[1][i].modes[mode];
+		}
 	}
 
 
 
 	/* apply grid displacement */
-//	auto pivot = h.pivots[0];
-//	grid->translate(-make_real3(pivot.x,pivot.y,pivot.z));
+	auto pivot = h.pivots[0];
+
+	grid->translate(-make_real3(pivot.x,pivot.y,pivot.z));
 
 	/* add items to dataMng */
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
@@ -109,6 +113,10 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	_ids.gridId = dataManager->add(grid);
 	_ids.tableId = dataManager->add(paramTable);
 	_ids.paramsId = dataManager->add(simParam);
+
+
+
+
 
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {
@@ -120,11 +128,11 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	ServiceType serviceType;
 	if (args.numCPUs > 0) {
-		serviceType = ServiceType::CPUEnergyService6D;
+		serviceType = ServiceType::CPUEnergyService6DModes;
 	}
 #ifdef CUDA
 	else {
-		serviceType = ServiceType::GPUEnergyService6D;
+		serviceType = ServiceType::GPUEnergyService6DModes;
 	}
 #endif
 
@@ -157,7 +165,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 }
 
 template<typename SERVICE>
-void Configurator_6D<SERVICE>::finalize() noexcept {
+void Configurator_6D_Modes<SERVICE>::finalize() noexcept {
 
 }
 
