@@ -15,15 +15,12 @@
 
 namespace as {
 
-//template<typename REAL, template <typename REAL> class GenericTypes>
 template<typename GenericTypes>
 struct ConfiguratorTypeWrapper {
-//	static_assert(std::is_arithmetic<REAL>::value, "Only arithmetic types supported");
 	ConfiguratorTypeWrapper() = delete;
 
 	using configurator_t = typename std::conditional<std::is_same<GenericTypes, Types_6D<float>>::value,
 			Configurator_6D<float>, Configurator_6D<double>>::type;
-
 
 };
 

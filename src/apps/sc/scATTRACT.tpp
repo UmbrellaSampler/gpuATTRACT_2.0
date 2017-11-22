@@ -17,21 +17,21 @@
 
 namespace as {
 
-template<typename SERVICE>
-scATTRACT<SERVICE>::scATTRACT() : _config(new configurator_t()) {}
+template<typename GenericTypes>
+scATTRACT<GenericTypes>::scATTRACT() : _config(new configurator_t()) {}
 
-template<typename SERVICE>
-void scATTRACT<SERVICE>::init(CmdArgs const& args) {
+template<typename GenericTypes>
+void scATTRACT<GenericTypes>::init(CmdArgs const& args) {
 	_config->init(args);
 }
 
-template<typename SERVICE>
-void scATTRACT<SERVICE>::finalize() {
+template<typename GenericTypes>
+void scATTRACT<GenericTypes>::finalize() {
 	_config->finalize();
 }
 
-template<typename SERVICE>
-void scATTRACT<SERVICE>::run() {
+template<typename GenericTypes>
+void scATTRACT<GenericTypes>::run() {
 
 	auto& dofs = _config->dofs();
 	auto server = _config->server();

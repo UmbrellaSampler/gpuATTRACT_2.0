@@ -32,15 +32,11 @@ ifeq ($(TEST), OFF)
 	VPATH = $(foreach d, $(SOURCE_FOLDERS), $d:)
 else ifeq ($(TEST), ON)
 	BINARY = "$(NAME)_TEST"
-	EXCLUDE = "main.cpp"
-	#SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp" -and -not -name "$(EXCLUDE)") \
-		$(shell find $(SOURCE_DIR_TEST) -name "*.cpp")		
+	EXCLUDE = main.cpp
 	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp"  ! -name $(EXCLUDE)) \
 		$(shell find $(SOURCE_DIR_TEST) -name "*.cpp")	
-	LIBS_TEST = -L$(GTESTDIR) -lgtest -lgmock
-	#VPATH = $(SOURCE_DIR_TEST):$(SOURCE_DIR):$(SOURCE_DIR)/fileIO
+	LIBS_TEST = -lgtest -lgmock
 	VPATH = $(SOURCE_DIR_TEST):$(foreach d, $(SOURCE_FOLDERS), $d:)
-	
 endif
 
 OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))

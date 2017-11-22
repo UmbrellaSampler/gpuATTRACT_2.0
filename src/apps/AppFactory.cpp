@@ -8,34 +8,19 @@
 #include <exception>
 #include "AppFactory.h"
 #include "scATTRACT.h"
+#include "emATTRACT.h"
 #include "CmdArgs.h"
-#include <CPUEnergyService6D.h>
-#include <CPUEnergyService6DModes.h>
 
-#ifdef CUDA
-#include <GPUEnergyService6D.h>
-#endif
 
 namespace as {
 
 std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
 
 	std::unique_ptr<App> app;
-
-	Platform p = Platform::unspecified;
-	if (args.numCPUs > 0) {
-		if (args.numModes > 0){
-			p = Platform::CPUModes;}
-		else{
-			p = Platform::CPU;}
-	} else if (args.deviceIds.size() > 0) {
-		p = Platform::GPU;
-	}
-
 	if (args.precision == "single") {
-		app = create<float>(args.app, p);
+		app = create<float>(args.app);
 	} else if (args.precision == "double") {
-		app = create<double>(args.app, p);
+		app = create<double>(args.app);
 	} else {
 		throw std::invalid_argument("unknown precision specification: " + args.precision);
 	}
@@ -45,33 +30,21 @@ std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
 }
 
 template<typename REAL>
-std::unique_ptr<App> AppFactory::create(AppType appType, Platform p) {
+std::unique_ptr<App> AppFactory::create(AppType appType) {
 //std::unique_ptr<App> AppFactory::create(AppType appType, ServiceType ServiceType, Platform p) {
 // for HM and/or MultiBodies --> need TypeFactory (like TypeWrapper) for EnergySerives
 
 	std::unique_ptr<App> app;
 
 	switch (appType) {
-	case AppType::Score:
-
-		switch (p) {
-			case Platform::CPU:
-				app = std::unique_ptr<App> (new scATTRACT<CPUEnergyService6D<REAL>>());
-				break;
-			case Platform::CPUModes:
-				app = std::unique_ptr<App> (new scATTRACT<CPUEnergyService6DModes<REAL>>());
-				break;
-#ifdef CUDA
-			case Platform::GPU:
-				app = std::unique_ptr<App> (new scATTRACT<GPUEnergyService6D<REAL>>());
-				break;
-#endif
-			default:
-				throw std::invalid_argument("unknown platform to create: " + static_cast<int>(appType));
-		}
-
-		// in case of multiple possible Service types (GPU, Modes) create private helper template factory method
+	case AppType::SCORE:
+		app = std::unique_ptr<App> (new scATTRACT<Types_6D<REAL>>());
 		break;
+
+	case AppType::EM:
+		app = std::unique_ptr<App> (new emATTRACT<Types_6D<REAL>>());
+		break;
+
 	default:
 		throw std::invalid_argument("unknown AppType: " + static_cast<int>(appType));
 	}

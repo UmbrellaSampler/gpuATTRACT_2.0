@@ -17,6 +17,7 @@
 #include "ScoreParser.h"
 #include "version.h"
 #include "AppParserFactory.h"
+#include "parser_constants.h"
 
 using namespace as;
 using namespace std;
@@ -54,7 +55,9 @@ static string usage() noexcept {
 	msg << "usage: gpuAttract <app> <args>" << endl;
 	msg << endl;
 	msg << "available apps:" << endl;
-	msg << "\t" << "sc" << "\t" << "Scoring input structures" << endl;
+	msg << "\t" << APP_SHORT_NAME_SC << "\t" << "Scoring input structures" << endl;
+	msg << endl;
+	msg << "\t" << APP_SHORT_NAME_EM << "\t" << "Docking of input structures using energy minimization" << endl;
 	msg << endl;
 	msg << "For further help information type: \"gpuAttract --help\" or \"gpuAttract <app> --help\"";
 	return msg.str();
@@ -116,8 +119,10 @@ void CmdParser::parse(int argc, char* argv[]) noexcept {
 }
 
 void CmdParser::assignApp(string app) {
-	if (app.compare("sc") == 0	) {
-		_args->app = AppType::Score;
+	if (app.compare(APP_SHORT_NAME_SC) == 0	) {
+		_args->app = AppType::SCORE;
+	} else if (app.compare(APP_SHORT_NAME_EM) == 0	) {
+		_args->app = AppType::EM;
 	} else {
 		throw po::error("unknown app: " + app);
 	}

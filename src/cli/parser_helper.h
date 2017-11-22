@@ -28,6 +28,9 @@ namespace as {
 
 	std::string extractFileName(std::string path) noexcept;
 
+	std::string concatenate(std::initializer_list<char const * const> const& values) noexcept;
+	std::string descriptionWithOptions(std::string desc, std::initializer_list<char const * const> const& values) noexcept;
+
 }
 
 
