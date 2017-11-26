@@ -17,6 +17,8 @@ namespace test {
 
 class Service_TimeOut : public as::CPUEnergyService<GenericTypes<int, int, int>> {
 public:
+	Service_TimeOut() :
+		as::CPUEnergyService<genericTypes_t>(nullptr) {}
 
 	itemProcessor_t createItemProcessor () override;
 

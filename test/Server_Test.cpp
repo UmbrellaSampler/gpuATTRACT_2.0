@@ -25,33 +25,28 @@ using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::Invoke;
 
+namespace test {
+
 TEST(Server, Construction) {
-	try {
-		as::Server<test::Service_Mock> server;
-		EXPECT_TRUE(true);
-	} catch (std::exception& e) {
-		FAIL();
-	}
 
 	try {
-		as::Server<test::Service_Mock> server(nullptr);
+		as::Server<Service_Mock::genericTypes_t> server(nullptr);
 		FAIL();
 	} catch (std::exception& e) {
 		ASSERT_STREQ( "Invalid service (nullptr).", e.what() );
 	}
 
-	auto service = std::make_shared<test::Service_Mock>();
+	auto service = std::make_shared<Service_Mock>();
 
 	try {
-		as::Server<test::Service_Mock> server(service);
+		as::Server<Service_Mock::genericTypes_t> server(service);
 		FAIL();
 	} catch (std::exception& e) {
 		ASSERT_STREQ( "Invalid service allocators (nullptr).", e.what() );
 	}
 
 	try {
-		service->initAllocators();
-		as::Server<test::Service_Mock> server(service);
+		as::Server<Service_Mock::genericTypes_t> server(service);
 		EXPECT_TRUE(true);
 	} catch (std::exception& e) {
 		FAIL();
@@ -59,8 +54,9 @@ TEST(Server, Construction) {
 }
 
 TEST(Server, Interface_setService) {
-	as::Server<test::Service_Mock> server;
-	auto service = std::make_shared<test::Service_Mock>();
+
+	auto service = std::make_shared<Service_Mock>();
+	as::Server<Service_Mock::genericTypes_t> server(service);
 	try {
 		server.setService(nullptr);
 		FAIL();
@@ -76,7 +72,6 @@ TEST(Server, Interface_setService) {
 	}
 
 	try {
-		service->initAllocators();
 		server.setService(service);
 		EXPECT_TRUE(true);
 	} catch (std::exception& e) {
@@ -85,11 +80,11 @@ TEST(Server, Interface_setService) {
 }
 
 TEST(Server, Interface_submit) {
-	using request_t = as::Server<test::Service_Mock>::request_t;
-	as::Server<test::Service_Mock> server;
-	auto serviceMock = server.service();
+	using request_t = as::Server<Service_Mock::genericTypes_t>::request_t;
+	auto serviceMock = std::make_shared<Service_Mock>();
+	as::Server<Service_Mock::genericTypes_t> server(serviceMock);
 	ON_CALL(*serviceMock, createItemProcessor())
-		.WillByDefault(Invoke(serviceMock.get(), &test::Service_Mock::createItemProcessorImpl));
+		.WillByDefault(Invoke(serviceMock.get(), &Service_Mock::createItemProcessorImpl));
 	EXPECT_CALL(*serviceMock, createItemProcessor())
 		.Times(AtLeast(0));
 	server.createWorkers(1);
@@ -132,11 +127,11 @@ TEST(Server, Interface_submit) {
 }
 
 TEST(Server, Interface_wait) {
-	using request_t = as::Server<test::Service_Mock>::request_t;
-	as::Server<test::Service_Mock> server;
-	auto serviceMock = server.service();
+	using request_t = as::Server<Service_Mock::genericTypes_t>::request_t;
+	auto serviceMock = std::make_shared<Service_Mock>();
+	as::Server<Service_Mock::genericTypes_t> server(serviceMock);
 	ON_CALL(*serviceMock, createItemProcessor())
-		.WillByDefault(Invoke(serviceMock.get(), &test::Service_Mock::createItemProcessorImpl));
+		.WillByDefault(Invoke(serviceMock.get(), &Service_Mock::createItemProcessorImpl));
 	EXPECT_CALL(*serviceMock, createItemProcessor())
 		.Times(AtLeast(0));
 	server.createWorkers(1);
@@ -168,8 +163,9 @@ TEST(Server, Interface_wait) {
 		server.wait(request, result); // to ensure that buffer return to buffer manager
 	}
 
-	using request_t = as::Server<test::Service_TimeOut>::request_t;
-	as::Server<test::Service_TimeOut> server_to;
+	using request_t = as::Server<Service_TimeOut>::request_t;
+
+	as::Server<Service_TimeOut::genericTypes_t> server_to(std::make_shared<Service_TimeOut>());
 	server_to.createWorkers(1);
 	server_to.setWaitTime(10);
 
@@ -186,8 +182,8 @@ TEST(Server, Interface_wait) {
 }
 
 TEST(Server, Interface_setItemSize) {
-	as::Server<test::Service_Mock> server;
-	auto serviceMock = server.service();
+	auto serviceMock = std::make_shared<Service_Mock>();
+	as::Server<Service_Mock::genericTypes_t> server(serviceMock);
 
 	try {
 		server.setItemSize(0);
@@ -211,18 +207,19 @@ constexpr unsigned testCommon = 2;
 
 class ServerIntegration: public ::testing::Test {
 protected: // could also be public according to gtest Primer.md
+	ServerIntegration() :
+		sh_serviceMock(std::make_shared<Service_Mock>()),
+		server(sh_serviceMock),
+		common(testCommon){}
+
 	virtual void SetUp() {
-		sh_serviceMock = std::make_shared<test::Service_Mock>();
-		sh_serviceMock->initAllocators();
-		common = testCommon;
-		initServer();
 		initInput();
 	}
 
 	virtual void TearDown() {}
 
-	using server_t = as::Server<test::Service_Mock>;
-	using request_t = as::Server<test::Service_Mock>::request_t;
+	using server_t = as::Server<Service_Mock::genericTypes_t>;
+	using request_t = as::Server<Service_Mock::genericTypes_t>::request_t;
 
 	request_t createRequest(unsigned inputSize) {
 		if (inputSize > maxTestSize) {
@@ -234,18 +231,15 @@ protected: // could also be public according to gtest Primer.md
 		return request;
 	}
 
-	std::shared_ptr<test::Service_Mock> sh_serviceMock; // mock service to be injected into the service
+	std::shared_ptr<Service_Mock> sh_serviceMock; // mock service to be injected into the service
 	server_t server;				// associated server
 
 	int common;			// the common element of the request
 
-	test::Service_Mock::input_t input[maxTestSize];
-	test::Service_Mock::result_t result[maxTestSize];
+	Service_Mock::input_t input[maxTestSize];
+	Service_Mock::result_t result[maxTestSize];
 
 private:
-	void initServer() {
-		server.setService(sh_serviceMock);
-	}
 
 	void initInput() {
 		std::iota(input, input + maxTestSize, 0);
@@ -256,7 +250,7 @@ private:
 TEST_F(ServerIntegration, WithServiceMock)
 {
 	ON_CALL(*sh_serviceMock, createItemProcessor())
-		.WillByDefault(Invoke(sh_serviceMock.get(), &test::Service_Mock::createItemProcessorImpl));
+		.WillByDefault(Invoke(sh_serviceMock.get(), &Service_Mock::createItemProcessorImpl));
 	EXPECT_CALL(*sh_serviceMock, createItemProcessor())
 		.Times(AtLeast(1));
 
@@ -281,6 +275,8 @@ TEST_F(ServerIntegration, WithServiceMock)
 	}
 
 }
+
+} // namespace test
 
 
 

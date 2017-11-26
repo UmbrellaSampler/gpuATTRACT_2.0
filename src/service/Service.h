@@ -25,6 +25,7 @@ template<typename GenericTypes>
 class Service {
 
 public:
+	using genericTypes_t = GenericTypes;
 	using service_t = Service<GenericTypes>;
 
 	// Contract
