@@ -19,23 +19,26 @@ class EnergyService : public Service<GenericTypes> {
 public:
 	using typename Service<GenericTypes>::service_t;
 
+	using typename service_t::input_t;
+	using typename service_t::result_t;
+
 	using typename service_t::itemProcessor_t;
 	using typename service_t::distributor_t;
 
 public:
 
 
-	explicit EnergyService(std::shared_ptr<DataManager> dataMng) {
-		_dataMng = dataMng;
-	}
+	explicit EnergyService(std::shared_ptr<Allocator<input_t>> inputAllocator,
+			std::shared_ptr<Allocator<result_t>> resultAllocator,
+			std::shared_ptr<DataManager> dataMng) :
+			Service<GenericTypes>(inputAllocator, resultAllocator),
+			_dataMng(dataMng) {}
 
 	virtual ~EnergyService() {};
 
 	virtual itemProcessor_t createItemProcessor() = 0;
 
 	distributor_t createDistributor() = 0;
-
-	void initAllocators() = 0;
 
 protected:
 	std::shared_ptr<DataManager> _dataMng;

@@ -89,7 +89,7 @@ TEST(Server, Interface_submit) {
 	as::Server<test::Service_Mock> server;
 	auto serviceMock = server.service();
 	ON_CALL(*serviceMock, createItemProcessor())
-		.WillByDefault(Invoke(serviceMock.get(), &test::Service_Mock::createItemProcessor_fake));
+		.WillByDefault(Invoke(serviceMock.get(), &test::Service_Mock::createItemProcessorImpl));
 	EXPECT_CALL(*serviceMock, createItemProcessor())
 		.Times(AtLeast(0));
 	server.createWorkers(1);
@@ -136,7 +136,7 @@ TEST(Server, Interface_wait) {
 	as::Server<test::Service_Mock> server;
 	auto serviceMock = server.service();
 	ON_CALL(*serviceMock, createItemProcessor())
-		.WillByDefault(Invoke(serviceMock.get(), &test::Service_Mock::createItemProcessor_fake));
+		.WillByDefault(Invoke(serviceMock.get(), &test::Service_Mock::createItemProcessorImpl));
 	EXPECT_CALL(*serviceMock, createItemProcessor())
 		.Times(AtLeast(0));
 	server.createWorkers(1);
@@ -256,7 +256,7 @@ private:
 TEST_F(ServerIntegration, WithServiceMock)
 {
 	ON_CALL(*sh_serviceMock, createItemProcessor())
-		.WillByDefault(Invoke(sh_serviceMock.get(), &test::Service_Mock::createItemProcessor_fake));
+		.WillByDefault(Invoke(sh_serviceMock.get(), &test::Service_Mock::createItemProcessorImpl));
 	EXPECT_CALL(*sh_serviceMock, createItemProcessor())
 		.Times(AtLeast(1));
 
