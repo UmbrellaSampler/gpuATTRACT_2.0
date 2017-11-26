@@ -8,11 +8,13 @@
 #ifndef SRC_REDUCTION_H_
 #define SRC_REDUCTION_H_
 
-#include "Vec3.h"
+
 #include "Torque.h"
 #include "TorqueMat.h"
 #include "matrixFunctions.h"
 #include "nativeTypesWrapper.h"
+#include <iostream>
+
 
 #ifdef CUDA
 #include "Types_6D.h"
@@ -32,13 +34,15 @@ public:
 
 constexpr float ForceLim = 1.0e18;
 
-template<typename REAL>
-PotForce<REAL> reducePotForce(
+
+
+template<typename REAL, typename RETURNTYPE>
+RETURNTYPE reducePotForce(
 		REAL const* fx, REAL const* fy, REAL const* fz,
 		REAL const* energy,
 		unsigned const& numAtoms)
 {
-	PotForce<REAL> potForce;
+	RETURNTYPE potForce;
 	potForce.E = 0.0;
 	potForce.pos = Vec3<REAL>(0.0);
 
@@ -70,6 +74,9 @@ PotForce<REAL> reducePotForce(
 	return potForce;
 }
 
+
+
+
 template<typename REAL>
 Vec3<REAL> reduceTorque(
 		REAL const* x, REAL const* y, REAL const* z, // unrotated protein coordinates x,y,z !!!
@@ -95,6 +102,8 @@ Vec3<REAL> reduceTorque(
 
 	return result;
 }
+
+
 
 inline bool isPow2(unsigned int x)
 {
