@@ -41,7 +41,7 @@ namespace as {
 template<typename REAL>
 GPUEnergyService6D<REAL>::GPUEnergyService6D(std::shared_ptr<DataManager> dataMng,
 		std::vector<int> const& deviceIds) :
-	GPUEnergyService<Types_6D<REAL>>::GPUEnergyService(dataMng), _workerId(0), _deviceIds(deviceIds)
+	GPUEnergyService<Types_6D<REAL>>(dataMng), _workerId(0), _deviceIds(deviceIds)
 {}
 
 template<typename REAL>

@@ -10,7 +10,7 @@
 
 #include "WorkItem.h"
 
-auto test::Service_Mock::createItemProcessor_fake() -> itemProcessor_t{
+auto test::Service_Mock::createItemProcessorImpl() -> itemProcessor_t {
 
 	itemProcessor_t fncObj = [] (workItem_t* item) {
 		using namespace std;

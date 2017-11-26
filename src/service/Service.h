@@ -36,6 +36,11 @@ public:
 	using itemProcessor_t = std::function<bool(workItem_t*)>;
 	using distributor_t = std::function<std::vector<workerId_t>(common_t const*, size_t)>;
 
+	explicit Service(std::shared_ptr<Allocator<input_t>> inputAllocator,
+			std::shared_ptr<Allocator<result_t>> resultAllocator) :
+				_inputAllocator(inputAllocator),
+				_resultAllocator(resultAllocator) {}
+
 	virtual ~Service() {}
 
 	void setInputAllocator(std::shared_ptr<Allocator<input_t>> allocator) {
@@ -56,7 +61,6 @@ public:
 
 	virtual itemProcessor_t createItemProcessor() = 0;
 	virtual distributor_t createDistributor() = 0;
-	virtual void initAllocators() = 0;
 
 private:
 

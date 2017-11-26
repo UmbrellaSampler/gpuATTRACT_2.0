@@ -19,7 +19,6 @@ class CPUEnergyService : public EnergyService<GenericTypes> {
 protected:
 public:
 	using typename EnergyService<GenericTypes>::service_t;
-public:
 
 	using typename service_t::input_t;
 	using typename service_t::common_t;
@@ -35,8 +34,6 @@ public:
 	virtual itemProcessor_t createItemProcessor() = 0;
 
 	distributor_t createDistributor() override;
-
-	void initAllocators() override;
 
 };
 

@@ -19,14 +19,9 @@ namespace as {
 
 template<typename GenericTypes>
 GPUEnergyService<GenericTypes>::GPUEnergyService(std::shared_ptr<DataManager> dataMng) :
-	EnergyService<GenericTypes>(dataMng)
+	EnergyService<GenericTypes>(std::make_shared<HostPinnedAllocator<input_t>>(),
+			std::make_shared<HostPinnedAllocator<result_t>>(), dataMng)
 {}
-
-template<typename GenericTypes>
-void GPUEnergyService<GenericTypes>::initAllocators() {
-	this->setInputAllocator(std::make_shared<HostPinnedAllocator<input_t>>());
-	this->setResultAllocator(std::make_shared<HostPinnedAllocator<result_t>>());
-}
 
 } // namespace as
 
