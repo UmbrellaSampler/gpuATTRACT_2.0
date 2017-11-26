@@ -25,8 +25,6 @@ public:
 	using typename service_t::itemProcessor_t;
 	using typename service_t::distributor_t;
 
-public:
-
 
 	explicit EnergyService(std::shared_ptr<Allocator<input_t>> inputAllocator,
 			std::shared_ptr<Allocator<result_t>> resultAllocator,
