@@ -171,8 +171,6 @@ void NLPotForce(
 /**
  *
  * this function calculates the forces between the ligand and the receptor
- * if they are not too further away than out of bonds.
- * dont forget to set the receptor forces to zero beforehand
  */
 
 template<typename REAL>
@@ -182,6 +180,9 @@ void NLPotForce(
 		Protein<REAL> const* lig,
 		SimParam<REAL> const* simParam,
 		ParamTable<REAL> const* table,
+		REAL const* RecPosX,
+		REAL const* RecPosY,
+		REAL const* RecPosZ,
 		REAL const* LigPosX,
 		REAL const* LigPosY,
 		REAL const* LigPosZ,
@@ -191,7 +192,8 @@ void NLPotForce(
 		REAL* outLig_E,
 		REAL* outRec_fx,// receptor forces have to be set to zero in advance
 		REAL* outRec_fy,
-		REAL* outRec_fz
+		REAL* outRec_fz,
+		REAL* outRec_E
 		)
 {
 
@@ -224,9 +226,9 @@ void NLPotForce(
 			for (unsigned j = 0; j < nDesc.numEl; ++j) {
 				const unsigned nIdx = grid->getNeighbor(nDesc.idx + j);
 
-				REAL dx = posLigX - rec->xPos()[nIdx];
-				REAL dy = posLigY - rec->yPos()[nIdx];
-				REAL dz = posLigZ - rec->zPos()[nIdx];
+				REAL dx = posLigX - RecPosX[nIdx];
+				REAL dy = posLigY - RecPosY[nIdx];
+				REAL dz = posLigZ - RecPosZ[nIdx];
 
 
 				const REAL dr2 = dx * dx + dy * dy + dz * dz;
@@ -265,9 +267,6 @@ void NLPotForce(
 				fAcc.z  += fVdW.z;
 				eAcc += eVdW;
 
-				outRec_fx[nIdx] -= fVdW.x;
-				outRec_fy[nIdx] -= fVdW.y;
-				outRec_fz[nIdx] -= fVdW.z;
 
 				const REAL chargeLig = lig->charge()[i];
 				const REAL chargeRec = rec->charge()[nIdx];
@@ -291,10 +290,6 @@ void NLPotForce(
 				fAcc.z  -= fVdW.z;
 				eAcc -= eVdW;
 
-				//add receptor forces
-				outRec_fx[nIdx] -= fVdW.x;
-				outRec_fy[nIdx] -= fVdW.y;
-				outRec_fz[nIdx] -= fVdW.z;
 
 
 				if (calc_elec) {
@@ -327,6 +322,11 @@ void NLPotForce(
 			outLig_fy[i] += fAcc.y;
 			outLig_fz[i] += fAcc.z;
 			outLig_E[i]  += eAcc;
+
+			outRec_fx[i] -= fAcc.x;
+			outRec_fy[i] -= fAcc.y;
+			outRec_fz[i] -= fAcc.z;
+			outRec_E[i]  -= eAcc;
 
 		} // for i
 	}

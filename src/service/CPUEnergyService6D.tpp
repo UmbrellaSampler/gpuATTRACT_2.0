@@ -101,6 +101,8 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 			const auto& dof = dofs[i];
 			auto& enGrad = results[i];
 
+
+
 			rotate_translate(
 					lig->xPos(),
 					lig->yPos(),
@@ -112,6 +114,7 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 					buffers->h_trafoLig.getY(),
 					buffers->h_trafoLig.getZ()
 			); // OK
+
 
 			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
@@ -162,13 +165,14 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 //			}
 ////			exit(EXIT_SUCCESS);
 
-			PotForce<REAL> redPotForce = reducePotForce(
+			PotForce<REAL> redPotForce = reducePotForce<REAL,PotForce<REAL>>(
 					buffers->h_potLig.getX(),
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),
 					buffers->h_potLig.getW(),
 					lig->numAtoms()
 			); // OK
+
 
 //			// Debug
 //			REAL x = redPotForce.pos.x;

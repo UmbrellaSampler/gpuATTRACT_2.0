@@ -25,7 +25,7 @@
 #include <map>
 #include <list>
 #include <memory>
-
+#include "TypeConfiguration.h"
 
 namespace as {
 
@@ -70,6 +70,7 @@ private:
 	std::list<Chunk> _chunkList;
 	std::vector<extDOF> _collectedRequests;
 	std::vector<extEnGrad> _collectedResults;
+
 
 
 	explicit RequestHandler(std::shared_ptr<extServer> server,

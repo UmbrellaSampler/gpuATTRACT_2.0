@@ -8,11 +8,13 @@
 #ifndef SRC_REDUCTION_H_
 #define SRC_REDUCTION_H_
 
-#include "Vec3.h"
+
 #include "Torque.h"
 #include "TorqueMat.h"
 #include "matrixFunctions.h"
 #include "nativeTypesWrapper.h"
+#include <iostream>
+
 
 #ifdef CUDA
 #include "Types_6D.h"
@@ -32,13 +34,15 @@ public:
 
 constexpr float ForceLim = 1.0e18;
 
-template<typename REAL>
-PotForce<REAL> reducePotForce(
+
+
+template<typename REAL, typename RETURNTYPE>
+RETURNTYPE reducePotForce(
 		REAL const* fx, REAL const* fy, REAL const* fz,
 		REAL const* energy,
 		unsigned const& numAtoms)
 {
-	PotForce<REAL> potForce;
+	RETURNTYPE potForce;
 	potForce.E = 0.0;
 	potForce.pos = Vec3<REAL>(0.0);
 
@@ -70,6 +74,9 @@ PotForce<REAL> reducePotForce(
 	return potForce;
 }
 
+
+
+
 template<typename REAL>
 Vec3<REAL> reduceTorque(
 		REAL const* x, REAL const* y, REAL const* z, // unrotated protein coordinates x,y,z !!!
@@ -95,59 +102,8 @@ Vec3<REAL> reduceTorque(
 
 	return result;
 }
-/*
- * @bief: reduceModeForce is essentially a dot product of the force vector and the modevector resulting in the effective force from the modes.
- * IMPORTANT: 1. the forces used have to be rotated such that they are the corresponding coordinatesystem.
- * 2. after the forces have been reduced they have to corrected by correctModeforce
- *
- */
-template<typename REAL>
-void reduceModeForce(
-		const REAL* forceX,
-		const REAL* forceY,
-		const REAL* forceZ,
-		const REAL* modeX,
-		const REAL* modeY,
-		const REAL* modeZ,
-		unsigned const& numAtoms,
-		unsigned const& numModes,
-		REAL* result
-		)
-{
-	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
-	//rotate forces into ligand frame
 
-	for( int i=0; i<numModes;i++){result[i]=0;}
-	for (unsigned i = 0; i < numAtoms; ++i) {
-		for(int mode=0;mode<numModes;mode++){
-				result[mode] -= forceX[i]*modeX[i*numModes+mode]+forceY[i]*modeY[i*numModes+mode]+forceZ[i]*modeZ[i*numModes+mode];
-		}
-	}
-}
-/**
- * @brief: this function corrects for strong mode interaction.
- * In case that high forces are acting the Proteins the mode tend to intoduce too much deformation.
- * Adding an exponential term which is of higher order (harmonic not enough) which is multiplied by the forceconstant for each mode corrects for this.
- * The old version uses either exp=3 or exp=4.
- * The forceconstant correspoonds to the magnitude of the modevector for each mode.
- */
-template<typename REAL>
-void correctModeForce(
-		const REAL* modeForceConstant,
-		unsigned const& numAtoms,
-		unsigned const& numModes,
-		REAL* delta
-		)
-{
-	const REAL factor=4.0;
-	const int exp=4;
-	REAL counterForce;
 
-	for(int mode=0; mode<numModes; mode++){
-		counterForce=factor*modeForceConstant[mode]*pow(delta[mode],exp);
-		delta[mode]=delta[mode]+counterForce;
-	}
-}
 
 
 inline bool isPow2(unsigned int x)

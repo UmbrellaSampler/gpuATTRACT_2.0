@@ -24,7 +24,7 @@
 #include <boost/coroutine/all.hpp>
 #include <Eigen/Core>
 #include <cassert>
-
+#include "TypeConfiguration.h"
 #include <meta.h>
 
 namespace as {
@@ -43,6 +43,8 @@ private:
 	virtual std::ostream& print(std::ostream&) const = 0;
 
 };
+
+
 
 class SolverBase {
 public:
@@ -71,18 +73,33 @@ public:
 	bool converged() {return !*coro;}
 	void setState(const Vector& value) { state = value;}
 
+//	template <typename DOFType>
+//	void setState(const DOFType &value) { state = TypesConverter<DOFType, Vector>::toSecond(value);}
+
+
 	template <typename DOFType>
-	void setState(const DOFType& value) { state = TypesConverter<DOFType, Vector>::toSecond(value);}
+	void setState( DOFType value) { typeConfigInput = value.getConfiguration();
+	state=value.getVectorfromDOF();}
+
 
 	Vector getState() {return state;}
 
+
 	void setObjective(const ObjGrad& value) { objective = value; }
 
+//	template <typename ResultType>
+//	void setObjective(const ResultType& value) {	objective = TypesConverter<ResultType, ObjGrad>::toSecond(value);}
+
 	template <typename ResultType>
-	void setObjective(const ResultType& value) {	objective = TypesConverter<ResultType, ObjGrad>::toSecond(value); }
+	void setObjective( ResultType value) {	typeConfigResult= value.getConfiguration();
+	objective=value.getVectorfromDOF();}
 
 	ObjGrad getObjective() {return objective;}
 
+
+	TypeConfiguration getInputDOFConfig(){return typeConfigInput;	}
+
+	TypeConfiguration getResultDOFConfig(){	return typeConfigResult;}
 	void start();
 
 	void step();
@@ -100,6 +117,8 @@ protected:
 
 	virtual Statistic* internal_getStats() = 0;
 
+	TypeConfiguration typeConfigInput;
+	TypeConfiguration typeConfigResult;
 
 	Vector state; // dof
 	ObjGrad objective; // energy
@@ -109,7 +128,6 @@ protected:
 	static bool stats;
 
 };
-
 }
 
 #endif /* SOLVERBASE_H_ */

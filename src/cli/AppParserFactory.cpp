@@ -22,6 +22,9 @@ std::unique_ptr<AppCmdParser> AppParserFactory::create(AppType app, std::shared_
 	case AppType::EM:
 		parser = std::unique_ptr<EmParser>(new EmParser(args));
 		break;
+	case AppType::SCORE_MODE:
+		parser = std::unique_ptr<ScoreParser>(new ScoreParser(args));
+		break;
 	default:
 		throw std::invalid_argument("unknown app to create: " + static_cast<int>(app));
 	}

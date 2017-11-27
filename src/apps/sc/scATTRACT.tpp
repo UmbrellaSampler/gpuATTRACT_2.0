@@ -11,6 +11,7 @@
 #include <iostream>
 #include "scATTRACT.h"
 #include "Configurator_6D.h"
+#include "Configurator_6D_Modes.h"
 #include "Request.h"
 #include "Server.h"
 

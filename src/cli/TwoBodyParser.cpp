@@ -31,9 +31,13 @@ void TwoBodyParser::addOptions() noexcept {
 			("dof"     			  , po::value<string>()->required()									, "structure (DOF) file")
 			("receptor-pdb,r"     , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_PDB)	, "pdb-file of receptor")
 			("ligand-pdb,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of ligand")
-			("grid,g"             , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "receptor grid file")
+			("gridrec,gr"             , po::value<string>()->default_value(FILE_DEFAULT_GRID_RECEPTOR)	, "receptor grid file")
+			("gridlig,gl"             , po::value<string>()->default_value(FILE_DEFAULT_GRID_LIGAND)	, "ligand grid file")
 			("par,p"	          , po::value<string>()->default_value(FILE_DEFAULT_PARAMETER)		, "attract forcefield parameter file")
-			("alphabet,a"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET)	, "receptor grid alphabet file");
+			("alphabetrec,ar"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
+			("alphabetlig,al"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
+      ("modl,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
+			("modr,mr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor");
 	_optsDesc.add(input);
 
 	po::options_description concurrency("concurrency");
@@ -50,6 +54,7 @@ void TwoBodyParser::addOptions() noexcept {
 	_optsDesc.add(concurrency);
 	po::options_description sim("simulation");
 	sim.add_options()
+      ("numModes", po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes")
 			("dielec", po::value<string>()->default_value(SIM_DEFAULT_DIELEC),
 					descriptionWithOptions("dielectric behavior", SIM_ALLOWED_DIELEC).c_str())
 			("epsilon", po::value<double>()->default_value(SIM_DEFAULT_EPSILON), "dielectric constant");
@@ -81,12 +86,20 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->recName = vm["receptor-pdb"].as<string>();
 	if(vm.count("ligand-pdb"))
 		_args->ligName = vm["ligand-pdb"].as<string>();
-	if(vm.count("grid"))
-		_args->gridName = vm["grid"].as<string>();
+	if(vm.count("gridrec"))
+		_args->gridNameRec = vm["gridrec"].as<string>();
+	if(vm.count("gridlig"))
+		_args->gridNameLig = vm["gridlig"].as<string>();
 	if(vm.count("par"))
 		_args->paramsName = vm["par"].as<string>();
-	if(vm.count("alphabet"))
-		_args->alphabetName = vm["alphabet"].as<string>();
+	if(vm.count("alphabetrec"))
+		_args->alphabetNameRec = vm["alphabetrec"].as<string>();
+	if(vm.count("alphabetlig"))
+		_args->alphabetNameLig = vm["alphabetlig"].as<string>();
+	if(vm.count("modr"))
+		_args->recModesName = vm["modr"].as<string>();
+	if(vm.count("modl"))
+		_args->ligModesName = vm["modl"].as<string>();
 	if(vm.count("numCPUs"))
 		_args->numCPUs = vm["numCPUs"].as<int>();
 	if(vm.count("device"))
@@ -99,6 +112,8 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->dielec = vm["dielec"].as<string>();
 	if(vm.count("epsilon"))
 		_args->epsilon = vm["epsilon"].as<double>();
+	if(vm.count("numModes"))
+		_args->numModes = vm["numModes"].as<int>();
 
 }
 

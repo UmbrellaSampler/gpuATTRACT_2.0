@@ -97,6 +97,11 @@ public:
 		return _modes + 2*_numModes*_numAtoms;
 	}
 
+	REAL* modeForce() const{
+		return _modeForceConstant;
+	}
+
+
 	tag_t tag() const{
 		return _tag;
 	}
@@ -127,6 +132,7 @@ public:
 
 	void setNumModes(unsigned num) {
 		_numModes = num;
+		_modeForceConstant=new REAL[_numModes];
 	}
 
 

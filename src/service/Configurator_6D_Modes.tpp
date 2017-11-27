@@ -1,17 +1,10 @@
-/*
- * Configurator_6D.tpp
- *
- *  Created on: Aug 17, 2016
- *      Author: uwe
- */
-
-#ifndef SRC_CONFIGURATOR_6D_TPP_
-#define SRC_CONFIGURATOR_6D_TPP_
+#ifndef SRC_CONFIGURATOR_6D_MODES_TPP_
+#define SRC_CONFIGURATOR_6D_MODES_TPP_
 
 #include <exception>
 #include <vector>
 
-#include "Configurator_6D.h"
+#include "Configurator_6D_Modes.h"
 
 #include "readFile.h"
 #include "DOF_6D.h"
@@ -27,16 +20,27 @@
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
 
+
 namespace as {
 
 template<typename SERVICE>
-void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
+void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
 	auto ligand = createProteinFromPDB<real_t>(args.ligName);
-	auto grid = createGridFromGridFile<real_t>(args.gridNameRec);
+	auto gridRec = createGridFromGridFile<real_t>(args.gridNameRec);
+	auto gridLig = createGridFromGridFile<real_t>(args.gridNameLig);
+
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
+
+	if(args.numModes > 0){
+		receptor->setNumModes(args.numModes);
+		ligand->setNumModes(args.numModes);
+		readHMMode<real_t>(receptor, args.recModesName);
+		readHMMode<real_t>(ligand, args.ligModesName);
+	}
+
 
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
@@ -56,6 +60,14 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
 	applyMapping(typeMap, ligand->numAtoms(), ligand->type(), ligand->mappedType());
 
+
+	auto mapVecRec = readGridAlphabetFromFile(args.alphabetNameLig); // map: std::vector<unsigned>
+	TypeMap typeMapRec = createTypeMapFromVector(mapVecRec);
+	receptor->setNumMappedTypes(1);
+	receptor->getOrCreateMappedPtr();
+	applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
+	applyMapping(typeMapRec, receptor->numAtoms(), receptor->type(), receptor->mappedType());
+
 	/* read dof file */
 	DOFHeader<real_t> h = readDOFHeader<real_t>(args.dofName);
 	/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
@@ -63,12 +75,10 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
-	std::vector<std::vector<DOF_6D<real_t>>> DOF_molecules = readDOF_6D<real_t>(args.dofName);
+	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = readDOF_6D_Modes<real_t>(args.dofName,args.numModes);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
-
-
 	/* apply pivoting to proteins */
 		if(h.auto_pivot) {
 			if (!h.pivots.empty()) {
@@ -85,31 +95,35 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 			receptor->pivotize(h.pivots[0]);
 			ligand->pivotize(h.pivots[1]);
 		}
-
 	/* transform ligand dofs assuming that the receptor is always centered in the origin */
 	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
 
 
 	/* init dof and result buffer */
-	_dofs = std::vector<input_t>(DOF_molecules[1].size());
+	_dofs=std::vector<input_t>(DOF_molecules[1].size());
+
+
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
-		_dofs[i].pos = DOF_molecules[1][i].pos;
-		_dofs[i].ang = DOF_molecules[1][i].ang;
+		_dofs[i].dof.push_back(DOF_molecules[0][i]);
+		_dofs[i].dof.push_back(DOF_molecules[1][i]);
 	}
 
-
-
 	/* apply grid displacement */
-	auto pivot = h.pivots[0];
-	grid->translate(-make_real3(pivot.x,pivot.y,pivot.z));
+	gridRec->translate(-make_real3(h.pivots[0].x,h.pivots[0].y,h.pivots[0].z));
+	gridLig->translate(-make_real3(h.pivots[1].x,h.pivots[1].y,h.pivots[1].z));
 
 	/* add items to dataMng */
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
 	_ids.recId = dataManager->add(receptor);
 	_ids.ligId = dataManager->add(ligand);
-	_ids.gridId = dataManager->add(grid);
+	_ids.gridRecId = dataManager->add(gridRec);
+	_ids.gridLigId = dataManager->add(gridLig);
 	_ids.tableId = dataManager->add(paramTable);
 	_ids.paramsId = dataManager->add(simParam);
+
+
+
+
 
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {
@@ -121,11 +135,11 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	ServiceType serviceType;
 	if (args.numCPUs > 0) {
-		serviceType = ServiceType::CPUEnergyService6D;
+		serviceType = ServiceType::CPUEnergyService6DModes;
 	}
 #ifdef CUDA
 	else {
-		serviceType = ServiceType::GPUEnergyService6D;
+		serviceType = ServiceType::GPUEnergyService6DModes;
 	}
 #endif
 
@@ -158,7 +172,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 }
 
 template<typename SERVICE>
-void Configurator_6D<SERVICE>::finalize() noexcept {
+void Configurator_6D_Modes<SERVICE>::finalize() noexcept {
 
 }
 

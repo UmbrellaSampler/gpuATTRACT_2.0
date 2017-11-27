@@ -46,7 +46,7 @@ static po::positional_options_description posOptions() {
 static po::options_description hiddenOptions() {
 	po::options_description options("Hidden");
 	options.add_options()
-			("app", po::value<string>(), "application: sc,em,mc");
+			("app", po::value<string>(), "application: sc,scmode,em,mc");
 	return options;
 }
 
@@ -123,6 +123,8 @@ void CmdParser::assignApp(string app) {
 		_args->app = AppType::SCORE;
 	} else if (app.compare(APP_SHORT_NAME_EM) == 0	) {
 		_args->app = AppType::EM;
+	} else if (app.compare(APP_SHORT_NAME_SCMODE) == 0	) {
+		_args->app = AppType::SCORE_MODE;
 	} else {
 		throw po::error("unknown app: " + app);
 	}

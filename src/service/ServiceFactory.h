@@ -10,6 +10,7 @@
 
 #include <memory>
 #include "ServiceType.h"
+#include "GenericTypes.h"
 
 namespace as {
 
@@ -23,8 +24,11 @@ class ServiceFactory {
 public:
 	ServiceFactory() = delete;
 
-	template<typename REAL, template <typename REAL> class GenericTypes>
-	static std::unique_ptr<Service<GenericTypes<REAL>>> create(ServiceType, std::shared_ptr<DataManager>, CmdArgs const&);
+//	template<typename REAL, template <typename REAL> class GenericTypes>
+//	static std::unique_ptr<Service<GenericTypes<REAL>>> create(ServiceType, std::shared_ptr<DataManager>, CmdArgs const&);
+
+	template<typename REAL>
+	static std::shared_ptr<void> create(ServiceType, std::shared_ptr<DataManager>, CmdArgs const&);
 
 };
 

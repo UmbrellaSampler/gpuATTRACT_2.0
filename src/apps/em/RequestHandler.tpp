@@ -25,7 +25,7 @@ RequestHandler<GenericTypes>::RequestHandler(std::shared_ptr<extServer> server,
 			unsigned numConcurrentObjects,
 			unsigned numChunks,
 			unsigned minChunkSize,
-			std::vector<extDOF> const& dofs,
+			std::vector<extDOF> const& dofsInput,
 			common_t const& common,
 			std::string const& solverName) :
 		_server(server),
@@ -35,7 +35,8 @@ RequestHandler<GenericTypes>::RequestHandler(std::shared_ptr<extServer> server,
 		_numObjects(0),
 		_common(common)
 {
-	init(solverName, dofs);
+
+	init(solverName, dofsInput);
 }
 
 template<typename GenericTypes>
@@ -111,7 +112,12 @@ void RequestHandler<GenericTypes>::run() {
 		for (auto& obj : chunk.getContainer()) {
 			SharedSolver& solver = obj.second;
 			solver->start();
-			_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(solver->getState()));
+			extDOF dof;
+			dof.setDOFfromVector(solver->getState(),solver->getInputDOFConfig());
+
+			_collectedRequests.push_back(dof);
+
+			//_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(solver->getState()));
 		}
 
 		request_t request(_collectedRequests.data(), _collectedRequests.size(), _common);
@@ -196,12 +202,20 @@ void RequestHandler<GenericTypes>::run() {
 						SharedSolver& newSolver = iter->second;
 						newSolver->start();
 						/* collect new request */
-						_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(newSolver->getState()));
+						extDOF dof;
+						dof.setDOFfromVector(newSolver->getState(),newSolver->getInputDOFConfig());
+						_collectedRequests.push_back(dof);
+
+						//_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(newSolver->getState()));
+
 						++iter;
 					}
 				} else {
 					/* collect new request */
-					_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(solver->getState()));
+					extDOF dof;
+					dof.setDOFfromVector(solver->getState(),solver->getInputDOFConfig());
+					_collectedRequests.push_back(dof);
+				//	_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(solver->getState()));
 					++iter;
 				}
 
@@ -237,7 +251,11 @@ template<typename GenericTypes>
 auto RequestHandler<GenericTypes>::getResultStates() noexcept -> std::vector<extDOF>  {
 	std::vector<extDOF> stateVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
-		stateVec[i] = TypesConverter<extDOF,Vector>::toFirst(_finishedObjects[i]->getState());
+		//stateVec[i] = TypesConverter<extDOF,Vector>::toFirst(_finishedObjects[i]->getState());
+
+		extDOF dof;
+		dof.setDOFfromVector(_finishedObjects[i]->getState(),_finishedObjects[i]->getInputDOFConfig());
+		stateVec[i] = dof;
 	}
 	return stateVec;
 }
@@ -246,7 +264,10 @@ template<typename GenericTypes>
 auto RequestHandler<GenericTypes>::getResultEnGrads() noexcept -> std::vector<extEnGrad> {
 	std::vector<extEnGrad> enGradVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
-		enGradVec[i] = TypesConverter<extEnGrad, ObjGrad>::toFirst(_finishedObjects[i]->getObjective());
+		extEnGrad dof;
+		dof.setDOFfromVector(_finishedObjects[i]->getObjective(),_finishedObjects[i]->getResultDOFConfig());
+		enGradVec[i] = dof;
+		//enGradVec[i] = TypesConverter<extEnGrad, ObjGrad>::toFirst(_finishedObjects[i]->getObjective());
 	}
 	return enGradVec;
 }

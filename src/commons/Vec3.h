@@ -119,6 +119,7 @@ public:
 		return Vec3(result);
 	}
 
+
 	__host__ __device__
 	void operator-=(const Vec3& rhs) {
 		x -= rhs.x;
@@ -172,6 +173,15 @@ public:
 	}
 
 	__host__ __device__
+	Vec3 inv() const {
+		Vec3 tmp;
+		tmp.x=-x;
+		tmp.y=-y;
+		tmp.z=-z;
+		return tmp;
+	}
+
+	__host__ __device__
 	double L2Norm() const {
 		return sqrt(L2NormSquare());
 	}
@@ -195,7 +205,7 @@ public:
 	}
 
 	__host__ __device__
-	bool operator==(const Vec3& rhs) const {
+	bool operator==(const Vec3 &rhs) const {
 		if (x != rhs.x)
 			return false;
 		if (y != rhs.y)

@@ -115,7 +115,7 @@ REAL* Protein<REAL>::getOrCreateModePtr() {
 
 template<typename REAL>
 REAL* Protein<REAL>::getOrCreateModeForcePtr() {
-	if (_modes == nullptr) {
+	if (_modeForceConstant == nullptr) {
 		if (_numModes == 0) {
 			throw std::runtime_error("getOrCreateModePtr(): the number of Modes must be set before");
 		}

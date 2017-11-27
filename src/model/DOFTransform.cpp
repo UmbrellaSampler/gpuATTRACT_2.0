@@ -26,7 +26,9 @@
 #include "nativeTypesWrapper.h"
 #include "DOFTransform.h"
 #include "Types_6D.h"
+#include "Types_6D_Modes.h"
 #include "matrixFunctions.h"
+#include <iostream>
 
 namespace as {
 
@@ -40,7 +42,7 @@ void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& do
 	assert(dof_rec.size() == dof_lig.size());
 
 	// center ligand dofs by the respective ligand pivot
-	if (centered_lig == false) {
+	if ( centered_lig == false) {
 		for (auto& dof : dof_lig) {
 			dof.pos.x += pivot_lig.x;
 			dof.pos.y += pivot_lig.y;
@@ -50,18 +52,30 @@ void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& do
 
 	/* shift ligand dofs by receptor pivot */
 	if (centered_rec == false) {
-		if (!(pivot_rec == Vec3<REAL>(0.0f))) {
+		if (!(pivot_rec == Vec3<REAL> (0.0f))) {
 			for (auto& dof : dof_lig) {
-				dof.pos.x -= pivot_rec.x;
-				dof.pos.y -= pivot_rec.y;
-				dof.pos.z -= pivot_rec.z;
+				//changed this so it is consitent with the old attract version
+				//dof.pos.x -= pivot_rec.x;
+				//dof.pos.y -= pivot_rec.y;
+				//dof.pos.z -= pivot_rec.z;
+				dof.pos.x -= pivot_lig.x;
+				dof.pos.y -= pivot_lig.y;
+				dof.pos.z -= pivot_lig.z;
 			}
 		}
+	}
+
+	//this way the emliminate any contribution of the pivot and always look at the proteins in their schwerpunkt coordinates
+	for (auto& dof : dof_lig) {
+		dof.pos.x += pivot_lig.x-pivot_rec.x;
+		dof.pos.y += pivot_lig.y-pivot_rec.y;
+		dof.pos.z += pivot_lig.z-pivot_rec.z;
 	}
 
 	/* rotate ligand into receptor frame and shift ligand by receptor dofs*/
 	for (unsigned j = 0; j < dof_lig.size(); ++j) {
 		const vec3_t& pos_rec = dof_rec[j].pos;
+
 		if (pos_rec.x != 0.0f || pos_rec.y != 0.0f || pos_rec.z != 0.0f ) {
 			vec3_t& pos_lig = dof_lig[j].pos;
 			pos_lig = pos_lig - pos_rec;
@@ -82,6 +96,7 @@ void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& do
 			RotMat<REAL> mat =  mat_rec_inv *mat_lig ;
 			rotmat2euler(mat, ang_lig.x, ang_lig.y, ang_lig.z);
 		}
+
 	}
 	/* the receptor dofs can now considered to be zero */
 
@@ -94,6 +109,16 @@ void transformDOF_glob2rec(const std::vector<DOF_6D<float>>& dof_rec, std::vecto
 
 template
 void transformDOF_glob2rec(const std::vector<DOF_6D<double>>& dof_rec, std::vector<DOF_6D<double>>& dof_lig,
+			const Vec3<double>& pivot_rec, const Vec3<double>& pivot_lig,
+			bool centered_rec, bool centered_lig);
+
+template
+void transformDOF_glob2rec(const std::vector<DOF_6D_Modes<float>>& dof_rec, std::vector<DOF_6D_Modes<float>>& dof_lig,
+			const Vec3<float>& pivot_rec, const Vec3<float>& pivot_lig,
+			bool centered_rec, bool centered_lig);
+
+template
+void transformDOF_glob2rec(const std::vector<DOF_6D_Modes<double>>& dof_rec, std::vector<DOF_6D_Modes<double>>& dof_lig,
 			const Vec3<double>& pivot_rec, const Vec3<double>& pivot_lig,
 			bool centered_rec, bool centered_lig);
 
