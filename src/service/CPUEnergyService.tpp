@@ -18,7 +18,8 @@ namespace as {
 
 template<typename GenericTypes>
 CPUEnergyService<GenericTypes>::CPUEnergyService(std::shared_ptr<DataManager> dataMng) :
-	EnergyService<GenericTypes>(dataMng)
+	EnergyService<GenericTypes>(std::make_shared<HostAllocator<input_t>>(),
+			std::make_shared<HostAllocator<result_t>>(), dataMng)
 {}
 
 template<typename GenericTypes>
@@ -32,12 +33,6 @@ auto CPUEnergyService<GenericTypes>::createDistributor() -> distributor_t {
 
 	return fncObj;
 
-}
-
-template<typename GenericTypes>
-void CPUEnergyService<GenericTypes>::initAllocators() {
-	this->setInputAllocator(std::make_shared<HostAllocator<input_t>>());
-	this->setResultAllocator(std::make_shared<HostAllocator<result_t>>());
 }
 
 } // namespace as

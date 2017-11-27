@@ -32,7 +32,7 @@ TEST(Reduction,checks_for_right_reduction_of_allforces){
 	test_readDOF(&DofLig, TEST_LIG_DOF_FILE_NAME, numModes);
 	test_readReferenceForce(forceX,forceY,forceZ, TEST_LIG_FORCE_FILE_NAME, testConfig.numAtomsLigand);
 
-	PotForce<float> redPotForce = reducePotForce(
+	PotForce_Modes<float> redPotForce = reducePotForce<float,PotForce_Modes<float>>(
 			forceX,
 			forceY,
 			forceZ,

@@ -11,10 +11,10 @@
 #include "Service_TimeOut.h"
 
 template
-class as::Server<test::Service_Mock>;
+class as::Server<test::Service_Mock::genericTypes_t>;
 
-template
-class as::Server<test::Service_TimeOut>;
+//template
+//class as::Server<test::Service_TimeOut::genericTypes_t>;
 
 template
 class as::HostAllocator<test::Service_Mock::input_t>;

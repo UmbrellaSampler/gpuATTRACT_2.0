@@ -10,16 +10,21 @@
 
 #include <gmock/gmock.h>
 
-#include "../src/service/CPUEnergyService.h"
+#include "CPUEnergyService.h"
+#include "GenericTypes.h"
+
+
 
 namespace test {
 
-class Service_Mock : public as::CPUEnergyService<int, int, int> {
+class Service_Mock : public as::CPUEnergyService<GenericTypes<int, int, int>> {
 public:
+	Service_Mock() :
+		as::CPUEnergyService<genericTypes_t>(nullptr) {}
 
 	MOCK_METHOD0(createItemProcessor, std::function<bool(workItem_t*)> () );
 
-	itemProcessor_t createItemProcessor_fake();
+	itemProcessor_t createItemProcessorImpl();
 
 };
 

@@ -36,8 +36,6 @@ public:
 
 	distributor_t createDistributor() = 0;
 
-	void initAllocators() override;
-
 };
 
 }  // namespace as

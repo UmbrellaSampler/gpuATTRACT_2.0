@@ -25,6 +25,7 @@ template<typename GenericTypes>
 class Service {
 
 public:
+	using genericTypes_t = GenericTypes;
 	using service_t = Service<GenericTypes>;
 
 	// Contract
@@ -35,6 +36,11 @@ public:
 	using workItem_t = WorkItem<input_t, common_t, result_t>;
 	using itemProcessor_t = std::function<bool(workItem_t*)>;
 	using distributor_t = std::function<std::vector<workerId_t>(common_t const*, size_t)>;
+
+	explicit Service(std::shared_ptr<Allocator<input_t>> inputAllocator,
+			std::shared_ptr<Allocator<result_t>> resultAllocator) :
+				_inputAllocator(inputAllocator),
+				_resultAllocator(resultAllocator) {}
 
 	virtual ~Service() {}
 
@@ -56,7 +62,6 @@ public:
 
 	virtual itemProcessor_t createItemProcessor() = 0;
 	virtual distributor_t createDistributor() = 0;
-	virtual void initAllocators() = 0;
 
 private:
 

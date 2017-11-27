@@ -143,25 +143,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	}
 #endif
 
-
-
-
-	/* init server and service*/
-//	std::shared_ptr<Service<dof_t, common_t, result_t>> service;
-//	if (std::is_same<service_t, CPU_6D_EnergyService<real_t>>::value) {
-//		service = std::make_shared<CPU_6D_EnergyService<real_t>>();
-//	}
-//#ifdef CUDA
-//	else if (std::is_same<service_t, GPU_6D_EnergyService<real_t>>::value){
-//		 service = std::make_shared<GPU_6D_EnergyService<real_t>>(args.deviceIds);
-//	}
-//#endif
-
-
-	//ToDo: create ServiceFactory with constructor for CmdArgs
 	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args)));
 
-	service->initAllocators();
 	_server = std::unique_ptr<server_t>(new server_t(service));
 	if (args.numCPUs > 0) {
 		_server->createWorkers(args.numCPUs);

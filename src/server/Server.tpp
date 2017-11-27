@@ -53,16 +53,6 @@ Server<GenericTypes>::Server(std::shared_ptr<service_t> service):
 	_dispatcher->start();
 }
 
-//template<typename GenericTypes>
-//Server<GenericTypes>::Server():
-//	Server(([]() -> std::shared_ptr<service_t> {
-//			std::shared_ptr<service_t> service = std::make_shared<service_t>();
-//			service->initAllocators();
-//			return service;
-//		})()
-//	)
-//{}
-
 template<typename GenericTypes> // needed for invalid application of 'sizeof' compiler error messages
 Server<GenericTypes>::~Server()
 {
