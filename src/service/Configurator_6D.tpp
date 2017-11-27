@@ -70,22 +70,21 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	/* apply pivoting to proteins */
-		if(h.auto_pivot) {
-			if (!h.pivots.empty()) {
-				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
-			}
-			receptor->auto_pivotize();
-			ligand->auto_pivotize();
-			h.pivots.push_back(receptor->pivot());
-			h.pivots.push_back(ligand->pivot());
-		} else {
-			if (h.pivots.size() != 2) {
-				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
-			}
-			receptor->pivotize(h.pivots[0]);
-			ligand->pivotize(h.pivots[1]);
-		}
-
+  if(h.auto_pivot) {
+    if (!h.pivots.empty()) {
+      throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
+    }
+    receptor->auto_pivotize();
+    ligand->auto_pivotize();
+    h.pivots.push_back(receptor->pivot());
+    h.pivots.push_back(ligand->pivot());
+  } else {
+    if (h.pivots.size() != 2) {
+      throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
+    }
+    receptor->pivotize(h.pivots[0]);
+    ligand->pivotize(h.pivots[1]);
+  }
 	/* transform ligand dofs assuming that the receptor is always centered in the origin */
 	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
 
@@ -100,8 +99,8 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	/* apply grid displacement */
-	auto pivot = h.pivots[0];
-	grid->translate(-make_real3(pivot.x,pivot.y,pivot.z));
+//	auto pivot = h.pivots[0];
+//	grid->translate(-make_real3(pivot.x,pivot.y,pivot.z));
 
 	/* add items to dataMng */
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
