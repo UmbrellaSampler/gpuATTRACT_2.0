@@ -91,11 +91,12 @@ std::ostream& operator<<(std::ostream& outStream, DOF_Vector_6D_Modes<REAL> cons
 
 
 	outStream 	<< setw(w) << "DOF";
-			for( int i=0;i<dof.size();i++){
-				outStream << setw(w) << dof.dof[i].pos.x << setw(w) << dof.dof[i].pos.y << setw(w) << dof.dof[i].pos.z
-				<< setw(w) << dof.dof[i].ang.x << setw(w) << dof.dof[i].ang.y << setw(w) << dof.dof[i].ang.z;
-				for(int mode=0;mode<dof.numModes;mode++){outStream<< setw(w) << dof.dof[i].modes[mode];}
-			}
+		for( int i=0;i<dof.size();i++){
+			outStream 	<< setw(w) << dof.dof[i].pos.x << setw(w) << dof.dof[i].pos.y << setw(w) << dof.dof[i].pos.z
+						<< setw(w) << dof.dof[i].ang.x << setw(w) << dof.dof[i].ang.y << setw(w) << dof.dof[i].ang.z;
+			for(int mode=0;mode<dof.numModes;mode++){
+			outStream << setw(w) << dof.dof[i].modes[mode];}
+		}
 	outStream.precision(precisionSetting);
 	outStream.flags(flagSettings);
 
@@ -126,11 +127,12 @@ std::ostream& operator<<(std::ostream& s, Result_Vector_6D_Modes<REAL> const& en
 
 
 	s << " Gradients: ";
-			for( int i=0;i<enGrad.size();i++){
-				s << setw(width) << enGrad.dof[i].ang.x  << setw(width) << enGrad.dof[i].ang.y  << setw(width) << enGrad.dof[i].ang.z
+		for( int i=0;i<enGrad.size();i++){
+			s 	<< setw(width) << enGrad.dof[i].ang.x  << setw(width) << enGrad.dof[i].ang.y  << setw(width) << enGrad.dof[i].ang.z
 				<< setw(width) << enGrad.dof[i].pos.x  << setw(width) << enGrad.dof[i].pos.y  << setw(width) << enGrad.dof[i].pos.z;
-				for(int mode=0;mode<enGrad.numModes;mode++){s<< setw(width) << enGrad.dof[i].modes[mode];}
-			}
+			for(int mode=0;mode<enGrad.numModes;mode++){
+			s	<< setw(width) << enGrad.dof[i].modes[mode];}
+		}
 	s.unsetf(ios::scientific);
 
 	s.precision(precisionSetting);

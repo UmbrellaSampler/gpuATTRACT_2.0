@@ -14,13 +14,18 @@
 
 namespace as {
 
+const unsigned MODES_LIGAND_MAX_NUMBER=10;
+const unsigned MODES_RECEPTOR_MAX_NUMBER=10;
+
+using Matrix = Eigen::MatrixXd;
+using Vector = Eigen::VectorXd;
+using Scalar = Eigen::VectorXd::Scalar;
+
 struct TypeConfiguration{
 	int _dofSize;
 	int* _numModes;
 };
 
-
-using Vector = Eigen::VectorXd;
 
 struct ObjGrad {
 	double obj; // function value

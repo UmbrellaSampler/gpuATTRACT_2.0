@@ -21,10 +21,9 @@
 #ifndef META_H_
 #define META_H_
 
-#include <Eigen/Core>
+
 #include "Types_6D.h"
 #include "Types_6D_Modes.h"
-#include <vector>
 
 #define OBJGRAD(dof, energy)	\
 	do { 						\
@@ -46,9 +45,7 @@
 
 namespace as {
 
-using Matrix = Eigen::MatrixXd;
-using Vector = Eigen::VectorXd;
-using Scalar = Eigen::VectorXd::Scalar;
+
 
 
 

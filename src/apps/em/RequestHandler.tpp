@@ -114,9 +114,7 @@ void RequestHandler<GenericTypes>::run() {
 			solver->start();
 			extDOF dof;
 			dof.setDOFfromVector(solver->getState(),solver->getInputDOFConfig());
-
 			_collectedRequests.push_back(dof);
-
 			//_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(solver->getState()));
 		}
 
@@ -205,9 +203,7 @@ void RequestHandler<GenericTypes>::run() {
 						extDOF dof;
 						dof.setDOFfromVector(newSolver->getState(),newSolver->getInputDOFConfig());
 						_collectedRequests.push_back(dof);
-
 						//_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(newSolver->getState()));
-
 						++iter;
 					}
 				} else {
@@ -252,7 +248,6 @@ auto RequestHandler<GenericTypes>::getResultStates() noexcept -> std::vector<ext
 	std::vector<extDOF> stateVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
 		//stateVec[i] = TypesConverter<extDOF,Vector>::toFirst(_finishedObjects[i]->getState());
-
 		extDOF dof;
 		dof.setDOFfromVector(_finishedObjects[i]->getState(),_finishedObjects[i]->getInputDOFConfig());
 		stateVec[i] = dof;

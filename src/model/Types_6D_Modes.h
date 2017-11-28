@@ -8,7 +8,7 @@
 #ifndef SRC_MODEL_TYPES_6D_MODES_H_
 #define SRC_MODEL_TYPES_6D_MODES_H_
 
-#include "Types_6D_Config.h"
+
 #include "nativeTypesWrapper.h"
 #include "Vec3.h"
 #include "GenericTypes.h"
@@ -64,6 +64,15 @@ struct Common_Modes {
 //	unsigned int numModes;
 //};
 
+
+/**
+ * brief: These types resolve a problem with the types converter in meta.h. Since the modes of DOFs might be varying
+ * (and in multibodydocking even the number of proteins) these types allow to safe their configuration in a simple struct
+ * which is the same for every dof.
+ * This way the solverbase can operate independently of the uses dof type and convert them safely back from Eigen::Vector to the specific DOF
+ * by just setting the DOF configuration.
+ */
+
 template<typename REAL>
 class DOF_6D_Modes {
 public:
@@ -76,19 +85,20 @@ public:
 
 
 	TypeConfiguration getConfiguration(){
-			TypeConfiguration config;
-			config._dofSize=1;
-			config._numModes=new int[1];
-			config._numModes[0]=numModes;
-			return config;
-		}
+		TypeConfiguration config;
+		config._dofSize=1;
+		config._numModes=new int[1];
+		config._numModes[0]=numModes;
+		return config;
+	}
 
 	Vector getVectorfromDOF(){
 		Vector vec;
 		vec  << ang.x, ang.y, ang.z,
 				pos.x, pos.y , pos.z;
 		for(int mode=0;mode< numModes; mode++){vec  << modes[mode];}
-		return vec;}
+		return vec;
+	}
 
 	void setDOFfromVector(Vector vec,TypeConfiguration config){
 		ang.x=vec(0);
@@ -199,6 +209,7 @@ public:
 		}
 		return config;
 	}
+
 	ObjGrad getVectorfromDOF(){
 		ObjGrad vec;
 		vec.obj=dof.E;
@@ -209,6 +220,7 @@ public:
 		}
 		return vec;
 	}
+
 	void setDOFfromVector(ObjGrad vec,TypeConfiguration config){
 		int dofcounter=0;
 		dof.reserve(config._dofSize());

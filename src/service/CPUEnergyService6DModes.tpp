@@ -111,10 +111,10 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 		assert(simParams != nullptr);
 
 
-			if (lig->numAtoms() > buffers->bufferSizeLig()) {
-				buffers->allocateLigandBuffer(lig->numAtoms());	}
-			if (rec->numAtoms() > buffers->bufferSizeRec()) {
-				buffers->allocateReceptorBuffer(rec->numAtoms());	}
+		if (lig->numAtoms() > buffers->bufferSizeLig()) {
+			buffers->allocateLigandBuffer(lig->numAtoms());	}
+		if (rec->numAtoms() > buffers->bufferSizeRec()) {
+			buffers->allocateReceptorBuffer(rec->numAtoms());	}
 
 //		lig->print(lig->numAtoms());
 //		exit(1);
@@ -195,11 +195,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 			//rotate forces back into the receptor frame
 			rotate_forces(invertedRecDOF.ang.inv(),
-					rec-> numAtoms(),
-					buffers->h_potRec.getX(),
-					buffers->h_potRec.getY(),
-					buffers->h_potRec.getZ()
-					);
+				rec-> numAtoms(),
+				buffers->h_potRec.getX(),
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ()
+				);
 
 			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
 			potForce(
@@ -231,25 +231,25 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			// calculate the forces acting on the receptor and the ligand in the receptor system via the neighborlist
 			//might have to rotate some forces (cant think straight anymore, but think not because all in receptor frame which is global)
 			NLPotForce(
-					gridRec->NL.get(),
-					rec,
-					lig,
-					simParams,
-					table,
-					buffers->h_defoRec.getX(),
-					buffers->h_defoRec.getY(),
-					buffers->h_defoRec.getZ(),
-					buffers->h_trafoLig.getX(),
-					buffers->h_trafoLig.getY(),
-					buffers->h_trafoLig.getZ(),
-					buffers->h_potLig.getX(), // output
-					buffers->h_potLig.getY(),
-					buffers->h_potLig.getZ(),
-					buffers->h_potLig.getW(),
-					buffers->h_potRec.getX(), // output
-					buffers->h_potRec.getY(),
-					buffers->h_potRec.getZ(),
-					buffers->h_potRec.getW()
+				gridRec->NL.get(),
+				rec,
+				lig,
+				simParams,
+				table,
+				buffers->h_defoRec.getX(),
+				buffers->h_defoRec.getY(),
+				buffers->h_defoRec.getZ(),
+				buffers->h_trafoLig.getX(),
+				buffers->h_trafoLig.getY(),
+				buffers->h_trafoLig.getZ(),
+				buffers->h_potLig.getX(), // output
+				buffers->h_potLig.getY(),
+				buffers->h_potLig.getZ(),
+				buffers->h_potLig.getW(),
+				buffers->h_potRec.getX(), // output
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				buffers->h_potRec.getW()
 			); // OK
 
 ////			// Debug
