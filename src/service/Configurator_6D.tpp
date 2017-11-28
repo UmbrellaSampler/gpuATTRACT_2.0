@@ -35,7 +35,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
 	auto ligand = createProteinFromPDB<real_t>(args.ligName);
-	auto grid = createGridFromGridFile<real_t>(args.gridName);
+	auto grid = createGridFromGridFile<real_t>(args.gridNameRec);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 
 	auto simParam = std::make_shared<SimParam<real_t>>();
@@ -49,7 +49,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	/* apply mapping according to receptor grid alphabet to ligand */
-	auto mapVec = readGridAlphabetFromFile(args.alphabetName); // map: std::vector<unsigned>
+	auto mapVec = readGridAlphabetFromFile(args.alphabetNameRec); // map: std::vector<unsigned>
 	TypeMap typeMap = createTypeMapFromVector(mapVec);
 	ligand->setNumMappedTypes(1);
 	ligand->getOrCreateMappedPtr();

@@ -101,6 +101,8 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 			const auto& dof = dofs[i];
 			auto& enGrad = results[i];
 
+
+
 			rotate_translate(
 					lig->xPos(),
 					lig->yPos(),
@@ -112,6 +114,7 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 					buffers->h_trafoLig.getY(),
 					buffers->h_trafoLig.getZ()
 			); // OK
+
 
 			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {

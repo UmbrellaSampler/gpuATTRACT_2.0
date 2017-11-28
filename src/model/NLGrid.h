@@ -89,6 +89,19 @@ public:
 		_maxDim.z = _pos.z + (_dimN.z - 1) * _dVox;
 	}
 
+//	virtual void setCenter(real3_t center) noexcept {
+//		real3_t pos;
+//		pos.x=center.x-(_dimN.x - 1) * _dVox/2;
+//		pos.y=center.y-(_dimN.x - 1) * _dVox/2;
+//		pos.z=center.z-(_dimN.x - 1) * _dVox/2;
+//		grid_t::setPos(pos);
+//		_maxDim.x = _pos.x + (_dimN.x - 1) * _dVox;
+//		_maxDim.y = _pos.y + (_dimN.y - 1) * _dVox;
+//		_maxDim.z = _pos.z + (_dimN.z - 1) * _dVox;
+//	}
+
+
+
 	virtual void translate(real3_t displ) noexcept {
 		auto pos = _pos + displ;
 		setPos(pos);

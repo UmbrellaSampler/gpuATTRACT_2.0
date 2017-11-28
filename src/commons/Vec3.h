@@ -119,6 +119,7 @@ public:
 		return Vec3(result);
 	}
 
+
 	__host__ __device__
 	void operator-=(const Vec3& rhs) {
 		x -= rhs.x;
@@ -169,6 +170,15 @@ public:
 	__host__ __device__
 	type L2NormSquare() const {
 		return x * x + y * y + z * z;
+	}
+
+	__host__ __device__
+	Vec3 inv() const {
+		Vec3 tmp;
+		tmp.x=-x;
+		tmp.y=-y;
+		tmp.z=-z;
+		return tmp;
 	}
 
 	__host__ __device__

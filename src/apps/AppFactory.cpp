@@ -8,9 +8,10 @@
 #include <exception>
 #include "AppFactory.h"
 #include "scATTRACT.h"
+#include "scATTRACTModes.h"
 #include "emATTRACT.h"
 #include "CmdArgs.h"
-
+#include "Types_6D_Modes.h"
 
 namespace as {
 
@@ -43,6 +44,10 @@ std::unique_ptr<App> AppFactory::create(AppType appType) {
 
 	case AppType::EM:
 		app = std::unique_ptr<App> (new emATTRACT<Types_6D<REAL>>());
+		break;
+
+	case AppType::SCORE_MODE:
+		app = std::unique_ptr<App> (new scATTRACTModes<Types_6D_Modes<REAL>>());
 		break;
 
 	default:

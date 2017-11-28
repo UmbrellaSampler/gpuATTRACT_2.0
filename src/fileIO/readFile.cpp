@@ -178,10 +178,12 @@ void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName) {
 	int numAtoms=prot->numAtoms();
 
 	vector<REAL> modeX;	vector<REAL> modeY;	vector<REAL> modeZ;
-	REAL modeVal[numModes];
+
 	REAL eigVal[numModes];
+	REAL modeVal[numModes];
 	REAL *protModes=NULL;
 	protModes = new REAL[3*numModes*numAtoms];
+
 
 	bool changeMode=true;
 	bool isData=false;
@@ -204,9 +206,8 @@ void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName) {
 			if(changeMode == true && tokens.size() > 1){
 				modeIdx++;
 				if (modeIdx == stoi(tokens.at(0)) && (modeIdx <= numModes)) {
-					modeVal[modeIdx]=stof(tokens.at(1))*stof(tokens.at(1));
 					eigVal[modeIdx-1]=0;
-					//cout <<"# "<<modeVal[modeIdx]<< endl;
+					modeVal[modeIdx-1]=stof(tokens.at(1))*stof(tokens.at(1));
 					changeMode=false;
 				}
 			}
@@ -238,6 +239,9 @@ void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName) {
 			protModes[2*numAtoms*numModes+numModes*i+mode]	/=sqrt(eigVal[mode]);
 		}
 	}
+
+	REAL* modeForceConstant=prot->modeForce();
+	for (int mode=0;mode< numModes; mode++){modeForceConstant[mode]=modeVal[mode];}
 	REAL* protBufMode = prot->getOrCreateModePtr();
 	std::copy(protModes, protModes+ 3*numModes*numAtoms, protBufMode);
 }

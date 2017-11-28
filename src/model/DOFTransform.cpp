@@ -65,10 +65,11 @@ void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& do
 		}
 	}
 
+	//this way the emliminate any contribution of the pivot and always look at the proteins in their schwerpunkt coordinates
 	for (auto& dof : dof_lig) {
-		dof.pos.x += pivot_lig.x;
-		dof.pos.y += pivot_lig.y;
-		dof.pos.z += pivot_lig.z;
+		dof.pos.x += pivot_lig.x-pivot_rec.x;
+		dof.pos.y += pivot_lig.y-pivot_rec.y;
+		dof.pos.z += pivot_lig.z-pivot_rec.z;
 	}
 
 	/* rotate ligand into receptor frame and shift ligand by receptor dofs*/

@@ -97,6 +97,11 @@ public:
 		return _modes + 2*_numModes*_numAtoms;
 	}
 
+	REAL* modeForce() const{
+		return _modeForceConstant;
+	}
+
+
 	tag_t tag() const{
 		return _tag;
 	}
@@ -115,6 +120,8 @@ public:
 
 	REAL* getOrCreateModePtr();
 
+	REAL* getOrCreateModeForcePtr();
+
 	void setTag(tag_t tag) {
 		_tag = tag;
 	}
@@ -125,11 +132,14 @@ public:
 
 	void setNumModes(unsigned num) {
 		_numModes = num;
+		_modeForceConstant=new REAL[_numModes];
 	}
+
 
 	void setNumMappedTypes(unsigned num) {
 		_numMappedTypes = num;
 	}
+
 
 	//TODO: refactor the pivotize functions to non-members
 	void pivotize(vec3_t pivot);
@@ -156,6 +166,7 @@ protected:
 
 	unsigned _numModes; /** number of modes */
 	REAL* _modes; /** normal mode deformation vectors */
+	REAL* _modeForceConstant;
 };
 
 }
