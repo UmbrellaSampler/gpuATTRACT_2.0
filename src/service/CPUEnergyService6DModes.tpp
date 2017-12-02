@@ -106,11 +106,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->xPos(),
 				lig->yPos(),
 				lig->zPos(),
-				dof.pos,
-				dof.ang,
+				dof.lig.pos,
+				dof.lig.ang,
 				lig->numAtoms(),
 				lig->numModes(),
-				dof.modes,
+				dof.lig.modes,
 				lig->xModes(),
 				lig->yModes(),
 				lig->zModes(),
@@ -185,7 +185,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			reduceModeForce(
-					dof.ang,
+					dof.lig.ang,
 					buffers->h_potLig.getX(),
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),
@@ -197,11 +197,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					redPotForce.modes
 					);
 
-			for( int mode=0;mode<lig->numModes();mode++){	enGrad.modes[mode]=redPotForce.modes[mode];}
+			for( int mode=0;mode<lig->numModes();mode++){enGrad.lig.modes[mode]=redPotForce.modes[mode];}
 			enGrad.E = redPotForce.E;
-			enGrad.pos = redPotForce.pos;
+			enGrad.lig.pos = redPotForce.pos;
 
-			enGrad.ang = reduceTorque(
+			enGrad.lig.ang = reduceTorque(
 					lig->xPos(),
 					lig->yPos(),
 					lig->zPos(),
@@ -209,7 +209,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),
 					lig->numAtoms(),
-					dof.ang
+					dof.lig.ang
 			); // OK
 
 		}

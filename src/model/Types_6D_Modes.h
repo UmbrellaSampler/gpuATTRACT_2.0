@@ -35,8 +35,15 @@ struct DOF_6D_Modes {
 	using vec3_t = Vec3<real_t>;
 	vec3_t pos;
 	vec3_t ang;
-	real_t modes[MODES_LIGAND_MAX_NUMBER];
+	real_t modes[MODES_MAX_NUMBER];
 	unsigned int numModes;
+};
+
+template <typename REAL>
+struct DOF2_6D_Modes {
+	using real_t = typename TypeWrapper<REAL>::real_t;
+	DOF_6D_Modes<real_t> rec;
+	DOF_6D_Modes<real_t> lig;
 };
 
 struct Common_Modes {
@@ -47,19 +54,17 @@ struct Common_Modes {
 	id_t paramsId;
 };
 
-template<typename REAL>
-struct Result_6D_Modes {
+template <typename REAL>
+struct Result2_6D_Modes {
 	using real_t = typename TypeWrapper<REAL>::real_t;
-	using vec3_t = Vec3<real_t>;
 	real_t E;
-	vec3_t pos;
-	vec3_t ang;
-	real_t modes[MODES_LIGAND_MAX_NUMBER];
-	unsigned int numModes;
+	DOF_6D_Modes<real_t> rec;
+	DOF_6D_Modes<real_t> lig;
 };
 
+
 template<typename REAL>
-using Types_6D_Modes = GenericTypes<DOF_6D_Modes<REAL>, Common_Modes, Result_6D_Modes<REAL>>;
+using Types_6D_Modes = GenericTypes<DOF2_6D_Modes<REAL>, Common_Modes, Result2_6D_Modes<REAL>>;
 
 }  // namespace as
 
