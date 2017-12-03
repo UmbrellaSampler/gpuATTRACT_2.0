@@ -92,8 +92,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	_dofs = std::vector<input_t>(DOF_molecules[1].size());
 
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
-		_dofs[i].rec = DOF_molecules[0][i];
-		_dofs[i].lig = DOF_molecules[1][i];
+		_dofs[i] = DOF_molecules[0][i];
+		_dofs[i] = DOF_molecules[1][i];
 	}
 
 
@@ -107,7 +107,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
 	_ids.recId = dataManager->add(receptor);
 	_ids.ligId = dataManager->add(ligand);
-	_ids.gridId = dataManager->add(grid);
+	_ids.gridIdRec = dataManager->add(grid);
 	_ids.tableId = dataManager->add(paramTable);
 	_ids.paramsId = dataManager->add(simParam);
 

@@ -28,6 +28,13 @@
 
 namespace as {
 
+template<typename REAL>
+class DOF_6D;
+
+template<typename REAL>
+class DOF_6D_Modes;
+
+
 	/*
 	 ** @brief: This function performs an inplace transformation of the ligand coordinates assuming
 	 ** that the receptor is always centered at the origin.
@@ -42,8 +49,13 @@ namespace as {
 	 ** 		pivots:	Vector of pivots of the receptor and the ligands
 	 ** 				Can be obtained by calling asDB::readDOFHeader(...)
 	 */
-template<typename REAL, typename DOF>
-void transformDOF_glob2rec(const std::vector<DOF>& dof_rec, std::vector<DOF>& dof_lig,
+template<typename REAL>
+void transformDOF_glob2rec(std::vector<DOF_6D<REAL>>& dof_rec, std::vector<DOF_6D<REAL>>& dof_lig,
+			const Vec3<REAL>& pivot_rec, const Vec3<REAL>& pivot_lig,
+			bool centered_rec, bool centered_lig);
+
+template<typename REAL>
+void transformDOF_glob2rec(std::vector<DOF_6D_Modes<REAL>>& dof_rec, std::vector<DOF_6D_Modes<REAL>>& dof_lig,
 			const Vec3<REAL>& pivot_rec, const Vec3<REAL>& pivot_lig,
 			bool centered_rec, bool centered_lig);
 
