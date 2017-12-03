@@ -8,7 +8,7 @@
 #ifndef SRC_MODEL_TYPES_6D_CONFIG_H_
 #define SRC_MODEL_TYPES_6D_CONFIG_H_
 
-const unsigned MODES_LIGAND_MAX_NUMBER=10;
-const unsigned MODES_RECEPTOR_MAX_NUMBER=10;
+const unsigned MODES_MAX_NUMBER=10;
+
 
 #endif /* TYPES_6D_CONFIG_H_ */

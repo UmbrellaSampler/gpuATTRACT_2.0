@@ -653,17 +653,19 @@ std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filena
 
 				std::vector<DOF_6D_Modes<REAL>>& vec = DOF_molecules[i];
 				DOF_6D_Modes<REAL> dof ;
-				dof.numModes=numModes;
-				{
-					stringstream stream(line);
-					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
-						>> dof.pos.x >> dof.pos.y >> dof.pos.z;
-					for (int i=0; i< dof.numModes; i++){
-						stream >> tmpMode;
-						if(std::isnan(tmpMode)){	dof.modes[i]=0.0;}
-						else{						dof.modes[i]=tmpMode;}
-					}
-				}
+
+				//does not compile at the moment
+//				dof.numModes=numModes;
+//				{
+//					stringstream stream(line);
+//					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
+//						>> dof.pos.x >> dof.pos.y >> dof.pos.z;
+//					for (int i=0; i< dof.numModes; i++){
+//						stream >> tmpMode;
+//						if(std::isnan(tmpMode)){	dof.modes[i]=0.0;}
+//						else{						dof.modes[i]=tmpMode;}
+//					}
+//				}
 				vec.push_back(dof);
 
 				++i;

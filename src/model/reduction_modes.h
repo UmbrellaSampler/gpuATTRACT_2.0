@@ -20,7 +20,7 @@ class PotForce_Modes {
 public:
 	real_t E;
 	vec3_t pos;
-	real_t modes[MODES_LIGAND_MAX_NUMBER];
+	real_t modes[MODES_MAX_NUMBER];
 };
 
 

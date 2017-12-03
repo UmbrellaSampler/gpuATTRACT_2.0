@@ -74,7 +74,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 		auto results = item->resultBuffer();
 
 		/* get DataItem pointers */
-		const auto grid = std::dynamic_pointer_cast<GridUnion<REAL>>(this->_dataMng->get(common->gridId)).get(); // _dataMng->get() returns shared_ptr<DataItem>
+		const auto grid = std::dynamic_pointer_cast<GridUnion<REAL>>(this->_dataMng->get(common->gridIdRec)).get(); // _dataMng->get() returns shared_ptr<DataItem>
 		assert(grid != nullptr);
 
 		const auto lig = std::dynamic_pointer_cast<Protein<REAL>>(this->_dataMng->get(common->ligId)).get();
@@ -106,11 +106,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->xPos(),
 				lig->yPos(),
 				lig->zPos(),
-				dof.pos,
-				dof.ang,
+				dof._6D.pos,
+				dof._6D.ang,
 				lig->numAtoms(),
 				lig->numModes(),
-				dof.modes,
+				dof.modesLig,
 				lig->xModes(),
 				lig->yModes(),
 				lig->zModes(),
@@ -185,7 +185,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			reduceModeForce(
-					dof.ang,
+					dof._6D.ang,
 					buffers->h_potLig.getX(),
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),
@@ -197,11 +197,13 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					redPotForce.modes
 					);
 
-			for( int mode=0;mode<lig->numModes();mode++){	enGrad.modes[mode]=redPotForce.modes[mode];}
-			enGrad.E = redPotForce.E;
-			enGrad.pos = redPotForce.pos;
+			for( int mode = 0; mode < lig->numModes(); mode++) {
+				enGrad.modesLig[mode]=redPotForce.modes[mode];
+			}
+			enGrad._6D.E = redPotForce.E;
+			enGrad._6D.pos = redPotForce.pos;
 
-			enGrad.ang = reduceTorque(
+			enGrad._6D.ang = reduceTorque(
 					lig->xPos(),
 					lig->yPos(),
 					lig->zPos(),
@@ -209,7 +211,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),
 					lig->numAtoms(),
-					dof.ang
+					dof._6D.ang
 			); // OK
 
 		}
