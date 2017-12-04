@@ -17,7 +17,8 @@
 
 
  /**
-  * @brief: to change from the receptor system to the ligand system the translational and rotational DOF have to be "inverted".
+  * @brief: to change from the receptor system to the ligand system
+  * the translational and rotational DOF have to be "inverted".
   * This function returns an inverted DOF such that it points to the receptor in the ligandsystem
   *
   */
@@ -35,8 +36,11 @@ return invertedDOF;
 
 
 /**
- * @brief: In addition to the normal transform function rotate_translate_deform also applies mode deformation to the coodinates.
- * Note that the deformed coordinates are also returned. The deformed but not translated coordinates are important to evaluate the NLForces between the receptor and the ligand
+ * @brief: In addition to the normal transform function rotate_translate_deform
+ * also applies mode deformation to the coodinates.
+ * Note that the deformed coordinates are also returned.
+ * The deformed but not translated coordinates are important to evaluate the
+ * NLForces between the receptor and the ligand
  *
  */
 template<typename REAL>
@@ -153,13 +157,6 @@ void rotate_forces(
 
 	}
 }
-
-
-
-
-
-
-
 
 }
 #endif /* TRANSFORM_MODES_H_ */

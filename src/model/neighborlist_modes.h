@@ -34,8 +34,7 @@ void NLPotForce(
 		REAL* outLig_E,
 		REAL* outRec_fx,// receptor forces have to be set to zero in advance
 		REAL* outRec_fy,
-		REAL* outRec_fz,
-		REAL* outRec_E
+		REAL* outRec_fz
 		)
 {
 
@@ -62,11 +61,12 @@ void NLPotForce(
 			const NeighbourDesc &nDesc = grid->getNeighbourDesc(idxX, idxY,
 					idxZ);
 
+			real3_t fRec = {0.0,0.0,0.0};
 			real3_t fAcc = {0.0,0.0,0.0};
 			REAL eAcc = 0.0;
 
-			real3_t fRec = {0.0,0.0,0.0};
-			REAL eRec = 0.0;
+
+
 
 			for (unsigned j = 0; j < nDesc.numEl; ++j) {
 				const unsigned nIdx = grid->getNeighbor(nDesc.idx + j);
@@ -78,7 +78,7 @@ void NLPotForce(
 				fRec.x = 0.0;
 				fRec.y = 0.0;
 				fRec.z = 0.0;
-				eRec  = 0.0;
+
 
 
 				const REAL dr2 = dx * dx + dy * dy + dz * dz;
@@ -120,7 +120,7 @@ void NLPotForce(
 				fRec.x -= fVdW.x;
 				fRec.y -= fVdW.y;
 				fRec.z -= fVdW.z;
-				eRec  +=  eVdW;
+
 
 				const REAL chargeLig = lig->charge()[i];
 				const REAL chargeRec = rec->charge()[nIdx];
@@ -147,7 +147,7 @@ void NLPotForce(
 				fRec.x += fVdW.x;
 				fRec.y += fVdW.y;
 				fRec.z += fVdW.z;
-				eRec  -=  eVdW;
+
 
 
 				if (calc_elec) {
@@ -168,7 +168,7 @@ void NLPotForce(
 					fRec.x -= fEl.x;;
 					fRec.y -= fEl.y;
 					fRec.z -= fEl.z;
-					eRec  +=  eEl;
+
 
 					ChargePotForce(grid->dPlateau2_inv(), rdx, rdy, rdz,
 							chargeLigRec,
@@ -182,15 +182,14 @@ void NLPotForce(
 					fRec.x += fEl.x;;
 					fRec.y += fEl.y;
 					fRec.z += fEl.z;
-					eRec  -=  eEl;
+
 
 
 				}
 
-				outRec_fx[nIdx]+=fRec.x;
-				outRec_fx[nIdx]+=fRec.y;
-				outRec_fx[nIdx]+=fRec.z;
-				outRec_E[nIdx]+=eRec;
+				outRec_fx[nIdx] += fRec.x;
+				outRec_fy[nIdx] += fRec.y;
+				outRec_fz[nIdx] += fRec.z;
 			} // for j
 
 			outLig_fx[i] += fAcc.x;
