@@ -31,10 +31,12 @@ void TwoBodyParser::addOptions() noexcept {
 			("dof"     			  , po::value<string>()->required()									, "structure (DOF) file")
 			("receptor-pdb,r"     , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_PDB)	, "pdb-file of receptor")
 			("ligand-pdb,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of ligand")
-			("grid,g"             , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "receptor grid file")
+			("gridrec,gr"             , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "receptor grid file")
+			("gridlig,gl"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "ligand grid file")
 			("par,p"	          , po::value<string>()->default_value(FILE_DEFAULT_PARAMETER)		, "attract forcefield parameter file")
-			("alphabet,a"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET)	, "receptor grid alphabet file")
-      ("modl,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
+			("alphabetrec,ar"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
+			("alphabetlig,al"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
+			("modl,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
 			("modr,mr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor");
 	_optsDesc.add(input);
 
@@ -84,12 +86,16 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->recName = vm["receptor-pdb"].as<string>();
 	if(vm.count("ligand-pdb"))
 		_args->ligName = vm["ligand-pdb"].as<string>();
-	if(vm.count("grid"))
-		_args->gridName = vm["grid"].as<string>();
+	if(vm.count("gridrec"))
+		_args->gridRecName = vm["gridrec"].as<string>();
+	if(vm.count("gridlig"))
+		_args->gridLigName = vm["gridlig"].as<string>();
 	if(vm.count("par"))
 		_args->paramsName = vm["par"].as<string>();
-	if(vm.count("alphabet"))
-		_args->alphabetName = vm["alphabet"].as<string>();
+	if(vm.count("alphabetrec"))
+		_args->alphabetRecName = vm["alphabetrec"].as<string>();
+	if(vm.count("alphabetlig"))
+		_args->alphabetLigName = vm["alphabetlig"].as<string>();
 	if(vm.count("modr"))
 		_args->recModesName = vm["modr"].as<string>();
 	if(vm.count("modl"))

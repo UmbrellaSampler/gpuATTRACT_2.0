@@ -20,11 +20,13 @@ public:
 
 	/* Input Files */
 	std::string dofName;
-	std::string gridName;
+	std::string gridRecName;
+	std::string gridLigName;
 	std::string ligName;
 	std::string recName;
 	std::string paramsName;
-	std::string alphabetName;
+	std::string alphabetRecName;
+	std::string alphabetLigName;
 	std::string recModesName;
 	std::string ligModesName;
  
