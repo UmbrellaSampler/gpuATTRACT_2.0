@@ -35,7 +35,6 @@ void d_deform	(Vec3<REAL>& posAtom,int atomIdx, REAL* dMode, REAL* xModes,REAL* 
 }
 
 
-
 template<typename REAL>
 void d_translate_rotate	(Vec3<REAL>& posAtom, int atomIdx, Vec3<REAL> const& pos,const RotMat<REAL> rotMat){
 	posAtom = rotMat*posAtom;
