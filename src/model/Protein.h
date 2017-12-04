@@ -97,6 +97,10 @@ public:
 		return _modes + 2*_numModes*_numAtoms;
 	}
 
+	REAL* modeForce(){
+		return _modeForceConstant;
+	}
+
 	tag_t tag() const{
 		return _tag;
 	}
