@@ -42,14 +42,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 		useModes=true;
 	}
 	if(useModes){
-		common_t::numModesRec=args.numModes;
-		common_t::numModesLig=args.numModes;
-		auto gridLig = createGridFromGridFile<real_t>(args.gridLigName);
 
-		receptor->setNumModes(args.numModes);
-		ligand->setNumModes(args.numModes);
-		readHMMode<real_t>(receptor, args.recModesName);
-		readHMMode<real_t>(ligand, args.ligModesName);
 	}
 
 	auto simParam = std::make_shared<SimParam<real_t>>();
@@ -70,14 +63,6 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
 	applyMapping(typeMapRec, ligand->numAtoms(), ligand->type(), ligand->mappedType());
 
-	if(useModes){
-		auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
-		TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
-		receptor->setNumMappedTypes(1);
-		receptor->getOrCreateMappedPtr();
-		applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
-		applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
-	}
 
 	/* read dof file */
 	DOFHeader<real_t> h = readDOFHeader<real_t>(args.dofName);
@@ -124,9 +109,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* apply grid displacement */
 	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));
-	if(useModes){
-		gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
-	}
+
 
 	/* add items to dataMng */
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
@@ -135,7 +118,23 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	_ids.gridIdRec = dataManager->add(gridRec);
 	_ids.tableId = dataManager->add(paramTable);
 	_ids.paramsId = dataManager->add(simParam);
+
 	if(useModes){
+
+		receptor->setNumModes(args.numModes);
+		ligand->setNumModes(args.numModes);
+		readHMMode<real_t>(receptor, args.recModesName);
+		readHMMode<real_t>(ligand, args.ligModesName);
+
+		auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
+		TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
+		receptor->setNumMappedTypes(1);
+		receptor->getOrCreateMappedPtr();
+		applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
+		applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
+
+		auto gridLig = createGridFromGridFile<real_t>(args.gridLigName);
+		gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
 		_ids.gridIdLig = dataManager->add(gridLig);
 	}
 
