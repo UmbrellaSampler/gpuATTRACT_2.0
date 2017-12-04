@@ -177,6 +177,15 @@ public:
 	}
 
 	__host__ __device__
+		double inv() const {
+		Vec3 inv;
+		inv.x = -x;
+		inv.y = -y;
+		inv.z = -z;
+		return inv;
+		}
+
+	__host__ __device__
 	Vec3& operator=(const Vec3& rhs) {
 		if (this != &rhs) {
 			x = rhs.x;
