@@ -65,6 +65,7 @@ public:
 	}
 
 	WorkerBuffer<REAL> h_trafoRec;
+	WorkerBuffer<REAL> h_defoRec;
 	WorkerBuffer<REAL> h_trafoLig;
 
 	WorkerBuffer<REAL> h_potRec;
@@ -279,7 +280,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			correctModeForce(
 				lig-> modeForce(),
 				lig-> numModes(),
-				redPotForceLig.modesLig
+				redPotForce.modesLig
 				);
 
 			////Reduce forces on receptor
@@ -305,8 +306,10 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 			//copy reduced forces
 			for( int mode = 0; mode < lig->numModes(); mode++) {
-				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
 				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
+			}
+			for( int mode = 0; mode < rec->numModes(); mode++) {
+				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
 			}
 			enGrad._6D.E = redPotForce.E;
 			enGrad._6D.pos = redPotForce.pos;
