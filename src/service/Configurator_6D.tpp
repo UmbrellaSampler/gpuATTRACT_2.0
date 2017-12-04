@@ -42,6 +42,8 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 		useModes=true;
 	}
 	if(useModes){
+		common_t::numModesRec=args.numModes;
+		common_t::numModesLig=args.numModes;
 		auto gridLig = createGridFromGridFile<real_t>(args.gridLigName);
 
 		receptor->setNumModes(args.numModes);
@@ -121,7 +123,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	/* apply grid displacement */
-	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot.y,receptor->pivot.z));
+	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));
 	if(useModes){
 		gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
 	}
