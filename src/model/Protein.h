@@ -115,6 +115,8 @@ public:
 
 	REAL* getOrCreateModePtr();
 
+	REAL* getOrCreateModeForcePtr();
+
 	void setTag(tag_t tag) {
 		_tag = tag;
 	}
@@ -156,6 +158,8 @@ protected:
 
 	unsigned _numModes; /** number of modes */
 	REAL* _modes; /** normal mode deformation vectors */
+
+	REAL* _modeForceConstant;
 };
 
 }
