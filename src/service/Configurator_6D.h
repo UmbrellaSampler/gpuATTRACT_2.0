@@ -46,8 +46,8 @@ public:
 
 	void init(CmdArgs const& args) noexcept;
 	void finalize() noexcept;
+	
 private:
-
 	common_t _ids;
 	std::vector<input_t> _dofs;
 	std::shared_ptr<server_t> _server;
