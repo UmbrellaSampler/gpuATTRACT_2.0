@@ -19,6 +19,43 @@
 
 
 
+
+
+
+
+
+
+ template<typename REAL>
+ void reduceModeForce(
+ 		Vec3<REAL> const& ang,
+ 		const REAL* forceX,
+ 		const REAL* forceY,
+ 		const REAL* forceZ,
+ 		const REAL* modeX,
+ 		const REAL* modeY,
+ 		const REAL* modeZ,
+ 		unsigned const& numAtoms,
+ 		unsigned const& numModes,
+ 		REAL* result
+ 		)
+ {
+ 	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
+ 	//rotate forces into ligand frame
+ 	const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
+ 	for( int i=0; i<numModes;i++){result[i]=0;}
+
+ 	for (unsigned i = 0; i < numAtoms; ++i) {
+ 		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
+ 		forceAtom = rotMatInv*forceAtom;
+ 		for(int mode=0;mode<numModes;mode++){
+ 				result[mode] -= forceAtom.x*modeX[i*numModes+mode]+forceAtom.y*modeY[i*numModes+mode]+forceAtom.z*modeZ[i*numModes+mode];
+ 		}
+ 	}
+
+ }
+
+
+
  /**
   * @brief: to change from the receptor system to the ligand system
   * the translational and rotational DOF have to be "inverted".
