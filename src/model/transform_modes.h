@@ -8,8 +8,9 @@
 #ifndef TRANSFORM_MODES_H_
 #define TRANSFORM_MODES_H_
 
-
 #include "transform.h"
+#include "Types_6D_Modes.h"
+
 
  namespace as{
 
@@ -26,10 +27,11 @@ template<typename REAL>
 const DOF_6D_Modes<REAL> invertDOF( DOF_6D_Modes<REAL> ligandDOF)
 {
 	DOF_6D_Modes<REAL> invertedDOF;
-	invertedDOF._6D.ang=receptorDOF.ang;
+	Vec3<REAL> ang(0.0);
+	invertedDOF._6D.ang=ang;
 	invertedDOF._6D.pos=ligandDOF._6D.pos.inv();
 	const RotMat<REAL> rotMat=euler2rotmat(ligandDOF._6D.ang.x, ligandDOF._6D.ang.y, ligandDOF._6D.ang.z).getInv();
-	invertedDOF._6D.pos=rotMat*invertedDOF.pos;
+	invertedDOF._6D.pos=rotMat*invertedDOF._6D.pos;
 return invertedDOF;
 }
 

@@ -177,7 +177,7 @@ public:
 	}
 
 	__host__ __device__
-		double inv() const {
+		Vec3 inv() const {
 		Vec3 inv;
 		inv.x = -x;
 		inv.y = -y;
