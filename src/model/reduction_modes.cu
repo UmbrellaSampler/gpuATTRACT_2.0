@@ -5,7 +5,7 @@
  *      Author: uwe
  */
 
-#include "reduction.h"
+#include "reduction_modes.h"
 
 namespace as {
 
@@ -93,13 +93,17 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 			fyRec = d_fyRec[base + i];
 			fzRec = d_fzRec[base + i];
 			Vec3<T> forceAtomRec(fxRec, fyRec, fzRec);
-			for(int mode=0;mode<numModesRec;mode++){
-				sum_modeRec[mode] -=  forceAtomRec.x*xModesLig[i*numModesLig+mode]+forceAtomRec.y*yModesLig[i*numModesLig+mode]+forceAtomRec.z*zModesLig[i*numModesLig+mode];
+			for(int mode=0; mode < numModesRec; mode++){
+				sum_modeRec[mode] -=  	forceAtomRec.x*xModesRec[i*numModesRec+mode]
+								       +forceAtomRec.y*yModesRec[i*numModesRec+mode]
+								       +forceAtomRec.z*zModesRec[i*numModesRec+mode];
 			}
 
-			if (nIsPow2 || i + blockSize < maxAtom) {
-				for(int mode=0;mode<numModesRec;mode++){
-					sum_modeRec[mode] +=  forceAtomRec.x*xModesRec[i*numModesRec+mode]+forceAtomRec.y*yModesRec[i*numModesRec+mode]+forceAtomRec.z*zModesRec[i*numModesRec+mode];
+			if (nIsPow2 || i + blockSize < numAtomRec) {
+				for(int mode=0; mode < numModesRec; mode++){
+					sum_modeRec[mode] -=  forceAtomRec.x*xModesRec[i*numModesRec+mode]
+					                     +forceAtomRec.y*yModesRec[i*numModesRec+mode]
+					                     +forceAtomRec.z*zModesRec[i*numModesRec+mode];
 				}
 			}
 		}
@@ -131,13 +135,15 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 			Vec3<T> forceAtomLig(fxLig, fyLig, fzLig);
 			forceAtomLig = rotMatInv*forceAtomLig;
 			for(int mode=0;mode<numModesLig;mode++){
-				sum_modeLig[mode] -=  forceAtomLig.x*xModesLig[i*numModesLig+mode]+forceAtomLig.y*yModesLig[i*numModesLig+mode]+forceAtomLig.z*zModesLig[i*numModesLig+mode];
+				sum_modeLig[mode] -=  forceAtomLig.x*xModesLig[i*numModesLig+mode]
+				                     +forceAtomLig.y*yModesLig[i*numModesLig+mode]
+				                     +forceAtomLig.z*zModesLig[i*numModesLig+mode];
 			}
 
 
 
         // ensure we don't read out of bounds -- this is optimized away for powerOf2 sized arrays
-        if (nIsPow2 || i + blockSize < maxAtom) {
+        if (nIsPow2 || i + blockSize < numAtomLig) {
 
 				fxLig = d_fxLig[base + i + blockSize];
 				fyLig = d_fyLig[base + i + blockSize];
@@ -158,8 +164,10 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 				sum_torque[6] += x * fzLig;
 				sum_torque[7] += y * fzLig;
 				sum_torque[8] += z * fzLig;
-				for(int mode=0;mode<numModesLig;mode++){
-					sum_modeLig[mode] +=  forceAtomLig.x*xModesLig[i*numModesLig+mode]+forceAtomLig.y*yModesLig[i*numModesLig+mode]+forceAtomLig.z*zModesLig[i*numModesLig+mode];
+				for(int mode=0; mode < numModesLig; mode++){
+					sum_modeLig[mode] -=  forceAtomLig.x*xModesLig[i*numModesLig+mode]
+					                     +forceAtomLig.y*yModesLig[i*numModesLig+mode]
+					                     +forceAtomLig.z*zModesLig[i*numModesLig+mode];
 				}
         	}
 
@@ -183,8 +191,8 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
     sdata[tid + 10* blockSize] = sum_torque[6];
     sdata[tid + 11* blockSize] = sum_torque[7];
     sdata[tid + 12* blockSize] = sum_torque[8];
-    for(int mode=0;mode<numModesLig;mode++){
-    	sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode];
+    for(int mode=0; mode < numModesLig; mode++){
+    	sdata[tid + (13+mode) * blockSize] =  sum_modeLig[mode];
     }
     for(int mode=0;mode<numModesRec;mode++){
 		sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode];
@@ -209,10 +217,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 512];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 512];
 		for(int mode=0;mode<numModesLig;mode++){
-		sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13+mode)* blockSize + 512];
+			sdata[tid + (13+mode)* blockSize] 	   = sum_modeLig[mode] = sum_modeLig[mode]
+			                                  				       + sdata[tid + (13+mode)* blockSize + 512];
     	}
     	for(int mode=0;mode<numModesRec;mode++){
-    		sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 512];
+    		sdata[tid + (13+numModesLig+mode)* blockSize] = sum_modeRec[mode] = sum_modeRec[mode]
+    		                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 512];
         }
     }
     __syncthreads();
@@ -234,10 +244,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 256];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 256];
 		for(int mode=0;mode<numModesLig;mode++){
-			sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13 + mode)* blockSize + 256];
+			sdata[tid + (13 + mode)* blockSize] =  sum_modeLig[mode] = sum_modeLig[mode]
+			                                                       + sdata[tid + (13 + mode)* blockSize + 256];
 		}
 		for(int mode=0;mode<numModesRec;mode++){
-			sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 256];
+			sdata[tid + (13 + numModesLig + mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode]
+			                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 256];
 		}
     }
 
@@ -259,10 +271,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 128];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 128];
 		for(int mode=0;mode<numModesLig;mode++){
-			sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13+mode)* blockSize + 128];
+			sdata[tid + (13 + mode)* blockSize] =  sum_modeLig[mode] = sum_modeLig[mode]
+			                                                       + sdata[tid + (13 + mode)* blockSize + 128];
 		}
 		for(int mode=0;mode<numModesRec;mode++){
-			sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 128];
+			sdata[tid + (13 + numModesLig + mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode]
+			                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 128];
 		}
     }
 
@@ -284,10 +298,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 64];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 64];
 		for(int mode=0;mode<numModesLig;mode++){
-			sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13 + mode)* blockSize + 64];
+			sdata[tid + (13 + mode)* blockSize] =  sum_modeLig[mode] = sum_modeLig[mode]
+			                                                       + sdata[tid + (13 + mode)* blockSize + 64];
 		}
 		for(int mode=0;mode<numModesRec;mode++){
-			sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 64];
+			sdata[tid + (13 + numModesLig + mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode]
+			                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 64];
 		}
     }
 
@@ -312,10 +328,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 			sum_torque[7] += sdata[tid + 11* blockSize + 32];
 			sum_torque[8] += sdata[tid + 12* blockSize + 32];
 			for(int mode=0;mode<numModesLig;mode++){
-				sum_modeLig[mode] += sdata[tid + (13 + mode)* blockSize + 32];
+				sum_modeLig[mode] += sdata[tid
+				                       + (13 + mode)* blockSize + 32];
 			}
 			for(int mode=0;mode<numModesRec;mode++){
-				sum_modeRec[mode] += sdata[tid + (13 + numModesLig + mode)* blockSize + 32];
+				sum_modeRec[mode] += sdata[tid
+				                       + (13 + numModesLig + mode)* blockSize + 32];
 			}
 
         }
@@ -361,10 +379,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 32];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 32];
 		for(int mode=0;mode<numModesLig;mode++){
-			sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13+mode)* blockSize + 32];
+			sdata[tid + (13 + mode)* blockSize] =  sum_modeLig[mode] = sum_modeLig[mode]
+			                                                       + sdata[tid + (13 + mode)* blockSize + 32];
 		}
 		for(int mode=0;mode<numModesRec;mode++){
-			sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 32];
+			sdata[tid + (13 + numModesLig + mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode]
+			                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 32];
 		}
 
     }
@@ -387,10 +407,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 16];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 16];
 		for(int mode=0;mode<numModesLig;mode++){
-			sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13+mode)* blockSize + 16];
+			sdata[tid + (13 + mode)* blockSize] =  sum_modeLig[mode] = sum_modeLig[mode]
+			                                                       + sdata[tid + (13+mode)* blockSize + 16];
 		}
 		for(int mode=0;mode<numModesRec;mode++){
-			sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 16];
+			sdata[tid + (13 + numModesLig + mode)* blockSize] =  sum_modeRec[mode] = sum_modeRec[mode]
+			                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 16];
 		}
     }
 
@@ -412,10 +434,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 8];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 8];
 		for(int mode=0;mode<numModesLig;mode++){
-			sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13+mode)* blockSize + 8];
+			sdata[tid + (13 + mode)* blockSize] =  sum_modeLig[mode] = sum_modeLig[mode]
+			                                                       + sdata[tid + (13+mode)* blockSize + 8];
 		}
 		for(int mode=0;mode<numModesRec;mode++){
-			sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 8];
+			sdata[tid + (13 + numModesLig + mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode]
+			                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 8];
 		}
     }
 
@@ -437,10 +461,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 4];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 4];
 		for(int mode=0;mode<numModesLig;mode++){
-			sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13+mode)* blockSize + 4];
+			sdata[tid + (13 + mode)* blockSize] =  sum_modeLig[mode] = sum_modeLig[mode]
+			                                                       + sdata[tid + (13 + mode)* blockSize + 4];
 		}
 		for(int mode=0;mode<numModesRec;mode++){
-			sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 4];
+			sdata[tid + (13 + numModesLig + mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode]
+			                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 4];
 		}
     }
 
@@ -462,10 +488,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 2];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 2];
 		for(int mode=0;mode<numModesLig;mode++){
-			sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13+mode)* blockSize + 2];
+			sdata[tid + (13 + mode)* blockSize] =  sum_modeLig[mode] = sum_modeLig[mode]
+			                                                       + sdata[tid + (13 + mode)* blockSize + 2];
 		}
 		for(int mode=0;mode<numModesRec;mode++){
-			sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 2];
+			sdata[tid + (13 + numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode]
+			                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 2];
 		}
     }
 
@@ -487,10 +515,12 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 		sdata[tid + 11* blockSize] = sum_torque[7] = sum_torque[7] + sdata[tid + 11* blockSize + 1];
 		sdata[tid + 12* blockSize] = sum_torque[8] = sum_torque[8] + sdata[tid + 12* blockSize + 1];
 		for(int mode=0;mode<numModesLig;mode++){
-			sdata[tid + (13+mode)* blockSize] =  sum_modeLig[mode]=sum_modeLig[mode] + sdata[tid + (13+mode)* blockSize + 1];
+			sdata[tid + (13 + mode)* blockSize] =  sum_modeLig[mode] = sum_modeLig[mode]
+			                                                       + sdata[tid + (13+mode)* blockSize + 1];
 		}
 		for(int mode=0;mode<numModesRec;mode++){
-			sdata[tid + (13+numModesLig+mode)* blockSize] =  sum_modeRec[mode]=sum_modeRec[mode] + sdata[tid + (13 + numModesLig + mode)* blockSize + 1];
+			sdata[tid + (13 + numModesLig + mode)* blockSize] =  sum_modeRec[mode] = sum_modeRec[mode]
+			                                                       + sdata[tid + (13 + numModesLig + mode)* blockSize + 1];
 		}
     }
 
@@ -499,53 +529,66 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 
     // write result for this block to global mem
     if (tid == 0) {
-    	g_odata[0  + blockIdx.x*(13+numModesLig + numModesRec + numModesRec)] = sum_fx;
-    	g_odata[1  + blockIdx.x*(13+numModesLig + numModesRec)] = sum_fy;
-    	g_odata[2  + blockIdx.x*(13+numModesLig + numModesRec)] = sum_fz;
-    	g_odata[3  + blockIdx.x*(13+numModesLig + numModesRec)] = sum_E;
-    	g_odata[4  + blockIdx.x*(13+numModesLig + numModesRec)] = sum_torque[0];
-    	g_odata[5  + blockIdx.x*(13+numModesLig + numModesRec)] = sum_torque[1];
-    	g_odata[6  + blockIdx.x*(13+numModesLig + numModesRec)] = sum_torque[2];
-    	g_odata[7  + blockIdx.x*(13+numModesLig + numModesRec)] = sum_torque[3];
-    	g_odata[8  + blockIdx.x*(13+numModesLig + numModesRec)] = sum_torque[4];
-    	g_odata[9  + blockIdx.x*(13+numModesLig + numModesRec)] = sum_torque[5];
-    	g_odata[10 + blockIdx.x*(13+numModesLig + numModesRec)] = sum_torque[6];
-    	g_odata[11 + blockIdx.x*(13+numModesLig + numModesRec)] = sum_torque[7];
-    	g_odata[12 + blockIdx.x*(13+numModesLig + numModesRec)] = sum_torque[8];
+    	g_odata[0  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_fx;
+    	g_odata[1  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_fy;
+    	g_odata[2  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_fz;
+    	g_odata[3  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_E;
+    	g_odata[4  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_torque[0];
+    	g_odata[5  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_torque[1];
+    	g_odata[6  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_torque[2];
+    	g_odata[7  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_torque[3];
+    	g_odata[8  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_torque[4];
+    	g_odata[9  + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_torque[5];
+    	g_odata[10 + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_torque[6];
+    	g_odata[11 + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_torque[7];
+    	g_odata[12 + blockIdx.x*(13 + numModesLig + numModesRec)] = sum_torque[8];
     	for(int mode=0;mode<numModesLig;mode++){
-    		g_odata[13 + mode + blockIdx.x*(13+numModesLig + numModesRec)] =  sum_modeLig[mode];
+    		g_odata[13 + mode + blockIdx.x*(13 + numModesLig + numModesRec)] =  sum_modeLig[mode];
     	}
     	for(int mode=0;mode<numModesRec;mode++){
-			g_odata[13 + numModesLig + mode + blockIdx.x*(13+numModesRec+numModesLig)] =  sum_modeRec[mode];
+			g_odata[13 + numModesLig + mode + blockIdx.x*(13 + numModesRec + numModesLig)] =  sum_modeRec[mode];
 		}
     }
 }
-///END BLOCK REDUCE MODE
+
 
 
 
 template
-void d_reduce<float>(
+void d_reduceMode<float>(
 		const unsigned& threads,
 		const unsigned& blocks,
 		const unsigned& numAtomsRec,
+		const unsigned& numAtomsLig,
+		const unsigned& numModesRec,
+		const unsigned& numModesLig,
+		typename Types_6D_modes<float>::DOF* dofs,
 		float* xPos, float* yPos, float* zPos,
-		float *d_fx, float *d_fy, float *d_fz, float *d_E,
+		float *xModesLig,float *yModesLig,float *zModesLig,
+		float *xModesRec,float *yModesRec,float *zModesRec,
+		float *d_fxRec, float *d_fyRec, float *d_fzRec,
+		float *d_fxLig, float *d_fyLig, float *d_fzLig,
+		float *d_E,
 		float *g_odata,
 		const cudaStream_t& stream);
 
 template
-void d_reduce<double>(
+void d_reduceMode<double>(
 		const unsigned& threads,
 		const unsigned& blocks,
 		const unsigned& numAtomsRec,
+		const unsigned& numAtomsLig,
+		const unsigned& numModesRec,
+		const unsigned& numModesLig,
+		typename Types_6D_modes<double>::DOF* dofs,
 		double* xPos, double* yPos, double* zPos,
-		double *d_fx, double *d_fy, double *d_fz, double *d_E,
+		double *xModesLig,double *yModesLig,double *zModesLig,
+		double *xModesRec,double *yModesRec,double *zModesRec,
+		double *d_fxRec, double *d_fyRec, double *d_fzRec,
+		double *d_fxLig, double *d_fyLig, double *d_fzLig,
+		double *d_E,
 		double *g_odata,
 		const cudaStream_t& stream);
-//GLENN add
-
-
 
 template <class T>
 void d_reduceMode(
@@ -560,7 +603,8 @@ void d_reduceMode(
 		T *xModesLig,T *yModesLig,T *zModesLig,
 		T *xModesRec,T *yModesRec,T *zModesRec,
 		T *d_fxRec, T *d_fyRec, T *d_fzRec,
-		T *d_fx, T *d_fy, T *d_fz, T *d_E,
+		T *d_fxLig, T *d_fyLig, T *d_fzLig,
+		T *d_E,
 		T *g_odata,
 		const cudaStream_t& stream)
 {
@@ -581,47 +625,47 @@ void d_reduceMode(
 		switch (threads)
 		{
 			case 1024:
-				blockReduceMode<T, 1024,true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T, 1024,true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 512:
-				blockReduceMode<T, 512, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T, 512, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 256:
-				blockReduceMode<T, 256, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T, 256, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 128:
-				blockReduceMode<T, 128, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T, 128, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 64:
-				blockReduceMode<T,  64, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,  64, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 32:
-				blockReduceMode<T,  32, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,  32, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 16:
-				blockReduceMode<T,  16, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,  16, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case  8:
-				blockReduceMode<T,   8, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,   8, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case  4:
-				blockReduceMode<T,   4, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,   4, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case  2:
-				blockReduceMode<T,   2, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,   2, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case  1:
-				blockReduceMode<T,   1, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,   1, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec, numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 		}
 	}
@@ -630,47 +674,47 @@ void d_reduceMode(
 		switch (threads)
 		{
 			case 1024:
-				blockReduceMode<T, 1024,false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T, 1024,false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 512:
-				blockReduceMode<T, 512, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T, 512, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 256:
-				blockReduceMode<T, 256, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T, 256, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 128:
-				blockReduceMode<T, 128, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T, 128, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 64:
-				blockReduceMode<T,  64, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,  64, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 32:
-				blockReduceMode<T,  32, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,  32, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case 16:
-				blockReduceMode<T,  16, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,  16, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case  8:
-				blockReduceMode<T,   8, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,   8, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec, d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case  4:
-				blockReduceMode<T,   4, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,   4, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case  2:
-				blockReduceMode<T,   2, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,   2, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 
 			case  1:
-				blockReduceMode<T,   1, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fx, d_fy, d_fz, d_E, g_odata);
+				blockReduceMode<T,   1, false><<< dimGrid, dimBlock, smemSize, stream >>>(numAtomsRec, numAtomsLig, numModesRec,  numModesLig, dofs, xPos, yPos, zPos, xModesRec, yModesRec, zModesRec,  xModesLig, yModesLig, zModesLig, d_fxRec, d_fyRec, d_fzRec,d_fxLig, d_fyLig, d_fzLig, d_E, g_odata);
 				break;
 		}
 	}
@@ -679,39 +723,7 @@ void d_reduceMode(
 
 
 
-template
-void d_reduceMode<float>(
-		const unsigned& threads,
-		const unsigned& blocks,
-		const unsigned& numAtomsRec,
-		const unsigned& numAtomsLig,
-		const unsigned& numModesRec,
-		const unsigned& numModesLig,
-		typename Types_6D_modes<float>::DOF* dofs,
-		float* xPos, float* yPos, float* zPos,
-		float *xModesLig,float *yModesLig,float *zModesLig,
-		float *xModesRec,float *yModesRec,float *zModesRec,
-		float *d_fxRec, float *d_fyRec, float *d_fzRec,
-		float *d_fx, float *d_fy, float *d_fz, float *d_E,
-		float *g_odata,
-		const cudaStream_t& stream);
 
-template
-void d_reduceMode<double>(
-		const unsigned& threads,
-		const unsigned& blocks,
-		const unsigned& numAtomsRec,
-		const unsigned& numAtomsLig,
-		const unsigned& numModesRec,
-		const unsigned& numModesLig,
-		typename Types_6D_modes<double>::DOF* dofs,
-		double* xPos, double* yPos, double* zPos,
-		double *xModesLig,double *yModesLig,double *zModesLig,
-		double *xModesRec,double *yModesRec,double *zModesRec,
-		double *d_fxRec, double *d_fyRec, double *d_fzRec,
-		double *d_fx, double *d_fy, double *d_fz, double *d_E,
-		double *g_odata,
-		const cudaStream_t& stream);
 
 
 //GLENN ADD MODEFORCE
