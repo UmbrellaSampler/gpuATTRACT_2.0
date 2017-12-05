@@ -7,8 +7,6 @@
 #include "Configurator_6D_Modes.h"
 
 #include "readFile.h"
-#include "DOF_6D.h"
-//#include "ServerIncludes.h"
 #include "Server.h"
 #include "Protein.h"
 #include "GridUnion.h"
@@ -64,7 +62,10 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
-	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = readDOF_6D_Modes<real_t>(args.dofName,args.numModes);
+	// TODO: transform DOF_6D to input_t
+	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
+	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName);
+
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
