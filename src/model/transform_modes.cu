@@ -43,7 +43,7 @@ void d_translate_rotate	(Vec3<REAL>& posAtom, int atomIdx, Vec3<REAL> const& pos
 
 
 template<typename REAL>
-__global__ void d_DOF2Pos(
+__global__ void d_DOFPos(
 		REAL const* xRec,
 		REAL const* yRec,
 		REAL const* zRec,
@@ -56,7 +56,7 @@ __global__ void d_DOF2Pos(
 		REAL const* xModesLig,
 		REAL const* yModesLig,
 		REAL const* zModesLig,
-		DOF2__6D_Modes<REAL>* dofs,
+		DOF_6D_Modes<REAL>* dofs,
 		unsigned numAtomsRec,
 		unsigned numModesRec,
 		unsigned numModesLig,
@@ -118,7 +118,7 @@ __global__ void d_rotateForces(
 		REAL const* xForce,
 		REAL const* yForce,
 		REAL const* zForce,
-		DOF2__6D_Modes<REAL>* dofs,
+		DOF_6D_Modes<REAL>* dofs,
 		unsigned numAtoms,
 		unsigned numDOFs
 )
@@ -145,11 +145,58 @@ __global__ void d_rotateForces(
 
 
 
+template<typename REAL>
+void d_rotateForces(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		REAL const* xForce,
+		REAL const* yForce,
+		REAL const* zForce,
+		DOF_6D_Modes<REAL>* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs
+)
+{
+	d_DOFPos<<<gridSize, blockSize, 0, stream>>> (
+			xForce,
+			yForce,
+			zForce,
+			dofs,
+			numAtoms,
+			numDOFs
+			);
+}
 
 
+template
+void d_rotateForces(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		float const* xForce,
+		float const* yForce,
+		float const* zForce,
+		DOF_6D_Modes<float>* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs
+		);
+
+template
+void d_rotateForces(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		double const* xForce,
+		double const* yForce,
+		double const* zForce,
+		DOF_6D_Modes<double>* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs
+		);
 
 template<typename REAL>
-void d_DOF2Pos(
+void d_DOFPos(
 		unsigned blockSize,
 		unsigned gridSize,
 		const cudaStream_t &stream,
@@ -165,7 +212,7 @@ void d_DOF2Pos(
 		REAL const* xModesLig,
 		REAL const* yModesLig,
 		REAL const* zModesLig,
-		DOF2__6D_Modes<REAL>* dofs,
+		DOF_6D_Modes<REAL>* dofs,
 		unsigned numAtomsRec,
 		unsigned numModesRec,
 		unsigned numModesLig,
@@ -181,7 +228,7 @@ void d_DOF2Pos(
 		REAL* zLigTrafo)
 {
 	cudaVerifyKernel((
-			d_DOF2Pos<<<gridSize, blockSize, 0, stream>>> (
+			d_DOFPos<<<gridSize, blockSize, 0, stream>>> (
 				xRec,
 				yRec,
 				zRec,
@@ -212,7 +259,7 @@ void d_DOF2Pos(
 		));
 }
 template
-void d_DOF2Pos<float>(
+void d_DOFPos<float>(
 		float const* xRec,
 		float const* yRec,
 		float const* zRec,
@@ -225,7 +272,7 @@ void d_DOF2Pos<float>(
 		float const* xModesLig,
 		float const* yModesLig,
 		float const* zModesLig,
-		DOF2__6D_Modes<float>* dofs,
+		DOF_6D_Modes<float>* dofs,
 		unsigned numAtomsRec,
 		unsigned numModesRec,
 		unsigned numModesLig,
@@ -242,7 +289,7 @@ void d_DOF2Pos<float>(
 		);
 
 template
-void d_DOF2Pos<double>(
+void d_DOFPos<double>(
 		double const* xRec,
 		double const* yRec,
 		double const* zRec,
@@ -255,7 +302,7 @@ void d_DOF2Pos<double>(
 		double const* xModesLig,
 		double const* yModesLig,
 		double const* zModesLig,
-		DOF2__6D_Modes<double>* dofs,
+		DOF_6D_Modes<double>* dofs,
 		unsigned numAtomsRec,
 		unsigned numModesRec,
 		unsigned numModesLig,
@@ -270,7 +317,6 @@ void d_DOF2Pos<double>(
 		double* yLigTrafo,
 		double* zLigTraf
 		);
-
 
 
 }  // namespace as

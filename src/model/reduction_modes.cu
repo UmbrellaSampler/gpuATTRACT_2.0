@@ -5,7 +5,7 @@
  *      Author: uwe
  */
 
-#include "reduction.h"
+#include "reduction_modes.h"
 
 namespace as {
 
