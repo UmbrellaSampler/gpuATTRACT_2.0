@@ -19,9 +19,9 @@
 #include "SimParam.h"
 
 
-#include "transform.h"
+#include "transform_modes.h"
 #include "interpolation.h"
-#include "neighborlist.h"
+#include "neighborlist_modes.h"
 #include "reduction_modes.h"
 #include "matrixFunctions.h"
 #include "RotMat.h"
@@ -45,16 +45,30 @@ public:
 	/**
 	 * Allocate new Buffers with size. Old buffers are automatically deallocated;
 	 */
-	void allocateBuffer(size_t size) {
+	void allocateBufferRec(size_t size) {
 		h_trafoLig = std::move(WorkerBuffer<REAL>(3,size));
 		h_potLig = std::move(WorkerBuffer<REAL>(4,size));
 	}
 
-	size_t bufferSize() {
+	void allocateBufferLig(size_t size) {
+		h_trafoRec = std::move(WorkerBuffer<REAL>(3,size));
+		h_defoRec = std::move(WorkerBuffer<REAL>(3,size));
+		h_potRec = std::move(WorkerBuffer<REAL>(4,size));
+	}
+
+	size_t bufferSizeRec() {
+		return h_trafoRec.bufferSize();
+	}
+
+	size_t bufferSizeLig() {
 		return h_trafoLig.bufferSize();
 	}
 
+	WorkerBuffer<REAL> h_trafoRec;
+	WorkerBuffer<REAL> h_defoRec;
 	WorkerBuffer<REAL> h_trafoLig;
+
+	WorkerBuffer<REAL> h_potRec;
 	WorkerBuffer<REAL> h_potLig;
 };
 
@@ -74,8 +88,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 		auto results = item->resultBuffer();
 
 		/* get DataItem pointers */
-		const auto grid = std::dynamic_pointer_cast<GridUnion<REAL>>(this->_dataMng->get(common->gridIdRec)).get(); // _dataMng->get() returns shared_ptr<DataItem>
-		assert(grid != nullptr);
+		const auto gridRec = std::dynamic_pointer_cast<GridUnion<REAL>>(this->_dataMng->get(common->gridIdRec)).get(); // _dataMng->get() returns shared_ptr<DataItem>
+		assert(gridRec != nullptr);
+
+		const auto gridLig = std::dynamic_pointer_cast<GridUnion<REAL>>(this->_dataMng->get(common->gridIdLig)).get(); // _dataMng->get() returns shared_ptr<DataItem>
+		assert(gridLig != nullptr);
 
 		const auto lig = std::dynamic_pointer_cast<Protein<REAL>>(this->_dataMng->get(common->ligId)).get();
 		assert(lig != nullptr);
@@ -89,10 +106,14 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 		const auto simParams = std::dynamic_pointer_cast<SimParam<REAL>>(this->_dataMng->get(common->paramsId)).get();
 		assert(simParams != nullptr);
 
-
-		if (lig->numAtoms() > buffers->bufferSize()) {
-			buffers->allocateBuffer(lig->numAtoms());
+		if (rec->numAtoms() > buffers->bufferSizeRec()) {
+			buffers->allocateBufferRec(rec->numAtoms());
 		}
+
+		if (lig->numAtoms() > buffers->bufferSizeLig()) {
+			buffers->allocateBufferLig(lig->numAtoms());
+		}
+
 
 //		lig->print(lig->numAtoms());
 //		exit(1);
@@ -101,7 +122,31 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			const auto& dof = dofs[i];
 			auto& enGrad = results[i];
 
+			//invert the receptor DOF such that it points to the receptor in the ligand system
+			DOF_6D_Modes<REAL> invertedRecDOF=invertDOF(dof);
 
+			//translate the coordinates of the receptor
+			rotate_translate_deform(
+				rec->xPos(),
+				rec->yPos(),
+				rec->zPos(),
+				invertedRecDOF._6D.pos,
+				invertedRecDOF._6D.ang,
+				rec->numAtoms(),
+				rec->numModes(),
+				invertedRecDOF.modesRec,
+				rec->xModes(),
+				rec->yModes(),
+				rec->zModes(),
+				buffers->h_defoRec.getX(),
+				buffers->h_defoRec.getY(),
+				buffers->h_defoRec.getZ(),
+				buffers->h_trafoRec.getX(),//output
+				buffers->h_trafoRec.getY(),
+				buffers->h_trafoRec.getZ()
+			); // OK
+
+			//translate the coordinates of the Ligand
 			rotate_translate(
 				lig->xPos(),
 				lig->yPos(),
@@ -126,17 +171,40 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			}
 //			exit(EXIT_SUCCESS);
 
+			// calculate the forces acting on the receptor via the ligand grid in the ligand system
 			potForce(
-					grid->inner.get(),
-					grid->outer.get(),
-					lig,
-					buffers->h_trafoLig.getX(),
-					buffers->h_trafoLig.getY(),
-					buffers->h_trafoLig.getZ(),
-					buffers->h_potLig.getX(), // output
-					buffers->h_potLig.getY(),
-					buffers->h_potLig.getZ(),
-					buffers->h_potLig.getW()
+				gridLig->inner.get(),
+				gridLig->outer.get(),
+				rec,
+				buffers->h_trafoRec.getX(),
+				buffers->h_trafoRec.getY(),
+				buffers->h_trafoRec.getZ(),
+				buffers->h_potRec.getX(), // output
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				buffers->h_potRec.getW()
+			);
+
+			//rotate forces back into the receptor frame
+			rotate_forces(invertedRecDOF._6D.ang.inv(),
+				rec-> numAtoms(),
+				buffers->h_potRec.getX(),
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ()
+			);
+
+			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
+			potForce(
+				gridRec->inner.get(),
+				gridRec->outer.get(),
+				lig,
+				buffers->h_trafoLig.getX(),
+				buffers->h_trafoLig.getY(),
+				buffers->h_trafoLig.getZ(),
+				buffers->h_potLig.getX(), // output
+				buffers->h_potLig.getY(),
+				buffers->h_potLig.getZ(),
+				buffers->h_potLig.getW()
 			); // OK
 
 //			exit(EXIT_SUCCESS);
@@ -146,19 +214,26 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			}
 //			exit(EXIT_SUCCESS);
 
+			// calculate the forces acting on the receptor and the ligand in the receptor system via the neighborlist
 			NLPotForce(
-					grid->NL.get(),
-					rec,
-					lig,
-					simParams,
-					table,
-					buffers->h_trafoLig.getX(),
-					buffers->h_trafoLig.getY(),
-					buffers->h_trafoLig.getZ(),
-					buffers->h_potLig.getX(), // output
-					buffers->h_potLig.getY(),
-					buffers->h_potLig.getZ(),
-					buffers->h_potLig.getW()
+				gridRec->NL.get(),
+				rec,
+				lig,
+				simParams,
+				table,
+				buffers->h_defoRec.getX(),
+				buffers->h_defoRec.getY(),
+				buffers->h_defoRec.getZ(),
+				buffers->h_trafoLig.getX(),
+				buffers->h_trafoLig.getY(),
+				buffers->h_trafoLig.getZ(),
+				buffers->h_potLig.getX(), // output
+				buffers->h_potLig.getY(),
+				buffers->h_potLig.getZ(),
+				buffers->h_potLig.getW(),
+				buffers->h_potRec.getX(), // output
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ()
 			); // OK
 
 ////			// Debug
@@ -168,12 +243,16 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			}
 ////			exit(EXIT_SUCCESS);
 
+
+
+
+			////Reduce forces on Ligand
 			PotForce_Modes<REAL> redPotForce = reducePotForce<REAL,PotForce_Modes<REAL>>(
-					buffers->h_potLig.getX(),
-					buffers->h_potLig.getY(),
-					buffers->h_potLig.getZ(),
-					buffers->h_potLig.getW(),
-					lig->numAtoms()
+				buffers->h_potLig.getX(),
+				buffers->h_potLig.getY(),
+				buffers->h_potLig.getZ(),
+				buffers->h_potLig.getW(),
+				lig->numAtoms()
 			); // OK
 
 //			// Debug
@@ -185,20 +264,51 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			reduceModeForce(
-					dof._6D.ang,
-					buffers->h_potLig.getX(),
-					buffers->h_potLig.getY(),
-					buffers->h_potLig.getZ(),
-					lig->xModes(),
-					lig->yModes(),
-					lig->zModes(),
-					lig->numAtoms(),
-					lig->numModes(),
-					redPotForce.modes
-					);
+				dof._6D.ang,
+				buffers->h_potLig.getX(),
+				buffers->h_potLig.getY(),
+				buffers->h_potLig.getZ(),
+				lig->xModes(),
+				lig->yModes(),
+				lig->zModes(),
+				lig->numAtoms(),
+				lig->numModes(),
+				redPotForce.modesLig
+				);
 
+			correctModeForce(
+				lig-> modeForce(),
+				lig-> numModes(),
+				redPotForce.modesLig
+				);
+
+			////Reduce forces on receptor
+
+			reduceModeForce(
+				buffers->h_potRec.getX(),
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				rec->xModes(),
+				rec->yModes(),
+				rec->zModes(),
+				rec->numAtoms(),
+				rec->numModes(),
+				redPotForce.modesRec
+				);
+
+			correctModeForce(
+				rec->modeForce(),
+				rec-> numModes(),
+				redPotForce.modesRec
+				);
+
+
+			//copy reduced forces
 			for( int mode = 0; mode < lig->numModes(); mode++) {
-				enGrad.modesLig[mode]=redPotForce.modes[mode];
+				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
+			}
+			for( int mode = 0; mode < rec->numModes(); mode++) {
+				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
 			}
 			enGrad._6D.E = redPotForce.E;
 			enGrad._6D.pos = redPotForce.pos;

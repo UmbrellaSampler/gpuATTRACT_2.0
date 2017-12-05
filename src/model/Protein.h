@@ -97,6 +97,10 @@ public:
 		return _modes + 2*_numModes*_numAtoms;
 	}
 
+	REAL* modeForce(){
+		return _modeForceConstant;
+	}
+
 	tag_t tag() const{
 		return _tag;
 	}
@@ -114,6 +118,8 @@ public:
 	REAL* getOrCreateChargePtr();
 
 	REAL* getOrCreateModePtr();
+
+	REAL* getOrCreateModeForcePtr();
 
 	void setTag(tag_t tag) {
 		_tag = tag;
@@ -156,6 +162,8 @@ protected:
 
 	unsigned _numModes; /** number of modes */
 	REAL* _modes; /** normal mode deformation vectors */
+
+	REAL* _modeForceConstant;
 };
 
 }

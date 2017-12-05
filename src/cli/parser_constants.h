@@ -25,8 +25,10 @@ constexpr auto APP_SHORT_NAME_EM = "em";
 constexpr auto FILE_DEFAULT_RECEPTOR_PDB = "receptorr.pdb";
 constexpr auto FILE_DEFAULT_LIGANG_PDB = "ligandr.pdb";
 constexpr auto FILE_DEFAULT_RECEPTOR_GRID = "receptorgrid.grid";
+constexpr auto FILE_DEFAULT_LIGAND_GRID = "ligandgrid.grid";
 constexpr auto FILE_DEFAULT_PARAMETER = "attract.par";
-constexpr auto FILE_DEFAULT_GRID_ALPAHBET = "receptorgrid.alphabet";
+constexpr auto FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR = "receptorgrid.alphabet";
+constexpr auto FILE_DEFAULT_GRID_ALPAHBET_LIGAND = "ligandgrid.alphabet";
 constexpr auto DEFAULT_MODE_RECEPTOR_FILE = "modesReceptor.dat";
 constexpr auto DEFAULT_MODE_LIGAND_FILE = "modesLigand.dat";
 
