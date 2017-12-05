@@ -41,9 +41,6 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	if(args.numModes > 0){
 		useModes=true;
 	}
-	if(useModes){
-
-	}
 
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
