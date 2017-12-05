@@ -21,7 +21,7 @@
 
 #include "transform_modes.h"
 #include "interpolation.h"
-#include "neighborlist.h"
+#include "neighborlist_modes.h"
 #include "reduction_modes.h"
 #include "matrixFunctions.h"
 #include "RotMat.h"
