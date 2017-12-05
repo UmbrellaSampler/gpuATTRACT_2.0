@@ -563,21 +563,22 @@ std::vector<AttractEnGrad> readEnGradFromFile(std::string filename) {
 	return enGrads;
 }
 
-template<typename REAL>
-std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename) {
+std::vector<std::vector<DOF>> readDOF(std::string filename) {
 	using namespace std;
 	using namespace as;
 
-	std::vector<std::vector<DOF_6D<REAL>>> DOF_molecules;
+	std::vector<std::vector<DOF>> DOF_molecules;
 
 	ifstream file(filename);
 
 	string line;
+	size_t lineNo = 0;
 	int i_molecules = 0;
 	if (file.is_open()) {
 		while (!file.eof()) {
 
 			getline(file, line);
+			++lineNo;
 
 
 			if (!line.compare(0,1, "#")) { // 0 == true
@@ -589,96 +590,38 @@ std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename) {
 			while (line.compare(0,1, "#") != 0 && !file.eof()) {
 
 				if (i_molecules == 0) {
-					DOF_molecules.push_back(std::vector<DOF_6D<REAL>> ());
+					DOF_molecules.push_back(std::vector<DOF> ());
 				}
 
-				std::vector<DOF_6D<REAL>>& vec = DOF_molecules[i];
-				DOF_6D<REAL> dof ;
+				std::vector<DOF>& vec = DOF_molecules[i];
+				DOF dof ;
 				{
 					stringstream stream(line);
-					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
-						>> dof.pos.x >> dof.pos.y >> dof.pos.z;
+					stream >> dof._6D.ang.x >> dof._6D.ang.y >> dof._6D.ang.z
+						>> dof._6D.pos.x >> dof._6D.pos.y >> dof._6D.pos.z;
+					for (size_t i = 0; !stream.eof(); ++i) {
+						stream >> dof.dofs[i];
+						if(stream.fail()) {
+							stream.clear();
+							string parsed;
+							stream >> parsed;
+							errorDOFFormat(filename);
+							cerr << "Cannot parse '" << parsed << "' at #" << i_molecules << " (line " << lineNo << ")" << endl;
+							exit(EXIT_FAILURE);
+						}
+					}
 				}
 				vec.push_back(dof);
 
 				++i;
 				getline(file, line);
+				++lineNo;
 			}
 			/* check if i equals the number of molecules == DOF_molecules.size(),
 			 * otherwise we miss a molecule in the definition */
 			if (i != DOF_molecules.size()) {
 				errorDOFFormat(filename);
-				cerr << "The DOF definition is incomplete at #" << i_molecules << "." << endl;
-						exit(EXIT_FAILURE);
-			}
-			++i_molecules;
-		}
-	} else {
-		cerr << "Error: Failed to open file " << filename << endl;
-		exit(EXIT_FAILURE);
-	}
-
-	file.close();
-
-	return DOF_molecules;
-
-}
-
-template<typename REAL>
-std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filename, int numModes) {
-	using namespace std;
-	using namespace as;
-
-	std::vector<std::vector<DOF_6D_Modes<REAL>>> DOF_molecules;
-
-	ifstream file(filename);
-
-	string line;
-	int i_molecules = 0;
-	REAL tmpMode;
-	if (file.is_open()) {
-		while (!file.eof()) {
-
-			getline(file, line);
-
-
-			if (!line.compare(0,1, "#")) { // 0 == true
-				continue;
-			}
-
-			/* read all dofs until the next "#" */
-			unsigned i = 0;
-			while (line.compare(0,1, "#") != 0 && !file.eof()) {
-
-				if (i_molecules == 0) {
-					DOF_molecules.push_back(std::vector<DOF_6D_Modes<REAL>> ());
-				}
-
-				std::vector<DOF_6D_Modes<REAL>>& vec = DOF_molecules[i];
-				DOF_6D_Modes<REAL> dof ;
-
-				//does not compile at the moment
-//				dof.numModes=numModes;
-//				{
-//					stringstream stream(line);
-//					stream >> dof.ang.x >> dof.ang.y >> dof.ang.z
-//						>> dof.pos.x >> dof.pos.y >> dof.pos.z;
-//					for (int i=0; i< dof.numModes; i++){
-//						stream >> tmpMode;
-//						if(std::isnan(tmpMode)){	dof.modes[i]=0.0;}
-//						else{						dof.modes[i]=tmpMode;}
-//					}
-//				}
-				vec.push_back(dof);
-
-				++i;
-				getline(file, line);
-			}
-			/* check if i equals the number of molecules == DOF_molecules.size(),
-			 * otherwise we miss a molecule in the definition */
-			if (i != DOF_molecules.size()) {
-				errorDOFFormat(filename);
-				cerr << "The DOF definition is incomplete at #" << i_molecules << "." << endl;
+				cerr << "The DOF definition is incomplete at #" << i_molecules << " (line " << lineNo << ")" << endl;
 						exit(EXIT_FAILURE);
 			}
 			++i_molecules;
@@ -898,18 +841,6 @@ std::shared_ptr<ParamTable<double>> createParamTableFromFile(std::string filenam
 
 template
 void readParamTableFromFile(std::shared_ptr<ParamTable<double>>, std::string filename);
-
-template
-std::vector<std::vector<DOF_6D<float>>> readDOF_6D(std::string filename);
-
-template
-std::vector<std::vector<DOF_6D_Modes<double>>> readDOF_6D_Modes(std::string filename, int numModes);
-
-template
-std::vector<std::vector<DOF_6D_Modes<float>>> readDOF_6D_Modes(std::string filename, int numModes);
-
-template
-std::vector<std::vector<DOF_6D<double>>> readDOF_6D(std::string filename);
 
 template
 DOFHeader<float> readDOFHeader<float>(std::string filename);
