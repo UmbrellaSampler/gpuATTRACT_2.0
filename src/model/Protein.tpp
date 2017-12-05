@@ -40,7 +40,7 @@ Protein<REAL>::Protein() :
 	_numMappedTypes(0),
 	_mappedTypes(nullptr),
 	_charge(nullptr),
-	_numModes(0), _modes(nullptr) {};
+	_numModes(0), _modes(nullptr), _modeForceConstant(nullptr) {};
 
 template<typename REAL>
 Protein<REAL>::~Protein() {
@@ -49,6 +49,7 @@ Protein<REAL>::~Protein() {
 	delete[] _type;
 	delete[] _mappedTypes;
 	delete[] _modes;
+	delete[] _modeForceConstant;
 }
 
 template<typename REAL>
@@ -111,6 +112,18 @@ REAL* Protein<REAL>::getOrCreateModePtr() {
 		_modes = new REAL[3*_numAtoms*_numModes];
 	}
 	return _modes;
+}
+
+template<typename REAL>
+REAL* Protein<REAL>::getOrCreateModeForcePtr() {
+	if (_modeForceConstant== nullptr) {
+		if (_numModes == 0) {
+			throw std::runtime_error("getOrCreateModeForcePtr(): the number of Modes must be set before");
+		}
+
+		_modeForceConstant = new REAL[_numModes];
+	}
+	return _modeForceConstant;
 }
 
 template<typename REAL>

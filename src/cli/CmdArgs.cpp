@@ -15,11 +15,13 @@ namespace as {
 
 std::ostream& operator<<(std::ostream& s, CmdArgs const& args) {
 	s << "dofName     = "  << args.dofName             << endl;
-	s << "gridName    = "  << args.gridName            << endl;
+	s << "gridRecName    = "  << args.gridRecName            << endl;
+	s << "gridLigName    = "  << args.gridLigName            << endl;
 	s << "ligName     = "  << args.ligName             << endl;
 	s << "recName     = "  << args.recName             << endl;
 	s << "paramsName  = "  << args.paramsName          << endl;
-	s << "alphabeName = "  << args.alphabetName 	   << endl;
+	s << "alphabetRecName = "  << args.alphabetRecName 	   << endl;
+	s << "alphabetLigName = "  << args.alphabetLigName 	   << endl;
 	s << "ligModesName = " <<args.ligModesName		   << endl;
 	s << "recModesName = " <<args.recModesName   	   << endl;
 	s << "numCPUs     = "  << args.numCPUs             << endl;

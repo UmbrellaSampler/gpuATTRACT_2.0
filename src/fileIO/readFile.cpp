@@ -240,6 +240,9 @@ void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName) {
 	}
 	REAL* protBufMode = prot->getOrCreateModePtr();
 	std::copy(protModes, protModes+ 3*numModes*numAtoms, protBufMode);
+
+	REAL* protBufModeForce = prot->getOrCreateModeForcePtr();
+	std::copy(modeVal, modeVal+ numModes, protBufModeForce);
 }
 template<typename REAL>
 void readGridFromGridFile(std::shared_ptr<GridUnion<REAL>> gridUnion, std::string filename) {

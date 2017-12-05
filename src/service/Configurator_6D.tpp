@@ -35,8 +35,13 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
 	auto ligand = createProteinFromPDB<real_t>(args.ligName);
-	auto grid = createGridFromGridFile<real_t>(args.gridName);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
+	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
+
+	bool useModes = false;
+	if(args.numModes > 0){
+		useModes=true;
+	}
 
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
@@ -49,12 +54,13 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	/* apply mapping according to receptor grid alphabet to ligand */
-	auto mapVec = readGridAlphabetFromFile(args.alphabetName); // map: std::vector<unsigned>
-	TypeMap typeMap = createTypeMapFromVector(mapVec);
+	auto mapVecRec = readGridAlphabetFromFile(args.alphabetRecName); // map: std::vector<unsigned>
+	TypeMap typeMapRec = createTypeMapFromVector(mapVecRec);
 	ligand->setNumMappedTypes(1);
 	ligand->getOrCreateMappedPtr();
 	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
-	applyMapping(typeMap, ligand->numAtoms(), ligand->type(), ligand->mappedType());
+	applyMapping(typeMapRec, ligand->numAtoms(), ligand->type(), ligand->mappedType());
+
 
 	/* read dof file */
 	DOFHeader<real_t> h = readDOFHeader<real_t>(args.dofName);
@@ -100,16 +106,35 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	/* apply grid displacement */
-	auto pivot = h.pivots[0];
-	grid->translate(-make_real3(pivot.x,pivot.y,pivot.z));
+	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));
+
 
 	/* add items to dataMng */
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
 	_ids.recId = dataManager->add(receptor);
 	_ids.ligId = dataManager->add(ligand);
-	_ids.gridId = dataManager->add(grid);
+	_ids.gridIdRec = dataManager->add(gridRec);
 	_ids.tableId = dataManager->add(paramTable);
 	_ids.paramsId = dataManager->add(simParam);
+
+	if(useModes){
+
+		receptor->setNumModes(args.numModes);
+		ligand->setNumModes(args.numModes);
+		readHMMode<real_t>(receptor, args.recModesName);
+		readHMMode<real_t>(ligand, args.ligModesName);
+
+		auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
+		TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
+		receptor->setNumMappedTypes(1);
+		receptor->getOrCreateMappedPtr();
+		applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
+		applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
+
+		auto gridLig = createGridFromGridFile<real_t>(args.gridLigName);
+		gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
+		_ids.gridIdLig = dataManager->add(gridLig);
+	}
 
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {
@@ -121,7 +146,12 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	ServiceType serviceType;
 	if (args.numCPUs > 0) {
-		serviceType = ServiceType::CPUEnergyService6D;
+		if(useModes){
+			serviceType = ServiceType::CPUEnergyService6DModes;
+		}
+		else{
+			serviceType = ServiceType::CPUEnergyService6D;
+		}
 	}
 #ifdef CUDA
 	else {
