@@ -19,9 +19,9 @@
 #include "SimParam.h"
 
 
-#include "transform.h"
+#include "transform_modes.h"
 #include "interpolation.h"
-#include "neighborlist.h"
+#include "neighborlist_modes.h"
 #include "reduction_modes.h"
 #include "matrixFunctions.h"
 #include "RotMat.h"
@@ -233,8 +233,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potLig.getW(),
 				buffers->h_potRec.getX(), // output
 				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ(),
-				buffers->h_potRec.getW()
+				buffers->h_potRec.getZ()
 			); // OK
 
 ////			// Debug

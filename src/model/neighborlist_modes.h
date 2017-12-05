@@ -12,6 +12,8 @@
 #include "neighborlist.h"
 
 
+namespace as {
+
 /**
  * this is an overloaded Version of the original  NLPotForce function which directly calculates the counteracting forces acting on the receptor.
  */
@@ -202,6 +204,6 @@ void NLPotForce(
 		} // for i
 	}
 }
-
+}//end Namespace as
 
 #endif /* NEIGHBORLIST_MODES_H_ */
