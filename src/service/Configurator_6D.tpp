@@ -38,6 +38,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
 
+	bool useModes = false;
 	if(args.numModes > 0){
 		useModes=true;
 	}
