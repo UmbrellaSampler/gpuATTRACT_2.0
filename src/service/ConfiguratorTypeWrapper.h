@@ -21,12 +21,6 @@ template<typename GenericTypes>
 struct ConfiguratorTypeWrapper {
 	ConfiguratorTypeWrapper() = delete;
 
-//	using configurator_t =
-//			typename std::conditional<std::is_same<GenericTypes, Types_6D<float>>::value,
-//			Configurator_6D<float>,
-//			Configurator_6D<double>>
-//			::type;
-
 	using configurator_t =
 			typename std::conditional<std::is_same<GenericTypes, Types_6D<float>>::value,
 			Configurator_6D<float>,

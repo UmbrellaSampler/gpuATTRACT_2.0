@@ -10,46 +10,26 @@
 
 #include <memory>
 #include "CmdArgs.h"
+#include "ConfiguratorBase.h"
 #include "Types_6D_Modes.h"
-#include "Service.h"
-
-//template<typename GenericTypes>
-//class Service;
 
 namespace as {
 
-template<typename GenericTypes>
-class Server;
-
 template<typename REAL>
-class Configurator_6D_Modes {
-	using service_t = Service<Types_6D_Modes<REAL>>;
-	using input_t = typename service_t::input_t;
-	using common_t = typename service_t::common_t;
+class Configurator_6D_Modes : public ConfiguratorBase<Types_6D_Modes<REAL>> {
+	using genericTypes_t = Types_6D_Modes<REAL>;
+	using typename ConfiguratorBase<genericTypes_t>::service_t;
+	using typename ConfiguratorBase<genericTypes_t>::input_t;
+	using typename ConfiguratorBase<genericTypes_t>::common_t;
 
 public:
-	using real_t = typename TypeWrapper<REAL>::real_t;
-	using server_t = Server<Types_6D_Modes<REAL>>;
+	using typename ConfiguratorBase<genericTypes_t>::real_t;
+	using typename ConfiguratorBase<genericTypes_t>::server_t;
 
-	std::vector<input_t>& dofs() noexcept {
-		return _dofs;
-	}
+	void init(CmdArgs const& args) noexcept override;
+	void finalize() noexcept override;
 
-	std::shared_ptr<server_t> server() noexcept {
-		return _server;
-	}
-
-	common_t& common() noexcept {
-		return _ids;
-	}
-
-	void init(CmdArgs const& args) noexcept;
-	void finalize() noexcept;
-
-private:
-	common_t _ids;
-	std::vector<input_t> _dofs;
-	std::shared_ptr<server_t> _server;
+	virtual ~Configurator_6D_Modes() {}
 
 };
 

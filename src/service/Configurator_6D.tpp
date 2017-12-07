@@ -92,10 +92,10 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	/* init dof and result buffer */
-	_dofs = std::vector<input_t>(DOF_molecules[1].size());
+	this->_dofs = std::vector<input_t>(DOF_molecules[1].size());
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
-		_dofs[i].pos = DOF_molecules[1][i].pos;
-		_dofs[i].ang = DOF_molecules[1][i].ang;
+		this->_dofs[i].pos = DOF_molecules[1][i].pos;
+		this->_dofs[i].ang = DOF_molecules[1][i].ang;
 	}
 
 
@@ -106,11 +106,11 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* add items to dataMng */
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
-	_ids.recId = dataManager->add(receptor);
-	_ids.ligId = dataManager->add(ligand);
-	_ids.gridId = dataManager->add(gridRec);
-	_ids.tableId = dataManager->add(paramTable);
-	_ids.paramsId = dataManager->add(simParam);
+	this->_ids.recId = dataManager->add(receptor);
+	this->_ids.ligId = dataManager->add(ligand);
+	this->_ids.gridId = dataManager->add(gridRec);
+	this->_ids.tableId = dataManager->add(paramTable);
+	this->_ids.paramsId = dataManager->add(simParam);
 
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {
@@ -132,11 +132,11 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args)));
 
-	_server = std::unique_ptr<server_t>(new server_t(service));
+	this->_server = std::unique_ptr<server_t>(new server_t(service));
 	if (args.numCPUs > 0) {
-		_server->createWorkers(args.numCPUs);
+		this->_server->createWorkers(args.numCPUs);
 	} else {
-		_server->createWorkers(args.deviceIds.size());
+		this->_server->createWorkers(args.deviceIds.size());
 	}
 
 }
