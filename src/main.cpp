@@ -21,9 +21,9 @@ using namespace as;
 int main(int argc, char* argv[]) {
 
 #ifdef CUDA
-	std::cerr << "Using CUDA" << std::endl;
+	std::cerr << "CUDA available" << std::endl;
 #else
-	std::cerr << "Not Using CUDA" << std::endl;
+	std::cerr << "CUDA not available" << std::endl;
 #endif
 
 	try {
@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
 		app->init(args);
 		app->run();
 	} catch (std::exception& e) {
-		std::cerr << "Catched error in main: " << + e.what() << std::endl;
+		std::cerr << "Error in main: " << + e.what() << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
