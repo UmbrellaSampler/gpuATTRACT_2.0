@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
 		app->init(args);
 		app->run();
 	} catch (std::exception& e) {
-		std::cerr << "Catched error in main: " << + e.what() << std::endl;
+		std::cerr << "Error in main: " << + e.what() << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
