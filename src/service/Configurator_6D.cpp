@@ -6,10 +6,6 @@
  */
 
 #include "Configurator_6D.tpp"
-//#include "CPU_6D_EnergyService.h"
-//#ifdef CUDA
-//#include "GPU_6D_EnergyService.h"
-//#endif
 
 namespace as {
 

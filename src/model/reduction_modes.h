@@ -8,7 +8,7 @@
 #ifndef REDUCTION_MODES_H_
 #define REDUCTION_MODES_H_
 
-#include "Types_6D_Config.h"
+#include "Types_6D_Modes.h"
 #include "reduction.h"
 
 namespace as {
@@ -24,6 +24,37 @@ public:
 	real_t modesLig[MODES_MAX_NUMBER];
 };
 
+
+template<typename REAL>
+void reduceModeForce(
+		Vec3<REAL> const& ang,
+		const REAL* forceX,
+		const REAL* forceY,
+		const REAL* forceZ,
+		const REAL* modeX,
+		const REAL* modeY,
+		const REAL* modeZ,
+		unsigned const& numAtoms,
+		unsigned const& numModes,
+		REAL* result
+		)
+{
+	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
+	//rotate forces into ligand frame
+	const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
+	for( int i=0; i<numModes;i++){result[i]=0;}
+
+	for (unsigned i = 0; i < numAtoms; ++i) {
+		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
+		forceAtom = rotMatInv*forceAtom;
+		for(int mode=0;mode<numModes;mode++){
+				result[mode] -= forceAtom.x*modeX[i*numModes+mode]
+							  + forceAtom.y*modeY[i*numModes+mode]
+							  + forceAtom.z*modeZ[i*numModes+mode];
+		}
+	}
+
+}
 
 /*
  * @bief: reduceModeForce is essentially a dot product of the force vector and the modevector
@@ -108,15 +139,15 @@ template<typename REAL>
 void deviceReduce(
 		const unsigned& blockSize,
 		const unsigned& numDOFs,
-		const unsigned& receptordSize,
+		const unsigned& receptorSize,
 		const unsigned& ligandSize,
 		const unsigned& numModesRec,
 		const unsigned& numModesLig,
-		T *xModesRec,T *yModesRec,T *zModesRec,
-		T *xModesLig,T *yModesLig,T *zModesLig,
+		REAL *xModesRec,REAL *yModesRec,REAL *zModesRec,
+		REAL *xModesLig,REAL *yModesLig,REAL *zModesLig,
 		REAL* xPos, REAL* yPos, REAL* zPos,
-		T *d_fxRec, T *d_fyRec, T *d_fzRec,
-		T *d_fxLig, T *d_fyLig, T *d_fzLig,
+		REAL *d_fxRec, REAL *d_fyRec, REAL *d_fzRec,
+		REAL *d_fxLig, REAL *d_fyLig, REAL *d_fzLig,
 		REAL *d_E,
 		REAL *d_out,
 		const cudaStream_t& stream)
@@ -141,6 +172,8 @@ template<typename REAL>
 void h_finalReduce(const unsigned& dofSize,
 			const unsigned& numDOFs,
 			DOF_6D_Modes<REAL>* dofs,
+			const unsigned int& numModesRec,
+			const unsigned int& numModesLig,
 			const REAL* deviceOut,
 			Result_6D_Modes<REAL>* enGrads)
 {
@@ -148,7 +181,7 @@ void h_finalReduce(const unsigned& dofSize,
 	for (unsigned i = 0; i < numDOFs; ++i)
 	{
 		auto &enGrad = enGrads[i];
-		enGrad.pos.x = deviceOut[i*dofsize + 0];
+		enGrad.pos.x = deviceOut[i*dofSize + 0];
 		enGrad.pos.y = deviceOut[i*dofSize + 1];
 		enGrad.pos.z = deviceOut[i*dofSize + 2];
 

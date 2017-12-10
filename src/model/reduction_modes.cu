@@ -49,7 +49,7 @@ struct SharedMemory<double>
 // each thread block reduces the arrays one structure
 template <typename T, unsigned int blockSize, bool nIsPow2>
 __global__ void
-blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec, unsigned numModesLig, typename Types_6D_modes<T>::DOF* dofs,
+blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec, unsigned numModesLig,  DOF_6D_Modes<T>* dofs,
 		T* xPos, T* yPos, T* zPos,
 		T *xModesRec,T *yModesRec,T *zModesRec,
 		T *xModesLig,T *yModesLig,T *zModesLig,
@@ -99,7 +99,7 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 								       +forceAtomRec.z*zModesRec[i*numModesRec+mode];
 			}
 
-			if (nIsPow2 || i + blockSize < numAtomRec) {
+			if (nIsPow2 || i + blockSize < numAtomsRec) {
 				for(int mode=0; mode < numModesRec; mode++){
 					sum_modeRec[mode] -=  forceAtomRec.x*xModesRec[i*numModesRec+mode]
 					                     +forceAtomRec.y*yModesRec[i*numModesRec+mode]
@@ -143,7 +143,7 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 
 
         // ensure we don't read out of bounds -- this is optimized away for powerOf2 sized arrays
-        if (nIsPow2 || i + blockSize < numAtomLig) {
+        if (nIsPow2 || i + blockSize < numAtomsLig) {
 
 				fxLig = d_fxLig[base + i + blockSize];
 				fyLig = d_fyLig[base + i + blockSize];
@@ -158,7 +158,7 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 				sum_torque[0] += x * fxLig;
 				sum_torque[1] += y * fxLig;
 				sum_torque[2] += z * fxLig;
-				sum_torque[3] += x * fy;
+				sum_torque[3] += x * fyLig;
 				sum_torque[4] += y * fyLig;
 				sum_torque[5] += z * fyLig;
 				sum_torque[6] += x * fzLig;
@@ -554,41 +554,41 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 
 
 
-template
-void d_reduceMode<float>(
-		const unsigned& threads,
-		const unsigned& blocks,
-		const unsigned& numAtomsRec,
-		const unsigned& numAtomsLig,
-		const unsigned& numModesRec,
-		const unsigned& numModesLig,
-		typename Types_6D_modes<float>::DOF* dofs,
-		float* xPos, float* yPos, float* zPos,
-		float *xModesLig,float *yModesLig,float *zModesLig,
-		float *xModesRec,float *yModesRec,float *zModesRec,
-		float *d_fxRec, float *d_fyRec, float *d_fzRec,
-		float *d_fxLig, float *d_fyLig, float *d_fzLig,
-		float *d_E,
-		float *g_odata,
-		const cudaStream_t& stream);
-
-template
-void d_reduceMode<double>(
-		const unsigned& threads,
-		const unsigned& blocks,
-		const unsigned& numAtomsRec,
-		const unsigned& numAtomsLig,
-		const unsigned& numModesRec,
-		const unsigned& numModesLig,
-		typename Types_6D_modes<double>::DOF* dofs,
-		double* xPos, double* yPos, double* zPos,
-		double *xModesLig,double *yModesLig,double *zModesLig,
-		double *xModesRec,double *yModesRec,double *zModesRec,
-		double *d_fxRec, double *d_fyRec, double *d_fzRec,
-		double *d_fxLig, double *d_fyLig, double *d_fzLig,
-		double *d_E,
-		double *g_odata,
-		const cudaStream_t& stream);
+//template
+//void d_reduceMode<float>(
+//		const unsigned& threads,
+//		const unsigned& blocks,
+//		const unsigned& numAtomsRec,
+//		const unsigned& numAtomsLig,
+//		const unsigned& numModesRec,
+//		const unsigned& numModesLig,
+//		typename Types_6D_modes<float>::DOF* dofs,
+//		float* xPos, float* yPos, float* zPos,
+//		float *xModesLig,float *yModesLig,float *zModesLig,
+//		float *xModesRec,float *yModesRec,float *zModesRec,
+//		float *d_fxRec, float *d_fyRec, float *d_fzRec,
+//		float *d_fxLig, float *d_fyLig, float *d_fzLig,
+//		float *d_E,
+//		float *g_odata,
+//		const cudaStream_t& stream);
+//
+//template
+//void d_reduceMode<double>(
+//		const unsigned& threads,
+//		const unsigned& blocks,
+//		const unsigned& numAtomsRec,
+//		const unsigned& numAtomsLig,
+//		const unsigned& numModesRec,
+//		const unsigned& numModesLig,
+//		typename Types_6D_modes<double>::DOF* dofs,
+//		double* xPos, double* yPos, double* zPos,
+//		double *xModesLig,double *yModesLig,double *zModesLig,
+//		double *xModesRec,double *yModesRec,double *zModesRec,
+//		double *d_fxRec, double *d_fyRec, double *d_fzRec,
+//		double *d_fxLig, double *d_fyLig, double *d_fzLig,
+//		double *d_E,
+//		double *g_odata,
+//		const cudaStream_t& stream);
 
 template <class T>
 void d_reduceMode(
@@ -598,7 +598,7 @@ void d_reduceMode(
 		const unsigned& numAtomsLig,
 		const unsigned& numModesRec,
 		const unsigned& numModesLig,
-		typename Types_6D_modes<T>::DOF* dofs,
+		 DOF_6D_Modes<T>* dofs,
 		T* xPos, T* yPos, T* zPos,
 		T *xModesLig,T *yModesLig,T *zModesLig,
 		T *xModesRec,T *yModesRec,T *zModesRec,
@@ -620,7 +620,7 @@ void d_reduceMode(
 
 
 
-	if (isPow2(numAtoms))
+	if (isPow2(max(numAtomsRec, numAtomsLig)))
 	{
 		switch (threads)
 		{

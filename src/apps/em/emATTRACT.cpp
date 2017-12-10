@@ -17,6 +17,13 @@ class emATTRACT<Types_6D<float>>;
 template
 class emATTRACT<Types_6D<double>>;
 
+// TODO: is implemented after scATTRACT<Types_6D_Modes<>>
+//template
+//class emATTRACT<Types_6D_Modes<float>>;
+//
+//template
+//class emATTRACT<Types_6D_Modes<double>>;
+
 }  // namespace as
 
 

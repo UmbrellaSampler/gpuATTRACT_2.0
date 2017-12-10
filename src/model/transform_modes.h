@@ -18,7 +18,6 @@
 
 
 
-
  /**
   * @brief: to change from the receptor system to the ligand system
   * the translational and rotational DOF have to be "inverted".
@@ -198,6 +197,19 @@ void d_DOFPos(
 	REAL* xLigTrafo,
 	REAL* yLigTrafo,
 	REAL* zLigTrafo);
+
+template<typename REAL>
+void d_rotateForces(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		REAL* xForce,
+		REAL* yForce,
+		REAL* zForce,
+		DOF_6D_Modes<REAL>* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs
+);
 
 #endif
 
