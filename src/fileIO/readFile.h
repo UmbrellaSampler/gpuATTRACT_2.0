@@ -25,8 +25,8 @@
 #include <memory>
 #include <vector>
 #include "nativeTypesWrapper.h"
+#include "Vec3.h"
 #include "Types_6D.h"
-#include "Types_6D_Modes.h"
 
 namespace as {
 
@@ -93,20 +93,6 @@ struct AttractEnGrad {
 
 std::vector<AttractEnGrad> readEnGradFromFile(std::string filename);
 
-
-/**
- * reads and returns a vector of dofs for each molecule
- */
-template<typename REAL>
-std::vector<std::vector<DOF_6D<REAL>>> readDOF_6D(std::string filename);
-
-
-/**
- * reads and returns a vector of dofs for each molecule with Modes
- */
-template<typename REAL>
-std::vector<std::vector<DOF_6D_Modes<REAL>>> readDOF_6D_Modes(std::string filename, int numModes);
-
 template<typename REAL>
 class DOFHeader {
 	using real_t = typename TypeWrapper<REAL>::real_t;
@@ -117,6 +103,17 @@ public:
 	bool centered_receptor;
 	bool centered_ligands;
 };
+
+constexpr unsigned DOF_MAX_NUMBER = 16;
+
+class DOF {
+public:
+	DOF_6D<double> _6D;
+	double dofs[DOF_MAX_NUMBER-6];
+	unsigned numDofs;
+};
+
+std::vector<std::vector<DOF>> readDOF(std::string filename);
 
 template<typename REAL>
 DOFHeader<REAL> readDOFHeader(std::string filename);

@@ -1,17 +1,17 @@
 /*
- * Configurator_6D.tpp
+ * Configurator_6D_Modes.tpp
  *
- *  Created on: Aug 17, 2016
+ *  Created on: Dec 7, 2017
  *      Author: uwe
  */
 
-#ifndef SRC_CONFIGURATOR_6D_TPP_
-#define SRC_CONFIGURATOR_6D_TPP_
+#ifndef SRC_SERVICE_CONFIGURATOR_6D_MODES_TPP_
+#define SRC_SERVICE_CONFIGURATOR_6D_MODES_TPP_
 
 #include <exception>
 #include <vector>
 
-#include "Configurator_6D.h"
+#include "Configurator_6D_Modes.h"
 
 #include "readFile.h"
 #include "Server.h"
@@ -28,7 +28,7 @@
 namespace as {
 
 template<typename SERVICE>
-void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
+void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
@@ -63,7 +63,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	}
 
 	// TODO: transform DOF_6D to input_t
-	std::vector<std::vector<DOF_6D<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D<real_t>>>();
+	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
 	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
@@ -94,8 +94,8 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	/* init dof and result buffer */
 	this->_dofs = std::vector<input_t>(DOF_molecules[1].size());
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
-		this->_dofs[i].pos = DOF_molecules[1][i].pos;
-		this->_dofs[i].ang = DOF_molecules[1][i].ang;
+		this->_dofs[i]._6D.pos = DOF_molecules[1][i]._6D.pos;
+		this->_dofs[i]._6D.ang = DOF_molecules[1][i]._6D.ang;
 	}
 
 
@@ -108,9 +108,28 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
 	this->_ids.recId = dataManager->add(receptor);
 	this->_ids.ligId = dataManager->add(ligand);
-	this->_ids.gridId = dataManager->add(gridRec);
+	this->_ids.gridIdRec = dataManager->add(gridRec);
 	this->_ids.tableId = dataManager->add(paramTable);
 	this->_ids.paramsId = dataManager->add(simParam);
+
+
+
+	receptor->setNumModes(args.numModes);
+	ligand->setNumModes(args.numModes);
+	readHMMode<real_t>(receptor, args.recModesName);
+	readHMMode<real_t>(ligand, args.ligModesName);
+
+	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
+	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
+	receptor->setNumMappedTypes(1);
+	receptor->getOrCreateMappedPtr();
+	applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
+	applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
+
+	auto gridLig = createGridFromGridFile<real_t>(args.gridLigName);
+	gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
+	this->_ids.gridIdLig = dataManager->add(gridLig);
+
 
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {
@@ -122,13 +141,15 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	ServiceType serviceType;
 	if (args.numCPUs > 0) {
-		serviceType = ServiceType::CPUEnergyService6D;
+		serviceType = ServiceType::CPUEnergyService6DModes;
 	}
-#ifdef CUDA
-	else {
-		serviceType = ServiceType::GPUEnergyService6D;
-	}
-#endif
+
+	// TODO: ServiceType::GPUEnergyService6DModes is not yet available
+//#ifdef CUDA
+//	else {
+//		serviceType = ServiceType::GPUEnergyService6DModes;
+//	}
+//#endif
 
 	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args)));
 
@@ -142,7 +163,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 }
 
 template<typename SERVICE>
-void Configurator_6D<SERVICE>::finalize() noexcept {
+void Configurator_6D_Modes<SERVICE>::finalize() noexcept {
 
 }
 
@@ -150,5 +171,4 @@ void Configurator_6D<SERVICE>::finalize() noexcept {
 
 
 
-
-#endif /* SRC_CONFIGURATOR_6D_TPP_ */
+#endif /* SRC_SERVICE_CONFIGURATOR_6D_MODES_TPP_ */

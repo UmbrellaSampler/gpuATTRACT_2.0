@@ -11,7 +11,9 @@
 #include <type_traits>
 
 #include "Configurator_6D.h"
+#include "Configurator_6D_Modes.h"
 #include "Types_6D.h"
+#include "Types_6D_Modes.h"
 
 namespace as {
 
@@ -19,8 +21,17 @@ template<typename GenericTypes>
 struct ConfiguratorTypeWrapper {
 	ConfiguratorTypeWrapper() = delete;
 
-	using configurator_t = typename std::conditional<std::is_same<GenericTypes, Types_6D<float>>::value,
-			Configurator_6D<float>, Configurator_6D<double>>::type;
+	using configurator_t =
+			typename std::conditional<std::is_same<GenericTypes, Types_6D<float>>::value,
+			Configurator_6D<float>,
+			typename std::conditional<std::is_same<GenericTypes, Types_6D<double>>::value,
+			Configurator_6D<double>,
+			typename std::conditional<std::is_same<GenericTypes, Types_6D_Modes<float>>::value,
+			Configurator_6D_Modes<float>,
+			Configurator_6D_Modes<double>>
+			::type>
+			::type>
+			::type;
 
 };
 
