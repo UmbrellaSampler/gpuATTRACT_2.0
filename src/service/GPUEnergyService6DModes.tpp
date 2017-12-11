@@ -11,7 +11,7 @@
 #ifdef CUDA
 
 #include <nvToolsExt.h>
-#include "GPUEnergyService6D.h"
+#include "GPUEnergyService6DModes.h"
 
 #include <cassert>
 #include "WorkerBuffer.h"
@@ -26,11 +26,11 @@
 #include "DeviceParamTable.h"
 #include "SimParam.h"
 
-#include "transform.h"
+#include "transform_modes.h"
 #include "interpolation.h"
 #include "neighborlist.h"
-#include "reduction.h"
-
+#include "reduction_modes.h"
+#include <algorithm>
 #include "macros.h"
 
 // ToDo: remove
@@ -39,15 +39,15 @@
 namespace as {
 
 template<typename REAL>
-GPUEnergyService6D<REAL>::GPUEnergyService6D(std::shared_ptr<DataManager> dataMng,
+GPUEnergyService6DModes<REAL>::GPUEnergyService6DModes(std::shared_ptr<DataManager> dataMng,
 		std::vector<int> const& deviceIds) :
-	GPUEnergyService<Types_6D<REAL>>(dataMng), _workerId(0), _deviceIds(deviceIds)
+	GPUEnergyService<Types_6D_Modes<REAL>>(dataMng), _workerId(0), _deviceIds(deviceIds)
 {}
 
 template<typename REAL>
-struct GPUEnergyService6D<REAL>::StageResource {
+struct GPUEnergyService6DModes<REAL>::StageResource {
 private:
-	using workItem_t = typename GPUEnergyService6D<REAL>::workItem_t;
+	using workItem_t = typename GPUEnergyService6DModes<REAL>::workItem_t;
 public:
 	d_GridUnion<REAL> gridRec;
 	d_GridUnion<REAL> gridLig;
@@ -59,7 +59,7 @@ public:
 };
 
 template<typename REAL>
-auto GPUEnergyService6D<REAL>::createStageResource(workItem_t* item, unsigned const& deviceId) -> StageResource {
+auto GPUEnergyService6DModes<REAL>::createStageResource(workItem_t* item, unsigned const& deviceId) -> StageResource {
 	/* item pointers */
 //			const auto dofs = item->inputBuffer();
 	const auto common = item->common();
@@ -97,9 +97,9 @@ auto GPUEnergyService6D<REAL>::createStageResource(workItem_t* item, unsigned co
 }
 
 template<typename REAL>
-class GPUEnergyService6D<REAL>::Private {
-	using dof_t = typename GPUEnergyService6D<REAL>::input_t;
-	using workItem_t = typename GPUEnergyService6D<REAL>::workItem_t;
+class GPUEnergyService6DModes<REAL>::Private {
+	using dof_t = typename GPUEnergyService6DModes<REAL>::input_t;
+	using workItem_t = typename GPUEnergyService6DModes<REAL>::workItem_t;
 
 public:
 
@@ -138,7 +138,6 @@ public:
 	}
 
 	void allocateBufferDOF( size_t const& numDOFs, size_t const& dofSize) {
-		const size_t atomBufferSize = numDOFs*numAtoms;
 		for (int i = 0; i < 2; ++i) {
 			d_dof[i]    = std::move(WorkerBuffer<dof_t,DeviceAllocator<dof_t>>(1,numDOFs));
 			d_res[i]    = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(1,(dofSize)*numDOFs));
@@ -156,7 +155,7 @@ public:
 	}
 
 	size_t bufferSizeDOF() const {
-		return min(d_dof[0].bufferSize(),d_dof[1].bufferSize());
+		return std::min(d_dof[0].bufferSize(),d_dof[1].bufferSize());
 	}
 
 	void addItemAndLigandSize(StageResource const& resc) {
@@ -167,12 +166,12 @@ public:
 
 	void resizeBuffersIfRequired(size_t const& numDOFs, size_t const& numAtomsRec, size_t const& numAtomsLig, size_t const& dofSize) {
 		if (numDOFs*numAtomsLig > bufferSizeLig()) {
-			allocateBufferLig( numAtomsLig);
+			allocateBufferLig(numDOFs, numAtomsLig);
 		}
 		if (numDOFs*numAtomsRec > bufferSizeRec()) {
 			allocateBufferRec(numDOFs, numAtomsRec);
 		}
-		if (numDOFs > bufferSizeDof()) {
+		if (numDOFs > bufferSizeDOF()) {
 			allocateBufferDOF(numDOFs, dofSize);
 		}
 	}
@@ -225,7 +224,7 @@ public:
 			cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
 			size_t sharedMem = deviceProp.sharedMemPerBlock;
 			size_t pow2 = 16;
-			while (pow2* (numModesLig + numModesRec + 13)*sizeof(REAL) < sharedMem) {
+			while (pow2* (Common_Modes::numModesLig + Common_Modes::numModesRec + 13)*sizeof(REAL) < sharedMem) {
 				pow2 *= 2;
 			}
 
@@ -242,10 +241,10 @@ public:
 			auto const& stageResc = stagesMngt.get(stageId);
 			auto* const it = stageResc.item;
 
-			const unsigned numEl = it->size()*stageResc.lig->numAtoms;
+			const unsigned numElLig = it->size()*stageResc.lig->numAtoms;
 			assert(numElLig <= bufferSizeLig());
 
-			const unsigned numEl = it->size()*stageResc.rec->numAtoms;
+			const unsigned numElRec = it->size()*stageResc.rec->numAtoms;
 			assert(numElRec <= bufferSizeRec());
 
 			/* Perform cuda kernel calls */
@@ -256,20 +255,52 @@ public:
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
 			cudaVerify(cudaStreamWaitEvent(streams[2], events[0], 0));
 
-			d_DOF2Pos(
-					BLSZ_TRAFO,
-					gridSize,
-					streams[2],
-					stageResc.lig->xPos,
-					stageResc.lig->yPos,
-					stageResc.lig->zPos,
-					d_dof[pipeIdx[1]].get(0),
-					stageResc.lig->numAtoms,
-					it->size(),
-					d_trafoLig.getX(),
-					d_trafoLig.getY(),
-					d_trafoLig.getZ()); //OK
+//			d_DOF2Pos(
+//					BLSZ_TRAFO,
+//					gridSize,
+//					streams[2],
+//					stageResc.lig->xPos,
+//					stageResc.lig->yPos,
+//					stageResc.lig->zPos,
+//					d_dof[pipeIdx[1]].get(0),
+//					stageResc.lig->numAtoms,
+//					it->size(),
+//					d_trafoLig.getX(),
+//					d_trafoLig.getY(),
+//					d_trafoLig.getZ()); //OK
 
+			d_DOFPos(
+				BLSZ_TRAFO,
+				gridSize,
+				streams[2],
+				stageResc.rec->xPos,
+				stageResc.rec->yPos,
+				stageResc.rec->zPos,
+				stageResc.lig->xPos,
+				stageResc.lig->yPos,
+				stageResc.lig->zPos,
+				stageResc.rec->xModes,
+				stageResc.rec->yModes,
+				stageResc.rec->zModes,
+				stageResc.lig->xModes,
+				stageResc.lig->yModes,
+				stageResc.lig->zModes,
+				d_dof[pipeIdx[1]].get(0),
+				stageResc.rec->numAtoms,
+				stageResc.lig->numAtoms,
+				stageResc.rec->numModes,
+				stageResc.lig->numModes,
+				it->size(),
+				d_defoRec.getX(),
+				d_defoRec.getY(),
+				d_defoRec.getZ(),
+				d_trafoRec.getX(),
+				d_trafoRec.getY(),
+				d_trafoRec.getZ(),
+				d_trafoLig.getX(),
+				d_trafoLig.getY(),
+				d_trafoLig.getZ()
+				);
 			// DEBUG
 //			cudaDeviceSynchronize();
 //			size_t bufferSize = d_trafoLig.bufferSize();
@@ -491,10 +522,20 @@ public:
 			h_finalReduce(
 				it->size(),
 				it->inputBuffer(),
+				stageResc.rec->numModes,
+				stageResc.lig->numModes,
 				h_res[pipeIdx[0]].get(0),
 				it->resultBuffer());
 			nvtxRangePop();
 
+//			finalReduce(const unsigned& dofSize,
+//						const unsigned& numDOFs,
+//						DOF_6D_Modes<REAL>* dofs,
+//						const unsigned int& numModesRec,
+//						const unsigned int& numModesLig,
+//						const REAL* deviceOut,
+//						Result_6D_Modes<REAL>* enGrads)
+//			{
 			/* Signal that result is in buffer */
 			it->setProcessed();
 
@@ -507,6 +548,7 @@ public:
 	}
 
 	WorkerBuffer<dof_t, DeviceAllocator<dof_t>> d_dof[2];
+	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoRec;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoRec;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoLig;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_potRec[2];
@@ -516,7 +558,7 @@ public:
 
 	static constexpr size_t BLSZ_TRAFO = 128;
 	static constexpr size_t BLSZ_INTRPL = 128;
-	static constexpr size_t dofSize = 13 + numModesLig + numModesRec;
+	size_t dofSize = 13 + Common_Modes::numModesLig + Common_Modes::numModesRec;
 	size_t blockSizeReduce = 0;
 	static constexpr unsigned numStages = 5;
 
@@ -535,17 +577,17 @@ public:
 };
 
 template<typename REAL>
-auto GPUEnergyService6D<REAL>::createDistributor() -> distributor_t {
+auto GPUEnergyService6DModes<REAL>::createDistributor() -> distributor_t {
 	distributor_t fncObj = [this] (common_t const* common, size_t numWorkers) {
 		(void)numWorkers;
-		std::vector<id_t> ids = {common->gridId, common->ligId, common->recId, common->tableId};
+		std::vector<id_t> ids = {common->gridIdRec, common->gridIdLig, common->ligId, common->recId, common->tableId};
 		return this->_dataMng->getCommonDeviceIds(ids);
 	};
 	return fncObj;
 }
 
 template<typename REAL>
-auto GPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
+auto GPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 	std::shared_ptr<Private> p = std::make_shared<Private>();
 	deviceId_t deviceId = _workerId++;
@@ -566,10 +608,11 @@ auto GPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 			const auto itemSize = item->size();
 			assert(itemSize > 0);
 
-			const unsigned& numAtoms = dI.lig->numAtoms;
+			const unsigned& numAtomsLig = dI.lig->numAtoms;
+			const unsigned& numAtomsRec = dI.rec->numAtoms;
+			const unsigned& dofSize = 13 + dI.lig->numModes + dI.rec->numModes;
 			p->addItemAndLigandSize(dI);
-			p->resizeBuffersIfRequired(itemSize, numAtoms);
-
+			p->resizeBuffersIfRequired(itemSize, numAtomsRec, numAtomsLig, dofSize);
 		} else {
 			p->stagesMngt.rotate();
 		}

@@ -4,16 +4,8 @@
 #include "RotMat.h"
 #include "matrixFunctions.h"
 #include "macros.h"
-
 namespace as {
 
-/**
- *
- * wouldnt it be better to load consecutive arrays of position into each thread? positions are not consequtive ->guess it takes really long to load
- * or does it average out across each warp?
- */
-
-///
 
 
 
@@ -26,14 +18,13 @@ return posInv;
 
 
 template<typename REAL>
-inline __device__ void d_deform	(Vec3<REAL>& posAtom,int atomIdx, REAL* dMode, REAL* xModes,REAL* yModes,REAL* zModes, int numModes){
+inline __device__ void d_deform(Vec3<REAL>& posAtom,int atomIdx, REAL* dMode, REAL* xModes,REAL* yModes,REAL* zModes, int numModes){
 	for(int mode=0; mode < numModes; mode++){
 		posAtom.x += dMode[mode] * xModes[atomIdx*numModes+mode];
 		posAtom.y += dMode[mode] * yModes[atomIdx*numModes+mode];
 		posAtom.z += dMode[mode] * zModes[atomIdx*numModes+mode];
 	}
 }
-
 
 template<typename REAL>
 inline __device__ void d_translate_rotate	(Vec3<REAL>& posAtom, int atomIdx, Vec3<REAL> const& pos,const RotMat<REAL> rotMat){
@@ -87,14 +78,22 @@ __global__ void d_DOFPos(
 
 		if (atomIdx < numAtomsRec){
 			Vec3<REAL> posAtomRec(xRec[atomIdx], yRec[atomIdx], zRec[atomIdx]);
-			d_deform( posAtomRec, atomIdx, dof.modesRec, xModesRec, yModesRec, zModesRec, numModesRec);
+
+			for(int mode=0; mode < numModesRec; mode++){
+				posAtomRec.x += dof.modesRec[mode] * xModesRec[atomIdx*numModesRec+mode];
+				posAtomRec.y += dof.modesRec[mode] * yModesRec[atomIdx*numModesRec+mode];
+				posAtomRec.z += dof.modesRec[mode] * zModesRec[atomIdx*numModesRec+mode];
+			}
 
 			xRecDefo[idx] = posAtomRec.x;
 			yRecDefo[idx] = posAtomRec.y;
 			zRecDefo[idx] = posAtomRec.z;
 
-			Vec3<REAL> posInv=invertDOF(posAtomRec, rotMat, dof._6D.pos);
-			d_translate_rotate(posAtomRec,atomIdx, posInv, rotMat.getInv());
+			const RotMat<REAL> rotMatInv = rotMat.getInv();
+			Vec3<REAL> posInv = rotMatInv * dof._6D.pos.inv();
+			posAtomRec = rotMat*posAtomRec;
+			posAtomRec += dof._6D.pos;
+
 
 			xRecTrafo[idx] = posAtomRec.x;
 			yRecTrafo[idx] = posAtomRec.y;
@@ -103,9 +102,15 @@ __global__ void d_DOFPos(
 
 		if (atomIdx < numAtomsLig){
 			Vec3<REAL> posAtomLig(xLig[atomIdx], yLig[atomIdx], zLig[atomIdx]);
-			d_deform( posAtomLig, atomIdx, dof.modesLig,  xModesLig, yModesLig, zModesLig, numModesLig);
-			d_translate_rotate(posAtomLig, atomIdx, dof._6D.pos, rotMat);
 
+
+			for(int mode=0; mode < numModesLig; mode++){
+				posAtomLig.x += dof.modesLig[mode] * xModesLig[atomIdx*numModesLig+mode];
+				posAtomLig.y += dof.modesLig[mode] * yModesLig[atomIdx*numModesLig+mode];
+				posAtomLig.z += dof.modesLig[mode] * zModesLig[atomIdx*numModesLig+mode];
+			}
+			posAtomLig = rotMat*posAtomLig;
+			posAtomLig += dof._6D.pos;
 			xLigTrafo[idx] = posAtomLig.x;
 			yLigTrafo[idx] = posAtomLig.y;
 			zLigTrafo[idx] = posAtomLig.z;
@@ -159,7 +164,7 @@ void d_rotateForces(
 		unsigned numDOFs
 )
 {
-	d_DOFPos<<<gridSize, blockSize, 0, stream>>> (
+	d_rotateForces<<<gridSize, blockSize, 0, stream>>> (
 			xForce,
 			yForce,
 			zForce,
@@ -234,10 +239,74 @@ void d_DOFPos(
 			xLigTrafo,
 			yLigTrafo,
 			zLigTrafo
-			)
-		));
+			))
+		);
 }
 
+template
+void d_DOFPos<float>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		float const* xRec,
+		float const* yRec,
+		float const* zRec,
+		float const* xLig,
+		float const* yLig,
+		float const* zLig,
+		float const* xModesRec,
+		float const* yModesRec,
+		float const* zModesRec,
+		float const* xModesLig,
+		float const* yModesLig,
+		float const* zModesLig,
+		DOF_6D_Modes<float>* dofs,
+		unsigned numAtomsRec,
+		unsigned numAtomsLig,
+		unsigned numModesRec,
+		unsigned numModesLig,
+		unsigned numDOFs,
+		float* xRecDefo,
+		float* yRecDefo,
+		float* zRecDefo,
+		float* xRecTrafo,
+		float* yRecTrafo,
+		float* zRecTrafo,
+		float* xLigTrafo,
+		float* yLigTrafo,
+		float* zLigTrafo);
 
+template
+void d_DOFPos<double>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		double const* xRec,
+		double const* yRec,
+		double const* zRec,
+		double const* xLig,
+		double const* yLig,
+		double const* zLig,
+		double const* xModesRec,
+		double const* yModesRec,
+		double const* zModesRec,
+		double const* xModesLig,
+		double const* yModesLig,
+		double const* zModesLig,
+		DOF_6D_Modes<double>* dofs,
+		unsigned numAtomsRec,
+		unsigned numAtomsLig,
+		unsigned numModesRec,
+		unsigned numModesLig,
+		unsigned numDOFs,
+		double* xRecDefo,
+		double* yRecDefo,
+		double* zRecDefo,
+		double* xRecTrafo,
+		double* yRecTrafo,
+		double* zRecTrafo,
+		double* xLigTrafo,
+		double* yLigTrafo,
+		double* zLigTrafo);
 
 }  // namespace as
