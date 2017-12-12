@@ -65,7 +65,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	// TODO: transform DOF_6D to input_t
 	//std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
 	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName);
-	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = DOFConverter_Modes(DOF_molecules_dof);
+	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
