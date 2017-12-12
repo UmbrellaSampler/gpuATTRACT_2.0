@@ -14,7 +14,7 @@
 
 namespace as{
 template<typename REAL>
-std::vector<std::vector<DOF_6D<REAL>>> DOFConverter(std::vector<std::vector<DOF>> in) {
+std::vector<std::vector<DOF_6D<REAL>>> DOFConverter(std::vector<std::vector<DOF>> &in) {
 	std::vector<std::vector<DOF_6D<REAL>>> outVec(in.size());
 	for (int i; i < in.size(); i++){
 		for (int k; k < in[i].size(); k++){
