@@ -32,6 +32,11 @@ const DOF_6D_Modes<REAL> invertDOF( DOF_6D_Modes<REAL> ligandDOF)
 	invertedDOF._6D.pos=ligandDOF._6D.pos.inv();
 	const RotMat<REAL> rotMat=euler2rotmat(ligandDOF._6D.ang.x, ligandDOF._6D.ang.y, ligandDOF._6D.ang.z).getInv();
 	invertedDOF._6D.pos=rotMat*invertedDOF._6D.pos;
+	std::copy( ligandDOF.modesRec, ligandDOF.modesRec+MODES_MAX_NUMBER,
+			invertedDOF.modesRec);
+	std::copy(ligandDOF.modesLig, ligandDOF.modesLig+MODES_MAX_NUMBER,
+			invertedDOF.modesLig);
+
 return invertedDOF;
 }
 
@@ -70,6 +75,8 @@ void rotate_translate_deform(
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> posAtom(x[i], y[i], z[i]);
 		for(int mode=0;mode<numModes;mode++){
+			float test = xModes[i*numModes+mode];
+			                    test = dlig[mode];
 			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
 			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
 			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];

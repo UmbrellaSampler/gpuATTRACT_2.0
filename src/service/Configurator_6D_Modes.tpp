@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "Configurator_6D_Modes.h"
-
+#include "DOFConverter.h"
 #include "readFile.h"
 #include "Server.h"
 #include "Protein.h"
@@ -63,12 +63,13 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	}
 
 	// TODO: transform DOF_6D to input_t
-	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
+	//std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
 	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName);
+	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
-
+	float test =DOF_molecules[1][0]._6D.ang.x;
 
 	/* apply pivoting to proteins */
 		if(h.auto_pivot) {
@@ -96,6 +97,16 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
 		this->_dofs[i]._6D.pos = DOF_molecules[1][i]._6D.pos;
 		this->_dofs[i]._6D.ang = DOF_molecules[1][i]._6D.ang;
+
+		for (int mode=0; mode < MODES_MAX_NUMBER; mode++){
+//		std::copy( DOF_molecules[1][i].modesRec, DOF_molecules[1][i].modesRec+MODES_MAX_NUMBER,
+//					this->_dofs[i].modesRec);
+//		std::copy( DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig+MODES_MAX_NUMBER,
+//				this->_dofs[i].modesLig);
+
+			this->_dofs[i].modesRec[mode]=0;
+			this->_dofs[i].modesLig[mode]=0;
+		}
 	}
 
 
