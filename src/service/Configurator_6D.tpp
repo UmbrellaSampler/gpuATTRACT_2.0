@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "Configurator_6D.h"
-
+#include "DOFConverter.h"
 #include "readFile.h"
 #include "Server.h"
 #include "Protein.h"
