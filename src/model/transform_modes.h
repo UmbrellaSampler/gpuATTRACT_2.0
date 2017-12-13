@@ -29,12 +29,12 @@ const DOF_6D_Modes<REAL> invertDOF( DOF_6D_Modes<REAL> ligandDOF)
 {
 	DOF_6D_Modes<REAL> invertedDOF;
 	Vec3<REAL> ang(0.0);
-	invertedDOF._6D.ang=ang;
+	invertedDOF._6D.ang=ligandDOF._6D.ang.inv();
 	invertedDOF._6D.pos=ligandDOF._6D.pos.inv();
 	const RotMat<REAL> rotMat=euler2rotmat(ligandDOF._6D.ang.x, ligandDOF._6D.ang.y, ligandDOF._6D.ang.z).getInv();
 	invertedDOF._6D.pos=rotMat*invertedDOF._6D.pos;
 	std::copy( ligandDOF.modesRec, ligandDOF.modesRec+MODES_MAX_NUMBER,
-			invertedDOF.modesRec);
+				invertedDOF.modesRec);
 	std::copy(ligandDOF.modesLig, ligandDOF.modesLig+MODES_MAX_NUMBER,
 			invertedDOF.modesLig);
 
