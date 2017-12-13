@@ -309,31 +309,4 @@ void d_DOFPos<double>(
 		double* yLigTrafo,
 		double* zLigTrafo);
 
-template
-void d_rotateForces<float>(
-		unsigned blockSize,
-		unsigned gridSize,
-		const cudaStream_t &stream,
-		float* xForce,
-		float* yForce,
-		float* zForce,
-		DOF_6D_Modes<float>* dofs,
-		unsigned numAtoms,
-		unsigned numDOFs
-		);
-
-template
-void d_rotateForces<double>(
-		unsigned blockSize,
-		unsigned gridSize,
-		const cudaStream_t &stream,
-		double* xForce,
-		double* yForce,
-		double* zForce,
-		DOF_6D_Modes<double>* dofs,
-		unsigned numAtoms,
-		unsigned numDOFs
-		);
-
-
 }  // namespace as
