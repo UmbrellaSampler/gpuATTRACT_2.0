@@ -118,16 +118,17 @@ void correctModeForce(
 #ifdef CUDA
 
 template <class T>
-void d_reduce(
+void d_reduceMode(
 		const unsigned& threads,
 		const unsigned& blocks,
 		const unsigned& numAtomsRec,
 		const unsigned& numAtomsLig,
 		const unsigned& numModesRec,
 		const unsigned& numModesLig,
-		T *xModesRec,T *yModesRec,T *zModesRec,
-		T *xModesLig,T *yModesLig,T *zModesLig,
+		 DOF_6D_Modes<T>* dofs,
 		T* xPos, T* yPos, T* zPos,
+		T *xModesLig,T *yModesLig,T *zModesLig,
+		T *xModesRec,T *yModesRec,T *zModesRec,
 		T *d_fxRec, T *d_fyRec, T *d_fzRec,
 		T *d_fxLig, T *d_fyLig, T *d_fzLig,
 		T *d_E,
@@ -143,6 +144,7 @@ void deviceReduce(
 		const unsigned& ligandSize,
 		const unsigned& numModesRec,
 		const unsigned& numModesLig,
+		DOF_6D_Modes<REAL>* dofs,
 		REAL *xModesRec,REAL *yModesRec,REAL *zModesRec,
 		REAL *xModesLig,REAL *yModesLig,REAL *zModesLig,
 		REAL* xPos, REAL* yPos, REAL* zPos,
@@ -156,10 +158,11 @@ void deviceReduce(
 	const unsigned threads = (max(ligandSize, receptorSize) < blockSize*2) ? nextPow2((max(ligandSize, receptorSize) + 1)/ 2) : blockSize;
 	/* each structure is reduced by one thread block */
 	const unsigned blocks = numDOFs;
-	d_reduce(threads, blocks, receptorSize, ligandSize, numModesRec, numModesLig,
+	d_reduceMode(threads, blocks, receptorSize, ligandSize, numModesRec, numModesLig,
+			dofs,
+			xPos, yPos, zPos,
 			xModesRec, yModesRec, zModesRec,
 			xModesLig, yModesLig, zModesLig,
-			xPos, yPos, zPos,
 			d_fxRec, d_fyRec, d_fzRec,
 			d_fxLig, d_fyLig, d_fzLig,
 			d_E,

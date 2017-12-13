@@ -463,6 +463,7 @@ public:
 				it->size(),
 				stageResc.rec->numAtoms,	stageResc.lig->numAtoms,
 				stageResc.rec->numModes, 	stageResc.lig->numModes,
+				d_dof[pipeIdx[1]].get(0),
 				stageResc.rec->xModes, 	stageResc.rec->yModes, stageResc.rec->zModes,
 				stageResc.lig->xModes, stageResc.lig->yModes, stageResc.lig->zModes,
 				stageResc.lig->xPos, stageResc.lig->yPos, stageResc.lig->zPos,
