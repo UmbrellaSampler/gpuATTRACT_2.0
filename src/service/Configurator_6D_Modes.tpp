@@ -156,11 +156,11 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	}
 
 	// TODO: ServiceType::GPUEnergyService6DModes is not yet available
-//#ifdef CUDA
-//	else {
-//		serviceType = ServiceType::GPUEnergyService6DModes;
-//	}
-//#endif
+#ifdef CUDA
+	else {
+		serviceType = ServiceType::GPUEnergyService6DModes;
+	}
+#endif
 
 	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args)));
 

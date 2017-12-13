@@ -355,6 +355,18 @@ public:
 				d_potRec[pipeIdx[1]].getZ(),
 				d_potRec[pipeIdx[1]].getW()); // OK
 
+			d_rotateForces(
+				BLSZ_INTRPL,
+				gridSizeRec,
+				streams[2],
+				d_potRec[pipeIdx[1]].getX(),
+				d_potRec[pipeIdx[1]].getY(),
+				d_potRec[pipeIdx[1]].getZ(),
+				d_dof[pipeIdx[1]].get(0),
+				stageResc.lig->numAtoms,
+				it->size()
+				);
+
 			// Debug
 //			cudaDeviceSynchronize();
 ////			exit(EXIT_SUCCESS);
@@ -445,16 +457,17 @@ public:
 			/* Device: Wait for completion of PotForce calc. to complete */
 			cudaVerify(cudaStreamWaitEvent(streams[3], events[3+pipeIdx[0]], 0));
 
+
 			deviceReduce(
 				blockSizeReduce,
 				it->size(),
-				stageResc.lig->numAtoms,
-				stageResc.lig->xPos,
-				stageResc.lig->yPos,
-				stageResc.lig->zPos,
-				d_potLig[pipeIdx[0]].getX(),
-				d_potLig[pipeIdx[0]].getY(),
-				d_potLig[pipeIdx[0]].getZ(),
+				stageResc.rec->numAtoms,	stageResc.lig->numAtoms,
+				stageResc.rec->numModes, 	stageResc.lig->numModes,
+				stageResc.rec->xModes, 	stageResc.rec->yModes, stageResc.rec->zModes,
+				stageResc.lig->xModes, stageResc.lig->yModes, stageResc.lig->zModes,
+				stageResc.lig->xPos, stageResc.lig->yPos, stageResc.lig->zPos,
+				d_potRec[pipeIdx[0]].getX(), d_potRec[pipeIdx[0]].getY(), d_potRec[pipeIdx[0]].getZ(),
+				d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
 				d_potLig[pipeIdx[0]].getW(),
 				d_res[pipeIdx[0]].get(0),
 				streams[3]);

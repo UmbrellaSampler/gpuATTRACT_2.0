@@ -36,6 +36,8 @@ std::shared_ptr<void> ServiceFactory::create(ServiceType serviceType,
 #ifdef CUDA
 		case ServiceType::GPUEnergyService6D:
 			return std::shared_ptr<void>( new GPUEnergyService6D<REAL>(dataMng, args.deviceIds));
+		case ServiceType::GPUEnergyService6DModes:
+			return std::shared_ptr<void>( new GPUEnergyService6D<REAL>(dataMng, args.deviceIds));
 #endif
 		default:
 			throw std::invalid_argument("unknown app to create: " + static_cast<int>(serviceType));
