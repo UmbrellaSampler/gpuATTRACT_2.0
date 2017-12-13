@@ -91,7 +91,7 @@ __global__ void d_DOFPos(
 
 			const RotMat<REAL> rotMatInv = rotMat.getInv();
 			Vec3<REAL> posInv = rotMatInv * dof._6D.pos.inv();
-			posAtomRec = rotMat*posAtomRec;
+			posAtomRec = rotMatInv*posAtomRec;
 			posAtomRec += dof._6D.pos;
 
 

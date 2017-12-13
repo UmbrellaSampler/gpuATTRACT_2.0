@@ -156,10 +156,10 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 			); // OK
 
 ////			// Debug
-			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-//			for(size_t i = 0; i < 20; ++i) {
-				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
-			}
+//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
+////			for(size_t i = 0; i < 20; ++i) {
+//				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
+//			}
 ////			exit(EXIT_SUCCESS);
 
 			PotForce<REAL> redPotForce = reducePotForce<REAL,PotForce<REAL>>(
