@@ -75,8 +75,6 @@ void rotate_translate_deform(
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> posAtom(x[i], y[i], z[i]);
 		for(int mode=0;mode<numModes;mode++){
-			float test = xModes[i*numModes+mode];
-			                    test = dlig[mode];
 			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
 			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
 			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];
