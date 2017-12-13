@@ -554,41 +554,7 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 
 
 
-//template
-//void d_reduceMode<float>(
-//		const unsigned& threads,
-//		const unsigned& blocks,
-//		const unsigned& numAtomsRec,
-//		const unsigned& numAtomsLig,
-//		const unsigned& numModesRec,
-//		const unsigned& numModesLig,
-//		typename Types_6D_modes<float>::DOF* dofs,
-//		float* xPos, float* yPos, float* zPos,
-//		float *xModesLig,float *yModesLig,float *zModesLig,
-//		float *xModesRec,float *yModesRec,float *zModesRec,
-//		float *d_fxRec, float *d_fyRec, float *d_fzRec,
-//		float *d_fxLig, float *d_fyLig, float *d_fzLig,
-//		float *d_E,
-//		float *g_odata,
-//		const cudaStream_t& stream);
-//
-//template
-//void d_reduceMode<double>(
-//		const unsigned& threads,
-//		const unsigned& blocks,
-//		const unsigned& numAtomsRec,
-//		const unsigned& numAtomsLig,
-//		const unsigned& numModesRec,
-//		const unsigned& numModesLig,
-//		typename Types_6D_modes<double>::DOF* dofs,
-//		double* xPos, double* yPos, double* zPos,
-//		double *xModesLig,double *yModesLig,double *zModesLig,
-//		double *xModesRec,double *yModesRec,double *zModesRec,
-//		double *d_fxRec, double *d_fyRec, double *d_fzRec,
-//		double *d_fxLig, double *d_fyLig, double *d_fzLig,
-//		double *d_E,
-//		double *g_odata,
-//		const cudaStream_t& stream);
+
 
 template <class T>
 void d_reduceMode(
@@ -721,13 +687,41 @@ void d_reduceMode(
 
 }
 
+template
+void d_reduceMode<float>(
+		const unsigned& threads,
+		const unsigned& blocks,
+		const unsigned& numAtomsRec,
+		const unsigned& numAtomsLig,
+		const unsigned& numModesRec,
+		const unsigned& numModesLig,
+		 DOF_6D_Modes<float>* dofs,
+		float* xPos, float* yPos, float* zPos,
+		float *xModesLig,float *yModesLig,float *zModesLig,
+		float *xModesRec,float *yModesRec,float *zModesRec,
+		float *d_fxRec, float *d_fyRec, float *d_fzRec,
+		float *d_fxLig, float *d_fyLig, float *d_fzLig,
+		float *d_E,
+		float *g_odata,
+		const cudaStream_t& stream);
 
-
-
-
-
-//GLENN ADD MODEFORCE
-
+template
+void d_reduceMode<double>(
+		const unsigned& threads,
+		const unsigned& blocks,
+		const unsigned& numAtomsRec,
+		const unsigned& numAtomsLig,
+		const unsigned& numModesRec,
+		const unsigned& numModesLig,
+		 DOF_6D_Modes<double>* dofs,
+		double* xPos, double* yPos, double* zPos,
+		double *xModesLig,double *yModesLig,double *zModesLig,
+		double *xModesRec,double *yModesRec,double *zModesRec,
+		double *d_fxRec, double *d_fyRec, double *d_fzRec,
+		double *d_fxLig, double *d_fyLig, double *d_fzLig,
+		double *d_E,
+		double *g_odata,
+		const cudaStream_t& stream);
 
 }  // namespace as
 
