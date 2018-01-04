@@ -204,7 +204,7 @@ void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName) {
 			if(changeMode == true && tokens.size() > 1){
 				modeIdx++;
 				if (modeIdx == stoi(tokens.at(0)) && (modeIdx <= numModes)) {
-					modeVal[modeIdx]=stof(tokens.at(1))*stof(tokens.at(1));
+					modeVal[modeIdx-1]=stof(tokens.at(1))*stof(tokens.at(1));
 					eigVal[modeIdx-1]=0;
 					//cout <<"# "<<modeVal[modeIdx]<< endl;
 					changeMode=false;

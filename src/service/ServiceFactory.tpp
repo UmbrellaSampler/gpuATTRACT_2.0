@@ -16,6 +16,7 @@
 #include "CPUEnergyService6DModes.h"
 #ifdef CUDA
 #include "GPUEnergyService6D.h"
+#include "GPUEnergyService6DModes.h"
 #endif
 
 namespace as {
@@ -37,7 +38,7 @@ std::shared_ptr<void> ServiceFactory::create(ServiceType serviceType,
 		case ServiceType::GPUEnergyService6D:
 			return std::shared_ptr<void>( new GPUEnergyService6D<REAL>(dataMng, args.deviceIds));
 		case ServiceType::GPUEnergyService6DModes:
-			return std::shared_ptr<void>( new GPUEnergyService6D<REAL>(dataMng, args.deviceIds));
+			return std::shared_ptr<void>( new GPUEnergyService6DModes<REAL>(dataMng, args.deviceIds));
 #endif
 		default:
 			throw std::invalid_argument("unknown app to create: " + static_cast<int>(serviceType));

@@ -69,7 +69,6 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
-	float test =DOF_molecules[1][0]._6D.ang.x;
 
 	/* apply pivoting to proteins */
 		if(h.auto_pivot) {
@@ -90,7 +89,6 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* transform ligand dofs assuming that the receptor is always centered in the origin */
 	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
-
 
 	/* init dof and result buffer */
 	this->_dofs = std::vector<input_t>(DOF_molecules[1].size());
@@ -127,6 +125,9 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	receptor->setNumModes(args.numModes);
 	ligand->setNumModes(args.numModes);
+	Common_Modes::numModesLig = args.numModes;
+	Common_Modes::numModesRec = args.numModes;
+
 	readHMMode<real_t>(receptor, args.recModesName);
 	readHMMode<real_t>(ligand, args.ligModesName);
 

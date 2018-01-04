@@ -64,8 +64,10 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
     // reading from global memory, writing to shared memory
     unsigned int tid = threadIdx.x;
     unsigned int i = threadIdx.x; // half the number of blocks
-    unsigned int maxAtom = max(numAtomsLig, numAtomsRec);
-    unsigned int base = blockIdx.x* maxAtom;
+    //unsigned int maxAtom = max(numAtomsLig, numAtomsRec);
+    unsigned int maxAtom =  numAtomsRec;
+    unsigned int base = blockIdx.x * maxAtom;
+
 
     T sum_fx = 0;
     T sum_fy = 0;
@@ -75,7 +77,7 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
     T sum_modeLig[10] = {0};
     T sum_modeRec[10] = {0};
 
-    unsigned DOFidx = tid / maxAtom;
+    unsigned int DOFidx = (base + i) / maxAtom;
     auto dof = dofs[DOFidx];
     Vec3<T> const& ang = dof._6D.ang;
     const RotMat<T> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
@@ -94,16 +96,19 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 			fzRec = d_fzRec[base + i];
 			Vec3<T> forceAtomRec(fxRec, fyRec, fzRec);
 			for(int mode=0; mode < numModesRec; mode++){
-				sum_modeRec[mode] -=  	forceAtomRec.x*xModesRec[i*numModesRec+mode]
-								       +forceAtomRec.y*yModesRec[i*numModesRec+mode]
-								       +forceAtomRec.z*zModesRec[i*numModesRec+mode];
+				sum_modeRec[mode] -=  	forceAtomRec.x * xModesRec[i * numModesRec+mode]
+								       +forceAtomRec.y * yModesRec[i * numModesRec+mode]
+								       +forceAtomRec.z * zModesRec[i * numModesRec+mode];
 			}
 
 			if (nIsPow2 || i + blockSize < numAtomsRec) {
+				forceAtomRec.x = d_fxRec[base + i + blockSize];
+				forceAtomRec.y = d_fyRec[base + i + blockSize];
+				forceAtomRec.z = d_fzRec[base + i + blockSize];
 				for(int mode=0; mode < numModesRec; mode++){
-					sum_modeRec[mode] -=  forceAtomRec.x*xModesRec[i*numModesRec+mode]
-					                     +forceAtomRec.y*yModesRec[i*numModesRec+mode]
-					                     +forceAtomRec.z*zModesRec[i*numModesRec+mode];
+					sum_modeRec[mode] -=  forceAtomRec.x * xModesRec[(i + blockSize) * numModesRec+mode]
+					                     +forceAtomRec.y * yModesRec[(i + blockSize) * numModesRec+mode]
+					                     +forceAtomRec.z * zModesRec[(i + blockSize) * numModesRec+mode];
 				}
 			}
 		}
@@ -133,18 +138,17 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 
 			//reduce mode Force for the ligand
 			Vec3<T> forceAtomLig(fxLig, fyLig, fzLig);
-			forceAtomLig = rotMatInv*forceAtomLig;
+			forceAtomLig = rotMatInv * forceAtomLig;
 			for(int mode=0;mode<numModesLig;mode++){
-				sum_modeLig[mode] -=  forceAtomLig.x*xModesLig[i*numModesLig+mode]
-				                     +forceAtomLig.y*yModesLig[i*numModesLig+mode]
-				                     +forceAtomLig.z*zModesLig[i*numModesLig+mode];
+				sum_modeLig[mode] -=  forceAtomLig.x*xModesLig[i * numModesLig+mode]
+				                     +forceAtomLig.y*yModesLig[i * numModesLig+mode]
+				                     +forceAtomLig.z*zModesLig[i * numModesLig+mode];
 			}
 
 
 
         // ensure we don't read out of bounds -- this is optimized away for powerOf2 sized arrays
         if (nIsPow2 || i + blockSize < numAtomsLig) {
-
 				fxLig = d_fxLig[base + i + blockSize];
 				fyLig = d_fyLig[base + i + blockSize];
 				fzLig = d_fzLig[base + i + blockSize];
@@ -164,10 +168,16 @@ blockReduceMode(unsigned numAtomsRec, unsigned numAtomsLig, unsigned numModesRec
 				sum_torque[6] += x * fzLig;
 				sum_torque[7] += y * fzLig;
 				sum_torque[8] += z * fzLig;
+				forceAtomLig.x = fxLig;
+				forceAtomLig.y = fyLig;
+				forceAtomLig.z = fzLig;
+				forceAtomLig = rotMatInv * forceAtomLig;
 				for(int mode=0; mode < numModesLig; mode++){
-					sum_modeLig[mode] -=  forceAtomLig.x*xModesLig[i*numModesLig+mode]
-					                     +forceAtomLig.y*yModesLig[i*numModesLig+mode]
-					                     +forceAtomLig.z*zModesLig[i*numModesLig+mode];
+					sum_modeLig[mode] -=  forceAtomLig.x*xModesLig[(i + blockSize) * numModesLig+mode]
+					                     +forceAtomLig.y*yModesLig[(i + blockSize) * numModesLig+mode]
+					                     +forceAtomLig.z*zModesLig[(i + blockSize) * numModesLig+mode];
+
+
 				}
         	}
 
@@ -566,8 +576,8 @@ void d_reduceMode(
 		const unsigned& numModesLig,
 		 DOF_6D_Modes<T>* dofs,
 		T* xPos, T* yPos, T* zPos,
-		T *xModesLig,T *yModesLig,T *zModesLig,
 		T *xModesRec,T *yModesRec,T *zModesRec,
+		T *xModesLig,T *yModesLig,T *zModesLig,
 		T *d_fxRec, T *d_fyRec, T *d_fzRec,
 		T *d_fxLig, T *d_fyLig, T *d_fzLig,
 		T *d_E,
@@ -586,7 +596,8 @@ void d_reduceMode(
 
 
 
-	if (isPow2(max(numAtomsRec, numAtomsLig)))
+//	if (isPow2(max(numAtomsRec, numAtomsLig)))
+		if (isPow2( numAtomsLig))
 	{
 		switch (threads)
 		{

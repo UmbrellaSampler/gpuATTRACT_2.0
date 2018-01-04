@@ -46,7 +46,7 @@ void reduceModeForce(
 
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
-		forceAtom = rotMatInv*forceAtom;
+		forceAtom = rotMatInv * forceAtom;
 		for(int mode=0;mode<numModes;mode++){
 				result[mode] -= forceAtom.x*modeX[i*numModes+mode]
 							  + forceAtom.y*modeY[i*numModes+mode]
@@ -155,7 +155,9 @@ void deviceReduce(
 		const cudaStream_t& stream)
 {
 	/* we need at least twice the block size number of threads */
-	const unsigned threads = (max(ligandSize, receptorSize) < blockSize*2) ? nextPow2((max(ligandSize, receptorSize) + 1)/ 2) : blockSize;
+	//const unsigned threads = (max(ligandSize, receptorSize) < blockSize*2) ? nextPow2((max(ligandSize, receptorSize) + 1)/ 2) : blockSize;
+	unsigned size = max(ligandSize, receptorSize);
+	const unsigned threads = (size < blockSize*2) ? nextPow2((size + 1)/ 2) : blockSize;
 	/* each structure is reduced by one thread block */
 	const unsigned blocks = numDOFs;
 	d_reduceMode(threads, blocks, receptorSize, ligandSize, numModesRec, numModesLig,
@@ -175,6 +177,8 @@ template<typename REAL>
 void h_finalReduce(
 			const unsigned& numDOFs,
 			DOF_6D_Modes<REAL>* dofs,
+			REAL const* modeForceConstantRec,
+			REAL const* modeForceConstantLig,
 			const unsigned int& numModesRec,
 			const unsigned int& numModesLig,
 			const REAL* deviceOut,
@@ -214,11 +218,25 @@ void h_finalReduce(
 		torque.mat[2][2] = deviceOut[i*dofSize + 12];
 
 		for(int mode=0; mode < numModesLig; mode++){
-			enGrad.modesLig[0]=deviceOut[i*dofSize + 13 + mode];
+			enGrad.modesLig[0]=deviceOut[i*dofSize + 13 +mode];
 		}
+
 		for(int mode=0; mode < numModesRec; mode++){
-			enGrad.modesRec[0]=deviceOut[i*dofSize + 13 + numModesRec + mode];
+			enGrad.modesRec[0]=deviceOut[i*dofSize + 13 + numModesLig + mode];
 		}
+		correctModeForce(
+			modeForceConstantRec,
+			numModesRec,
+			enGrad.modesRec
+			);
+
+		correctModeForce(
+			modeForceConstantLig,
+			numModesLig,
+			enGrad.modesLig
+			);
+
+
 		const auto &dof = dofs[i];
 		const TorqueMat<REAL> torqueMat = euler2torquemat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
 		Vec3<REAL> result = torqueMat.rotateReduce(torque);

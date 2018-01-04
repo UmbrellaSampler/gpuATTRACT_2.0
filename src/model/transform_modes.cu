@@ -68,6 +68,7 @@ __global__ void d_DOFPos(
 	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
 	const unsigned int maxNumAtoms = max(numAtomsRec, numAtomsLig);
 
+
 	if (idx < maxNumAtoms*numDOFs) {
 		/* load DOF from global memory */
 		unsigned DOFidx = idx / maxNumAtoms;
@@ -76,7 +77,8 @@ __global__ void d_DOFPos(
 
 		const RotMat<REAL> rotMat = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
 
-		if (atomIdx < numAtomsRec){
+		if (atomIdx < numAtomsRec ){
+			int bufIdx = numAtomsRec * DOFidx + atomIdx;
 			Vec3<REAL> posAtomRec(xRec[atomIdx], yRec[atomIdx], zRec[atomIdx]);
 
 			for(int mode=0; mode < numModesRec; mode++){
@@ -85,22 +87,24 @@ __global__ void d_DOFPos(
 				posAtomRec.z += dof.modesRec[mode] * zModesRec[atomIdx*numModesRec+mode];
 			}
 
-			xRecDefo[idx] = posAtomRec.x;
-			yRecDefo[idx] = posAtomRec.y;
-			zRecDefo[idx] = posAtomRec.z;
+			xRecDefo[bufIdx] = posAtomRec.x;
+			yRecDefo[bufIdx] = posAtomRec.y;
+			zRecDefo[bufIdx] = posAtomRec.z;
 
 			const RotMat<REAL> rotMatInv = rotMat.getInv();
 			Vec3<REAL> posInv = rotMatInv * dof._6D.pos.inv();
 			posAtomRec = rotMatInv*posAtomRec;
-			posAtomRec += dof._6D.pos;
+			posAtomRec += posInv;
 
 
-			xRecTrafo[idx] = posAtomRec.x;
-			yRecTrafo[idx] = posAtomRec.y;
-			zRecTrafo[idx] = posAtomRec.z;
+			xRecTrafo[bufIdx] = posAtomRec.x;
+			yRecTrafo[bufIdx] = posAtomRec.y;
+			zRecTrafo[bufIdx] = posAtomRec.z;
 		}
 
-		if (atomIdx < numAtomsLig){
+		if (atomIdx < numAtomsLig && idx < numAtomsRec*numDOFs){
+			int bufIdx = numAtomsLig * DOFidx + atomIdx;
+
 			Vec3<REAL> posAtomLig(xLig[atomIdx], yLig[atomIdx], zLig[atomIdx]);
 
 
@@ -109,11 +113,12 @@ __global__ void d_DOFPos(
 				posAtomLig.y += dof.modesLig[mode] * yModesLig[atomIdx*numModesLig+mode];
 				posAtomLig.z += dof.modesLig[mode] * zModesLig[atomIdx*numModesLig+mode];
 			}
+
 			posAtomLig = rotMat*posAtomLig;
 			posAtomLig += dof._6D.pos;
-			xLigTrafo[idx] = posAtomLig.x;
-			yLigTrafo[idx] = posAtomLig.y;
-			zLigTrafo[idx] = posAtomLig.z;
+			xLigTrafo[bufIdx] = posAtomLig.x;
+			yLigTrafo[bufIdx] = posAtomLig.y;
+			zLigTrafo[bufIdx] = posAtomLig.z;
 		}
 	}
 }
