@@ -97,6 +97,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
 		this->_dofs[i]._6D.pos = DOF_molecules[1][i]._6D.pos;
 		this->_dofs[i]._6D.ang = DOF_molecules[1][i]._6D.ang;
+		std::copy(DOF_molecules[1][i].modesRec, DOF_molecules[1][i].modesRec + receptor->numModes(), this->_dofs[i].modesRec);
+		std::copy(DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig + ligand->numModes(), this->_dofs[i].modesLig);
 	}
 
 
