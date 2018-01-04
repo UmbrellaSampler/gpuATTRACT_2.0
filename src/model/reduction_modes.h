@@ -218,11 +218,11 @@ void h_finalReduce(
 		torque.mat[2][2] = deviceOut[i*dofSize + 12];
 
 		for(int mode=0; mode < numModesLig; mode++){
-			enGrad.modesLig[0]=deviceOut[i*dofSize + 13 +mode];
+			enGrad.modesLig[mode]=deviceOut[i*dofSize + 13 +mode];
 		}
 
 		for(int mode=0; mode < numModesRec; mode++){
-			enGrad.modesRec[0]=deviceOut[i*dofSize + 13 + numModesLig + mode];
+			enGrad.modesRec[mode]=deviceOut[i*dofSize + 13 + numModesLig + mode];
 		}
 		correctModeForce(
 			modeForceConstantRec,
