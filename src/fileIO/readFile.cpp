@@ -600,11 +600,11 @@ std::vector<std::vector<DOF>> readDOF(std::string filename) {
 					stream >> dof._6D.ang.x >> dof._6D.ang.y >> dof._6D.ang.z
 						>> dof._6D.pos.x >> dof._6D.pos.y >> dof._6D.pos.z;
 
-					size_t i = 0;
+					size_t k = 0;
 					double value;
 					while( stream >> value ){
 						dof.dofs[i] = value;
-						i++;
+						k++;
 					}
 				}
 				vec.push_back(dof);
