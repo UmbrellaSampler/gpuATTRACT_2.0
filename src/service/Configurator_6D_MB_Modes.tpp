@@ -1,17 +1,17 @@
 /*
- * Configurator_MB_6D_Modes.tpp
+ * Configurator_6D_MB_Modes.tpp
  *
  *  Created on: Dec 7, 2017
  *      Author: uwe
  */
 
-#ifndef SRC_SERVICE_CONFIGURATOR_MB_6D_MODES_TPP_
-#define SRC_SERVICE_CONFIGURATOR_MB_6D_MODES_TPP_
+#ifndef SRC_SERVICE_CONFIGURATOR_6D_MB_MODES_TPP_
+#define SRC_SERVICE_CONFIGURATOR_6D_MB_MODES_TPP_
 
 #include <exception>
 #include <vector>
 
-#include "Configurator_MB_6D_Modes.h"
+#include "Configurator_6D_MB_Modes.h"
 #include "DOFConverter.h"
 #include "readFile.h"
 #include "Server.h"
@@ -28,7 +28,7 @@
 namespace as {
 
 template<typename SERVICE>
-void Configurator_MB_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
+void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
@@ -65,7 +65,7 @@ void Configurator_MB_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	// TODO: transform DOF_6D to input_t
 	//std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
 	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName);
-	std::vector<std::vector<DOF_MB_6D_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
+	std::vector<std::vector<DOF_6D_MB_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
@@ -167,7 +167,7 @@ void Configurator_MB_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 }
 
 template<typename SERVICE>
-void Configurator_MB_6D_Modes<SERVICE>::finalize() noexcept {
+void Configurator_6D_MB_Modes<SERVICE>::finalize() noexcept {
 
 }
 
