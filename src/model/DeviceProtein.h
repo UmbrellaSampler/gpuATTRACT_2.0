@@ -10,6 +10,7 @@
 
 #ifdef CUDA
 #include "DeviceItem.h"
+#include "Types_6D_Config.h"
 /**
  * DeviceProtein represents a Protein on a device.
  */
@@ -36,7 +37,7 @@ public:
 		REAL* xModes = nullptr; /** normal mode deformation vectors */
 		REAL* yModes = nullptr;
 		REAL* zModes = nullptr;
-		REAL modeForce[10];
+		REAL modeForce[MODES_MAX_NUMBER];
 	};
 
 	using HostResc = Desc;
