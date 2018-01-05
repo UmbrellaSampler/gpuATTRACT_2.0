@@ -21,7 +21,7 @@
 #include "ParamTable.h"
 #include "DeviceParamTable.h"
 #include "macros.h"
-
+#include "Types_6D_Config.h"
 namespace as {
 
 template <typename REAL>
@@ -82,7 +82,7 @@ std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::s
 	deviceDesc.xModes = d_xModes;
 	deviceDesc.yModes = d_yModes;
 	deviceDesc.zModes = d_zModes;
-	std::copy(protein->modeForce(), protein->modeForce() + protein->numModes(), deviceDesc.modeForce);
+	std::copy(protein->modeForce(), protein->modeForce() + MODES_MAX_NUMBER, deviceDesc.modeForce);
 
 
 	std::shared_ptr<DeviceProtein<REAL>> deviceProtein = std::make_shared<DeviceProtein<REAL>>();
