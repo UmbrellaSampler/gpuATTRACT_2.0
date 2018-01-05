@@ -71,7 +71,7 @@ public:
 
 	class FortranSmuggler {
 	public:
-		FortranSmuggler (coro_t& _coro, Vector& _state, ObjGrad& _objective):
+		FortranSmuggler (push_type& _coro, Vector& _state, ObjGrad& _objective):
 			coro(_coro),
 			state(_state),
 			objective(_objective)
@@ -79,10 +79,12 @@ public:
 
 		Vector& state_ref() { return state; }
 		ObjGrad& objective_ref() { return objective; }
-		void call_coro() { coro(); };
+		void call_coro() {
+			coro();
+		};
 
 	private:
-		coro_t& coro;
+		push_type& coro;
 		Vector& state;
 		ObjGrad& objective;
 	};
@@ -90,7 +92,7 @@ public:
 
 private:
 
-	void run(coro_t::caller_type& ca) override;
+	void run(push_type& ca) override;
 
 	/* solver options */
 	static Options settings;

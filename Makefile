@@ -62,6 +62,13 @@ INCLUDES = $(foreach d, $(SOURCE_FOLDERS), -I$d)
 LDFLAGS =  #-L...
 LIBS =  -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_coroutine -lboost_context -lboost_system
 
+# for testing with different boost lib versions. should be disabled by default.
+ifeq (1, 0)
+#	INCLUDES += -I/home/uwe/dev/boost_1_55_0
+#	LDFLAGS += -L/home/uwe/dev/boost_1_55_0/stage/lib
+	INCLUDES += -I/home/uwe/dev/boost_1_54_0
+	LDFLAGS += -L/home/uwe/dev/boost_1_54_0/stage/lib
+endif
 
 ifeq ($(CUDA), ON)
 	OFLAGS += -DCUDA
