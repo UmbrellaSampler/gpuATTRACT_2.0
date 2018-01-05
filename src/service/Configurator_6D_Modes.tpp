@@ -69,7 +69,6 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
-	float test =DOF_molecules[1][0]._6D.ang.x;
 
 	/* apply pivoting to proteins */
 		if(h.auto_pivot) {
