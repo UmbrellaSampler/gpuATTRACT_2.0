@@ -224,6 +224,7 @@ void h_finalReduce(
 		for(int mode=0; mode < numModesRec; mode++){
 			enGrad.modesRec[mode]=deviceOut[i*dofSize + 13 + numModesLig + mode];
 		}
+
 		correctModeForce(
 			modeForceConstantRec,
 			numModesRec,
