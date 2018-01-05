@@ -36,6 +36,7 @@ public:
 		REAL* xModes = nullptr; /** normal mode deformation vectors */
 		REAL* yModes = nullptr;
 		REAL* zModes = nullptr;
+		REAL modeForce[10];
 	};
 
 	using HostResc = Desc;
