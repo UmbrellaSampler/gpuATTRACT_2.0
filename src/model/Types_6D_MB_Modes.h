@@ -12,7 +12,7 @@
 #include "nativeTypesWrapper.h"
 #include "Vec3.h"
 #include "GenericTypes.h"
-#include "Types_6D.h"
+#include "Types_6D_Modes.h"
 
 namespace as {
 #ifndef __CUDACC__ // ostream is not available in nvcc
@@ -34,29 +34,30 @@ template<typename REAL>
 struct DOF_6D_MB_Modes {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
-	DOF_6D<real_t> _6D;
+	DOF_6D<real_t> _6D[LIGANDS_MAX_NUMBER];
 	real_t modesRec[MODES_MAX_NUMBER];
-	real_t modesLig[MODES_MAX_NUMBER];
+	real_t modesLig[LIGANDS_MAX_NUMBER][MODES_MAX_NUMBER];
 
 };
 
 struct Common_MB_Modes {
 	id_t gridIdRec;
-	id_t gridIdLig;
-	id_t ligId;
+	id_t gridIdLig[LIGANDS_MAX_NUMBER];
+	id_t ligId[LIGANDS_MAX_NUMBER];
 	id_t recId;
 	id_t tableId;
 	id_t paramsId;
 	static unsigned int numModesRec;
-	static unsigned int numModesLig;
+	static unsigned int numModesLig[LIGANDS_MAX_NUMBER];
 };
 
 template<typename REAL>
 struct Result_6D_MB_Modes {
 	using real_t = typename TypeWrapper<REAL>::real_t;
-	Result_6D<real_t> _6D;
+	real_t E;
+	DOF_6D<real_t> _6D[LIGANDS_MAX_NUMBER];
 	real_t modesRec[MODES_MAX_NUMBER];
-	real_t modesLig[MODES_MAX_NUMBER];
+	real_t modesLig[LIGANDS_MAX_NUMBER][MODES_MAX_NUMBER];
 };
 
 template<typename REAL>
@@ -67,4 +68,4 @@ using Types_6D_Modes = GenericTypes<DOF_6D_MB_Modes<REAL>, Common_MB_Modes, Resu
 
 
 
-#endif /* TYPES_6D_MODES_H_ */
+#endif /* TYPES_6D_MB_MODES_H_ */
