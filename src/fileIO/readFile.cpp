@@ -603,7 +603,7 @@ std::vector<std::vector<DOF>> readDOF(std::string filename) {
 					size_t k = 0;
 					double value;
 					while( stream >> value ){
-						dof.dofs[i] = value;
+						dof.dofs[k] = value;
 						k++;
 					}
 				}
