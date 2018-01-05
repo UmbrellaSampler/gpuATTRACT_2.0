@@ -1,7 +1,6 @@
 /*
  * transform_modes.h
  *
-<<<<<<< HEAD
  *  Created on: Dec 5, 2017
  *      Author: glenn
  */
