@@ -32,7 +32,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
-	auto ligand = createProteinFromPDB<real_t>(args.ligName);
+	auto ligand = createProteinFromPDB<real_t>(args.ligName[0]);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
 
@@ -56,7 +56,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 	/* read dof file */
-	DOFHeader<real_t> h = readDOFHeader<real_t>(args.dofName);
+	DOFHeader<real_t> h = readDOFHeader<real_t>(args.dofName[0]);
 	/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
 	if(!h.auto_pivot && h.pivots.size() > 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
@@ -64,7 +64,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	// TODO: transform DOF_6D to input_t
 	//std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
-	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName);
+	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName[0]);
 	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
@@ -73,7 +73,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	/* apply pivoting to proteins */
 		if(h.auto_pivot) {
 			if (!h.pivots.empty()) {
-				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
+				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName[0] + ")" );
 			}
 			receptor->auto_pivotize();
 			ligand->auto_pivotize();
@@ -81,7 +81,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 			h.pivots.push_back(ligand->pivot());
 		} else {
 			if (h.pivots.size() != 2) {
-				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
+				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName[0] + ")" );
 			}
 			receptor->pivotize(h.pivots[0]);
 			ligand->pivotize(h.pivots[1]);
@@ -130,7 +130,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
 	applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
 
-	auto gridLig = createGridFromGridFile<real_t>(args.gridLigName);
+	auto gridLig = createGridFromGridFile<real_t>(args.gridLigName[0]);
 	gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
 	this->_ids.gridIdLig = dataManager->add(gridLig);
 

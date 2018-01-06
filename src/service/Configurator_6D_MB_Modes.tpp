@@ -42,11 +42,12 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	Common_Modes::numModesRec = args.numModes;
 	readHMMode<real_t>(receptor, args.recModesName);
 
-
+	/* add items to dataMng */
+		std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
 	/* apply mapping according to receptor grid alphabet to ligand */
 	auto mapVecRec = readGridAlphabetFromFile(args.alphabetRecName); // map: std::vector<unsigned>
 	TypeMap typeMapRec = createTypeMapFromVector(mapVecRec);
-	DOFHeader<real_t> hRec = readDOFHeader<real_t>(args.dofName);
+	DOFHeader<real_t> hRec = readDOFHeader<real_t>(args.dofName[0]);
 	/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
 	if(!hRec.auto_pivot && hRec.pivots.size() > 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
@@ -54,13 +55,13 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	if(hRec.auto_pivot) {
 		if (!hRec.pivots.empty()) {
-			throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
+			throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName[0] + ")" );
 		}
 		receptor->auto_pivotize();
 		hRec.pivots.push_back(receptor->pivot());
 	} else {
 		if (hRec.pivots.size() != 2) {
-			throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
+			throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName[0] + ")" );
 		}
 		receptor->pivotize(hRec.pivots[0]);
 	}
@@ -68,29 +69,21 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	std::string ligNameMB, ligAlphabetNameMB, ligModesNameMB, gridLigNameMB, dofNameMB;
 	for(int lig = 0; lig < args.numLigands; lig++){
 		std::string substitute = "_"+std::to_string(lig)+".";
-		ligNameMB = args.ligName;
-		std::replace(ligNameMB.begin(), ligNameMB.end(), '.', 'adsf_');
-		auto ligand = createProteinFromPDB<real_t>(ligNameMB);
+
+		auto ligand = createProteinFromPDB<real_t>(args.ligName[lig]);
 		ligand->setNumModes(args.numModes);
 		Common_MB_Modes::numModesLig[lig] = args.numModes;
 
-		ligModesNameMB = args.ligModesName;
-		std::replace(ligModesNameMB.begin(), ligModesNameMB.end(), '.', '_'+std::to_string(lig)+'.');
-		readHMMode<real_t>(ligand, ligModesNameMB);
+		readHMMode<real_t>(ligand, args.ligModesName[lig]);
 
 		ligand->setNumMappedTypes(1);
 		ligand->getOrCreateMappedPtr();
 		applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
 		applyMapping(typeMapRec, ligand->numAtoms(), ligand->type(), ligand->mappedType());
 
-		gridLigNameMB = args.gridLigName;
-		std::replace(gridLigNameMB.begin(), gridLigNameMB.end(), '.', '_'+std::to_string(lig)+'.');
-		auto gridLig = createGridFromGridFile<real_t>(gridLigNameMB);
+		auto gridLig = createGridFromGridFile<real_t>(args.gridLigName[lig]);
 
-
-		dofNameMB = args.dofName;
-		std::replace(dofNameMB.begin(), dofNameMB.end(), '.', '_'+std::to_string(lig)+'.');
-		DOFHeader<real_t> hLig = readDOFHeader<real_t>(dofNameMB);
+		DOFHeader<real_t> hLig = readDOFHeader<real_t>(args.dofName[lig+1]);
 		/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
 		if(!hLig.auto_pivot && hLig.pivots.size() > 2) {
 			throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
@@ -98,13 +91,13 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 		if(hLig.auto_pivot) {
 			if (!hLig.pivots.empty()) {
-				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
+				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName[lig + 1] + ")" );
 			}
 			ligand->auto_pivotize();
 			hLig.pivots.push_back(ligand->pivot());
 		} else {
 			if (hLig.pivots.size() != 2) {
-				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
+				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName[lig + 1] + ")" );
 			}
 			ligand->pivotize(hLig.pivots[0]);
 		}
@@ -127,6 +120,10 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 			this->_dofs[i]._6D[lig].ang = DOF_molecules[1][i]._6D.ang;
 			std::copy(DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig + ligand->numModes(), this->_dofs[i].modesLig[lig]);
 		}
+
+		gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
+				this->_ids.ligId[lig] = dataManager->add(ligand);
+				this->_ids.gridIdLig[lig] = dataManager->add(gridLig);
 	}
 
 	//ligAlphabetNameMB = std::replace(args.alphabetLigName.begin(), args.alphabetLigName.end(), '.', '_'+std::to_string(lig)+'.');
@@ -158,17 +155,14 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));
 
 
-	/* add items to dataMng */
-	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
+
 	this->_ids.recId = dataManager->add(receptor);
 	this->_ids.gridIdRec = dataManager->add(gridRec);
 	this->_ids.tableId = dataManager->add(paramTable);
 	this->_ids.paramsId = dataManager->add(simParam);
 
 	for (int lig = 0; lig < args.numLigands; lig++){
-		gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
-		this->_ids.ligId[lig] = dataManager->add(ligand);
-		this->_ids.gridIdLig[lig] = dataManager->add(gridLig);
+
 	}
 
 
