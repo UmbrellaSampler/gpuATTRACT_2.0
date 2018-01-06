@@ -70,7 +70,6 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
-
 	/* apply pivoting to proteins */
 		if(h.auto_pivot) {
 			if (!h.pivots.empty()) {
@@ -91,12 +90,13 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	/* transform ligand dofs assuming that the receptor is always centered in the origin */
 	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
 
-
 	/* init dof and result buffer */
 	this->_dofs = std::vector<input_t>(DOF_molecules[1].size());
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
 		this->_dofs[i]._6D.pos = DOF_molecules[1][i]._6D.pos;
 		this->_dofs[i]._6D.ang = DOF_molecules[1][i]._6D.ang;
+		std::copy(DOF_molecules[1][i].modesRec, DOF_molecules[1][i].modesRec + receptor->numModes(), this->_dofs[i].modesRec);
+		std::copy(DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig + ligand->numModes(), this->_dofs[i].modesLig);
 	}
 
 
@@ -117,6 +117,9 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	receptor->setNumModes(args.numModes);
 	ligand->setNumModes(args.numModes);
+	Common_Modes::numModesLig = args.numModes;
+	Common_Modes::numModesRec = args.numModes;
+
 	readHMMode<real_t>(receptor, args.recModesName);
 	readHMMode<real_t>(ligand, args.ligModesName);
 
@@ -146,11 +149,11 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	}
 
 	// TODO: ServiceType::GPUEnergyService6DModes is not yet available
-//#ifdef CUDA
-//	else {
-//		serviceType = ServiceType::GPUEnergyService6DModes;
-//	}
-//#endif
+#ifdef CUDA
+	else {
+		serviceType = ServiceType::GPUEnergyService6DModes;
+	}
+#endif
 
 	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args)));
 

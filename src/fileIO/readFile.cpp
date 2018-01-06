@@ -204,7 +204,7 @@ void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName) {
 			if(changeMode == true && tokens.size() > 1){
 				modeIdx++;
 				if (modeIdx == stoi(tokens.at(0)) && (modeIdx <= numModes)) {
-					modeVal[modeIdx]=stof(tokens.at(1))*stof(tokens.at(1));
+					modeVal[modeIdx-1]=stof(tokens.at(1))*stof(tokens.at(1));
 					eigVal[modeIdx-1]=0;
 					//cout <<"# "<<modeVal[modeIdx]<< endl;
 					changeMode=false;
@@ -599,16 +599,12 @@ std::vector<std::vector<DOF>> readDOF(std::string filename) {
 					stringstream stream(line);
 					stream >> dof._6D.ang.x >> dof._6D.ang.y >> dof._6D.ang.z
 						>> dof._6D.pos.x >> dof._6D.pos.y >> dof._6D.pos.z;
-					for (size_t i = 0; !stream.eof(); ++i) {
-						stream >> dof.dofs[i];
-						if(stream.fail()) {
-							stream.clear();
-							string parsed;
-							stream >> parsed;
-							errorDOFFormat(filename);
-							cerr << "Cannot parse '" << parsed << "' at #" << i_molecules << " (line " << lineNo << ")" << endl;
-							exit(EXIT_FAILURE);
-						}
+
+					size_t k = 0;
+					double value;
+					while( stream >> value ){
+						dof.dofs[k] = value;
+						k++;
 					}
 				}
 				vec.push_back(dof);

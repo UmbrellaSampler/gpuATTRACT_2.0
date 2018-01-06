@@ -57,7 +57,6 @@ void transformDOF_glob2rec(DOF_6D<REAL>& dof_rec, DOF_6D<REAL>& dof_lig,
 	}
 
 
-
 	/* rotate ligand into receptor frame and shift ligand by receptor dofs*/
 	const vec3_t& pos_rec = dof_rec.pos;
 
