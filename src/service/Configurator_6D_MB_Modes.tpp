@@ -77,6 +77,9 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
 	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));
 
+	this->_ids.recId = dataManager->add(receptor);
+	this->_ids.gridIdRec = dataManager->add(gridRec);
+
 //////////////////////////////initialize ligands////////////////////////
 	for(int lig = 0; lig < args.numLigands; lig++){
 		auto ligand = createProteinFromPDB<real_t>(args.ligName[lig]);
@@ -149,21 +152,9 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	simParam->ffelec = 	static_cast<real_t>(FELEC/args.epsilon);
 
 	/* read dof file */
-
-
-
-
-
-
-
-	this->_ids.recId = dataManager->add(receptor);
-	this->_ids.gridIdRec = dataManager->add(gridRec);
 	this->_ids.tableId = dataManager->add(paramTable);
 	this->_ids.paramsId = dataManager->add(simParam);
 
-	for (int lig = 0; lig < args.numLigands; lig++){
-
-	}
 
 
 
