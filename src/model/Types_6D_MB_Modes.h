@@ -49,6 +49,7 @@ struct Common_MB_Modes {
 	id_t paramsId;
 	static unsigned int numModesRec;
 	static unsigned int numModesLig[LIGANDS_MAX_NUMBER];
+	static unsigned int numLigands;
 };
 
 template<typename REAL>
