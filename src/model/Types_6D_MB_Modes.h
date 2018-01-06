@@ -61,7 +61,7 @@ struct Result_6D_MB_Modes {
 };
 
 template<typename REAL>
-using Types_6D_Modes = GenericTypes<DOF_6D_MB_Modes<REAL>, Common_MB_Modes, Result_6D_MB_Modes<REAL>>;
+using Types_6D_MB_Modes = GenericTypes<DOF_6D_MB_Modes<REAL>, Common_MB_Modes, Result_6D_MB_Modes<REAL>>;
 
 }  // namespace as
 
