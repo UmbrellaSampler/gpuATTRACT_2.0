@@ -47,7 +47,7 @@ void TwoBodyParser::addOptions() noexcept {
 			("modl2,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "second mode file of ligand")
 			("modl3,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "third mode file of ligand")
 			("modr,mr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor")
-			("numLig,mb"	          , po::value<string>()->default_value(DEFAULT_NUM_LIGANDS)	, "number of Ligands");
+			("numLig,mb"	          , po::value<int>()->default_value(DEFAULT_NUM_LIGANDS)	, "number of Ligands");
 	_optsDesc.add(input);
 
 	po::options_description concurrency("concurrency");
