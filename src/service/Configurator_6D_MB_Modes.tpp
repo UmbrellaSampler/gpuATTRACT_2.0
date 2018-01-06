@@ -24,6 +24,7 @@
 #include "DOFTransform.h"
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
+#include <string>
 
 namespace as {
 
@@ -32,7 +33,101 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
-	auto ligand = createProteinFromPDB<real_t>(args.ligName);
+	receptor->setNumModes(args.numModes);
+	Common_Modes::numModesRec = args.numModes;
+	readHMMode<real_t>(receptor, args.recModesName);
+
+
+	/* apply mapping according to receptor grid alphabet to ligand */
+	auto mapVecRec = readGridAlphabetFromFile(args.alphabetRecName); // map: std::vector<unsigned>
+	TypeMap typeMapRec = createTypeMapFromVector(mapVecRec);
+	DOFHeader<real_t> hRec = readDOFHeader<real_t>(args.dofName);
+	/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
+	if(!hRec.auto_pivot && hRec.pivots.size() > 2) {
+		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
+	}
+
+	if(hRec.auto_pivot) {
+		if (!hRec.pivots.empty()) {
+			throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
+		}
+		receptor->auto_pivotize();
+		hRec.pivots.push_back(receptor->pivot());
+	} else {
+		if (hRec.pivots.size() != 2) {
+			throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
+		}
+		receptor->pivotize(hRec.pivots[0]);
+	}
+
+	std::string ligNameMB, ligAlphabetNameMB, ligModesNameMB, gridLigNameMB, dofNameMB;
+	for(int lig = 0; lig < args.numLigands; lig++){
+		ligNameMB = std::replace(args.ligName.begin(), args.ligName.end(), '.', '_');
+		auto ligand = createProteinFromPDB<real_t>(ligNameMB);
+		ligand->setNumModes(args.numModes);
+		Common_Modes::numModesLig[lig] = args.numModes;
+
+		ligModesNameMB = std::replace(args.ligModesName.begin(), args.ligModesName.end(), '.', '_'+std::to_string(lig)+'.');
+		readHMMode<real_t>(ligand, ligModesNameMB);
+
+		ligand->setNumMappedTypes(1);
+		ligand->getOrCreateMappedPtr();
+		applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
+		applyMapping(typeMapRec, ligand->numAtoms(), ligand->type(), ligand->mappedType());
+
+		gridLigNameMB = std::replace(args.gridLigName.begin(), args.gridLigName.end(), '.', '_'+std::to_string(lig)+'.');
+		auto gridLig = createGridFromGridFile<real_t>(gridLigNameMB);
+
+
+		dofNameMB = std::replace(args.dofName.begin(), args.dofName.end(), '.', '_'+std::to_string(lig)+'.');
+		DOFHeader<real_t> hLig = readDOFHeader<real_t>(dofNameMB);
+		/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
+		if(!hLig.auto_pivot && hLig.pivots.size() > 2) {
+			throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
+		}
+
+		if(hLig.auto_pivot) {
+			if (!hLig.pivots.empty()) {
+				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
+			}
+			ligand->auto_pivotize();
+			hLig.pivots.push_back(ligand->pivot());
+		} else {
+			if (hLig.pivots.size() != 2) {
+				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
+			}
+			ligand->pivotize(hLig.pivots[0]);
+		}
+		// TODO: transform DOF_6D to input_t
+		//std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
+		std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(dofNameMB);
+		std::vector<std::vector<DOF_6D_MB_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
+		if(DOF_molecules.size() != 2) {
+			throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
+		}
+
+		/* apply pivoting to proteins */
+		/* transform ligand dofs assuming that the receptor is always centered in the origin */
+		transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], hRec.pivots[0], hLig.pivots[1], hLig.centered_receptor, hLig.centered_ligands);
+
+		/* init dof and result buffer */
+		this->_dofs = std::vector<input_t>(DOF_molecules[1].size());
+		for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
+			this->_dofs[i]._6D[lig].pos = DOF_molecules[1][i]._6D.pos;
+			this->_dofs[i]._6D[lig].ang = DOF_molecules[1][i]._6D.ang;
+			std::copy(DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig + ligand->numModes(), this->_dofs[i].modesLig[lig]);
+		}
+	}
+
+	//ligAlphabetNameMB = std::replace(args.alphabetLigName.begin(), args.alphabetLigName.end(), '.', '_'+std::to_string(lig)+'.');
+	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
+	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
+	receptor->setNumMappedTypes(1);
+	receptor->getOrCreateMappedPtr();
+	applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
+	applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
+
+
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
 
@@ -45,59 +140,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	simParam->epsilon = static_cast<real_t>(args.epsilon);
 	simParam->ffelec = 	static_cast<real_t>(FELEC/args.epsilon);
 
-
-	/* apply mapping according to receptor grid alphabet to ligand */
-	auto mapVecRec = readGridAlphabetFromFile(args.alphabetRecName); // map: std::vector<unsigned>
-	TypeMap typeMapRec = createTypeMapFromVector(mapVecRec);
-	ligand->setNumMappedTypes(1);
-	ligand->getOrCreateMappedPtr();
-	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
-	applyMapping(typeMapRec, ligand->numAtoms(), ligand->type(), ligand->mappedType());
-
-
 	/* read dof file */
-	DOFHeader<real_t> h = readDOFHeader<real_t>(args.dofName);
-	/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
-	if(!h.auto_pivot && h.pivots.size() > 2) {
-		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
-	}
-
-	// TODO: transform DOF_6D to input_t
-	//std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
-	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName);
-	std::vector<std::vector<DOF_6D_MB_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
-	if(DOF_molecules.size() != 2) {
-		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
-	}
-
-	/* apply pivoting to proteins */
-		if(h.auto_pivot) {
-			if (!h.pivots.empty()) {
-				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
-			}
-			receptor->auto_pivotize();
-			ligand->auto_pivotize();
-			h.pivots.push_back(receptor->pivot());
-			h.pivots.push_back(ligand->pivot());
-		} else {
-			if (h.pivots.size() != 2) {
-				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
-			}
-			receptor->pivotize(h.pivots[0]);
-			ligand->pivotize(h.pivots[1]);
-		}
-
-	/* transform ligand dofs assuming that the receptor is always centered in the origin */
-	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
-
-	/* init dof and result buffer */
-	this->_dofs = std::vector<input_t>(DOF_molecules[1].size());
-	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
-		this->_dofs[i]._6D.pos = DOF_molecules[1][i]._6D.pos;
-		this->_dofs[i]._6D.ang = DOF_molecules[1][i]._6D.ang;
-		std::copy(DOF_molecules[1][i].modesRec, DOF_molecules[1][i].modesRec + receptor->numModes(), this->_dofs[i].modesRec);
-		std::copy(DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig + ligand->numModes(), this->_dofs[i].modesLig);
-	}
 
 
 
@@ -108,31 +151,16 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	/* add items to dataMng */
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
 	this->_ids.recId = dataManager->add(receptor);
-	this->_ids.ligId = dataManager->add(ligand);
 	this->_ids.gridIdRec = dataManager->add(gridRec);
 	this->_ids.tableId = dataManager->add(paramTable);
 	this->_ids.paramsId = dataManager->add(simParam);
 
+	for (int lig = 0; lig < args.numLigands; lig++){
+		gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
+		this->_ids.ligId[lig] = dataManager->add(ligand);
+		this->_ids.gridIdLig[lig] = dataManager->add(gridLig);
+	}
 
-
-	receptor->setNumModes(args.numModes);
-	ligand->setNumModes(args.numModes);
-	Common_Modes::numModesLig = args.numModes;
-	Common_Modes::numModesRec = args.numModes;
-
-	readHMMode<real_t>(receptor, args.recModesName);
-	readHMMode<real_t>(ligand, args.ligModesName);
-
-	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
-	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
-	receptor->setNumMappedTypes(1);
-	receptor->getOrCreateMappedPtr();
-	applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
-	applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
-
-	auto gridLig = createGridFromGridFile<real_t>(args.gridLigName);
-	gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
-	this->_ids.gridIdLig = dataManager->add(gridLig);
 
 
 #ifdef CUDA
