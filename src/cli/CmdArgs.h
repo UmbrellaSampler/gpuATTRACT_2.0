@@ -19,10 +19,10 @@ public:
 	AppType app;
 
 	/* Input Files */
-	std::string dofName;
+	std::vector<std::string> dofName;
 	std::string gridRecName;
-	std::string gridLigName;
-	std::string ligName;
+	std::vector<std::string> gridLigName;
+	std::vector<std::string> ligName;
 	std::string recName;
 	std::string paramsName;
 	std::string alphabetRecName;
