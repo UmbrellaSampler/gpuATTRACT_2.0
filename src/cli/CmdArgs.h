@@ -28,7 +28,7 @@ public:
 	std::string alphabetRecName;
 	std::string alphabetLigName;
 	std::string recModesName;
-	std::string ligModesName;
+	std::vector<std::string> ligModesName;
  
 	/* Concurrency */
 	int numModes;
