@@ -63,7 +63,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
 	}
 
 
-	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName);
+	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName[0]);
 	std::vector<std::vector<DOF_6D<real_t>>> DOF_molecules = DOFConverter<real_t>(DOF_molecules_dof);
 	if(DOF_molecules.size() != 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");

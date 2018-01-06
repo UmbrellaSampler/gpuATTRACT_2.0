@@ -121,7 +121,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	Common_Modes::numModesRec = args.numModes;
 
 	readHMMode<real_t>(receptor, args.recModesName);
-	readHMMode<real_t>(ligand, args.ligModesName);
+	readHMMode<real_t>(ligand, args.ligModesName[0]);
 
 	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
 	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
