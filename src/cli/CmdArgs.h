@@ -19,7 +19,8 @@ public:
 	AppType app;
 
 	/* Input Files */
-	std::vector<std::string> dofName;
+	std::string dofName;
+	std::vector<std::string> dofNameLig;
 	std::string gridRecName;
 	std::vector<std::string> gridLigName;
 	std::vector<std::string> ligName;
