@@ -28,11 +28,18 @@ void TwoBodyParser::addOptions() noexcept {
 
 	po::options_description input("input files");
 	input.add_options()
-			("dof"     			  , po::value<string>()->required()									, "structure (DOF) file")
+			("dofRec"     			  , po::value<string>()->required()									, "receptor structure (DOF) file")
+			("dofLig"     			  , po::value<string>()->required()									, "ligand structure (DOF) file")
+			("dofLig2"     			  , po::value<string>()->required()									, "second ligand structure (DOF) file")
+			("dofLig3"     			  , po::value<string>()->required()									, "third ligand structure (DOF) file")
 			("receptor-pdb,r"     , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_PDB)	, "pdb-file of receptor")
 			("ligand-pdb,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of ligand")
+			("ligand-pdb2,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "second pdb-file of ligand")
+			("ligand-pdb3,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "third pdb-file of ligand")
 			("gridrec,gr"             , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "receptor grid file")
 			("gridlig,gl"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "ligand grid file")
+			("gridlig2,gl2"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "second ligand grid file")
+			("gridlig3,gl3"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "third ligand grid file")
 			("par,p"	          , po::value<string>()->default_value(FILE_DEFAULT_PARAMETER)		, "attract forcefield parameter file")
 			("alphabetrec,ar"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
 			("alphabetlig,al"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
@@ -81,16 +88,30 @@ void TwoBodyParser::enforceRules(po::variables_map const& vm) const {
 }
 
 void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
-	if(vm.count("dof"))
-		_args->dofName = vm["dof"].as<string>();
+	if(vm.count("dofRec"))
+		_args->dofName.push_back(vm["dofRec"].as<string>());
+	if(vm.count("dofLig"))
+		_args->dofName.push_back(vm["dofLig"].as<string>());
+	if(vm.count("dofLig2"))
+		_args->dofName.push_back(vm["dofLig2"].as<string>());
+	if(vm.count("dofLig3"))
+		_args->dofName.push_back(vm["dofLig3"].as<string>());
 	if(vm.count("receptor-pdb"))
 		_args->recName = vm["receptor-pdb"].as<string>();
 	if(vm.count("ligand-pdb"))
-		_args->ligName = vm["ligand-pdb"].as<string>();
+		_args->ligName.push_back(vm["ligand-pdb"].as<string>());
+	if(vm.count("ligand-pdb2"))
+		_args->ligName.push_back(vm["ligand-pdb2"].as<string>());
+	if(vm.count("ligand-pdb3"))
+		_args->ligName.push_back(vm["ligand-pdb3"].as<string>());
 	if(vm.count("gridrec"))
 		_args->gridRecName = vm["gridrec"].as<string>();
 	if(vm.count("gridlig"))
-		_args->gridLigName = vm["gridlig"].as<string>();
+		_args->gridLigName.push_back(vm["gridlig"].as<string>());
+	if(vm.count("gridlig2"))
+		_args->gridLigName.push_back(vm["gridlig2"].as<string>());
+	if(vm.count("gridlig3"))
+		_args->gridLigName.push_back(vm["gridlig3"].as<string>());
 	if(vm.count("par"))
 		_args->paramsName = vm["par"].as<string>();
 	if(vm.count("alphabetrec"))
