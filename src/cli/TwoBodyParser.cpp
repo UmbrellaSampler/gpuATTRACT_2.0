@@ -93,11 +93,11 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 	if(vm.count("dofRec"))
 		_args->dofName.push_back(vm["dofRec"].as<string>());
 	if(vm.count("dofLig"))
-		_args->dofName.push_back(vm["dofLig"].as<string>());
+		_args->dofNameLig.push_back(vm["dofLig"].as<string>());
 	if(vm.count("dofLig2"))
-		_args->dofName.push_back(vm["dofLig2"].as<string>());
+		_args->dofNameLig.push_back(vm["dofLig2"].as<string>());
 	if(vm.count("dofLig3"))
-		_args->dofName.push_back(vm["dofLig3"].as<string>());
+		_args->dofNameLig.push_back(vm["dofLig3"].as<string>());
 	if(vm.count("receptor-pdb"))
 		_args->recName = vm["receptor-pdb"].as<string>();
 	if(vm.count("ligand-pdb"))
