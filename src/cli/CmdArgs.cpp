@@ -22,7 +22,7 @@ std::ostream& operator<<(std::ostream& s, CmdArgs const& args) {
 	s << "paramsName  = "  << args.paramsName          << endl;
 	s << "alphabetRecName = "  << args.alphabetRecName 	   << endl;
 	s << "alphabetLigName = "  << args.alphabetLigName 	   << endl;
-	s << "ligModesName = " for (auto ligModesName : args.ligModesName) s << ligModesName << " "; s << endl;
+	s << "ligModesName = "; for (auto ligModesName : args.ligModesName) s << ligModesName << " "; s << endl;
 	s << "recModesName = " <<args.recModesName   	   << endl;
 	s << "numCPUs     = "  << args.numCPUs             << endl;
 	s << "devices     = [ "; for (auto device : args.deviceIds) s << device << " "; s << "]"<< endl;
