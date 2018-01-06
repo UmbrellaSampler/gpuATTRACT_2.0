@@ -47,7 +47,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	/* apply mapping according to receptor grid alphabet to ligand */
 	auto mapVecRec = readGridAlphabetFromFile(args.alphabetRecName); // map: std::vector<unsigned>
 	TypeMap typeMapRec = createTypeMapFromVector(mapVecRec);
-	DOFHeader<real_t> hRec = readDOFHeader<real_t>(args.dofName[0]);
+	DOFHeader<real_t> hRec = readDOFHeader<real_t>(args.dofName);
 	/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
 	if(!hRec.auto_pivot && hRec.pivots.size() > 2) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
@@ -55,13 +55,13 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	if(hRec.auto_pivot) {
 		if (!hRec.pivots.empty()) {
-			throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName[0] + ")" );
+			throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );
 		}
 		receptor->auto_pivotize();
 		hRec.pivots.push_back(receptor->pivot());
 	} else {
 		if (hRec.pivots.size() != 2) {
-			throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName[0] + ")" );
+			throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName + ")" );
 		}
 		receptor->pivotize(hRec.pivots[0]);
 	}
@@ -83,7 +83,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 		auto gridLig = createGridFromGridFile<real_t>(args.gridLigName[lig]);
 
-		DOFHeader<real_t> hLig = readDOFHeader<real_t>(args.dofName[lig+1]);
+		DOFHeader<real_t> hLig = readDOFHeader<real_t>(args.dofNameLig[lig]);
 		/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
 		if(!hLig.auto_pivot && hLig.pivots.size() > 2) {
 			throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
@@ -91,13 +91,13 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 		if(hLig.auto_pivot) {
 			if (!hLig.pivots.empty()) {
-				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName[lig + 1] + ")" );
+				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofNameLig[lig] + ")" );
 			}
 			ligand->auto_pivotize();
 			hLig.pivots.push_back(ligand->pivot());
 		} else {
 			if (hLig.pivots.size() != 2) {
-				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofName[lig + 1] + ")" );
+				throw std::logic_error("No auto pivot specified, but number of defined pivots is incorrect. (File " + args.dofNameLig[lig] + ")" );
 			}
 			ligand->pivotize(hLig.pivots[0]);
 		}
