@@ -29,14 +29,14 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D_MB_Modes<REAL> const& d
 
 	outStream 	<< setw(w) << 0 << setw(w) << 0 << setw(w) << 0
 				<< setw(w) << 0 << setw(w) << 0 << setw(w) << 0;
-	for(int mode=0;mode<Common_Modes::numModesRec;mode++){
+	for(int mode=0;mode<Common_MB_Modes::numModesRec;mode++){
 		outStream<< setw(w) << dof.modesRec[mode];
 	}
 
-	for (int lig = 0; lig < Common_Modes::numLigands; lig++){
+	for (int lig = 0; lig < Common_MB_Modes::numLigands; lig++){
 		outStream 	<< setw(w) << dof._6D[lig].pos.x << setw(w) << dof._6D[lig].pos.y << setw(w) << dof._6D[lig].pos.z
 					<< setw(w) << dof._6D[lig].ang.x << setw(w) << dof._6D[lig].ang.y << setw(w) << dof._6D[lig].ang.z;
-		for(int mode=0;mode<Common_Modes::numModesLig[lig];mode++){
+		for(int mode=0;mode<Common_MB_Modes::numModesLig[lig];mode++){
 			outStream<< setw(w) << dof.modesLig[lig][mode];
 		}
 	}
@@ -70,15 +70,15 @@ std::ostream& operator<<(std::ostream& s, Result_6D_MB_Modes<REAL> const& enGrad
 
 		s 	<< setw(width) << 0  << setw(width) << 0  << setw(width) << 0
 		    << setw(width) << 0  << setw(width) << 0  << setw(width) << 0;
-		for(int mode=0;mode<Common_Modes::numModesRec;mode++){
+		for(int mode=0;mode<Common_MB_Modes::numModesRec;mode++){
 			s<< setw(width) << enGrad.modesRec[mode];
 		}
 
-		for (int lig = 0; lig < Common_Modes::numLigands; lig++){
+		for (int lig = 0; lig < Common_MB_Modes::numLigands; lig++){
 			s << setw(width) << enGrad._6D[lig].ang.x  << setw(width) << enGrad._6D[lig].ang.y  << setw(width) << enGrad._6D[lig].ang.z
 			  << setw(width) << enGrad._6D[lig].pos.x  << setw(width) << enGrad._6D[lig].pos.y  << setw(width) << enGrad._6D[lig].pos.z;
 
-			for(int mode=0;mode<Common_Modes::numModesLig[lig];mode++){
+			for(int mode=0;mode<Common_MB_Modes::numModesLig[lig];mode++){
 				s<< setw(width) << enGrad.modesLig[lig][mode];
 			}
 		}
