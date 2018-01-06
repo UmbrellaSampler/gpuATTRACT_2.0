@@ -24,7 +24,12 @@
 #include "DOFTransform.h"
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
+
+//only for test purposes
 #include <string>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
 
 namespace as {
 
@@ -62,12 +67,15 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	std::string ligNameMB, ligAlphabetNameMB, ligModesNameMB, gridLigNameMB, dofNameMB;
 	for(int lig = 0; lig < args.numLigands; lig++){
-		ligNameMB = std::replace(args.ligName.begin(), args.ligName.end(), '.', '_');
+		std::string substitute = "_"+std::to_string(lig)+".";
+		ligNameMB = args.ligName;
+		std::replace(ligNameMB.begin(), ligNameMB.end(), '.', 'adsf_');
 		auto ligand = createProteinFromPDB<real_t>(ligNameMB);
 		ligand->setNumModes(args.numModes);
-		Common_Modes::numModesLig[lig] = args.numModes;
+		Common_MB_Modes::numModesLig[lig] = args.numModes;
 
-		ligModesNameMB = std::replace(args.ligModesName.begin(), args.ligModesName.end(), '.', '_'+std::to_string(lig)+'.');
+		ligModesNameMB = args.ligModesName;
+		std::replace(ligModesNameMB.begin(), ligModesNameMB.end(), '.', '_'+std::to_string(lig)+'.');
 		readHMMode<real_t>(ligand, ligModesNameMB);
 
 		ligand->setNumMappedTypes(1);
@@ -75,11 +83,13 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
 		applyMapping(typeMapRec, ligand->numAtoms(), ligand->type(), ligand->mappedType());
 
-		gridLigNameMB = std::replace(args.gridLigName.begin(), args.gridLigName.end(), '.', '_'+std::to_string(lig)+'.');
+		gridLigNameMB = args.gridLigName;
+		std::replace(gridLigNameMB.begin(), gridLigNameMB.end(), '.', '_'+std::to_string(lig)+'.');
 		auto gridLig = createGridFromGridFile<real_t>(gridLigNameMB);
 
 
-		dofNameMB = std::replace(args.dofName.begin(), args.dofName.end(), '.', '_'+std::to_string(lig)+'.');
+		dofNameMB = args.dofName;
+		std::replace(dofNameMB.begin(), dofNameMB.end(), '.', '_'+std::to_string(lig)+'.');
 		DOFHeader<real_t> hLig = readDOFHeader<real_t>(dofNameMB);
 		/* check file. only a receptor-ligand pair (no multi-bodies!) is allowed */
 		if(!hLig.auto_pivot && hLig.pivots.size() > 2) {
@@ -101,7 +111,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		// TODO: transform DOF_6D to input_t
 		//std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
 		std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(dofNameMB);
-		std::vector<std::vector<DOF_6D_MB_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
+		std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
 		if(DOF_molecules.size() != 2) {
 			throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 		}
