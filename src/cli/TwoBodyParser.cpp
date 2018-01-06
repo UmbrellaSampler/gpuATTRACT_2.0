@@ -34,16 +34,18 @@ void TwoBodyParser::addOptions() noexcept {
 			("dofLig3"     			  , po::value<string>()->required()									, "third ligand structure (DOF) file")
 			("receptor-pdb,r"     , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_PDB)	, "pdb-file of receptor")
 			("ligand-pdb,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of ligand")
-			("ligand-pdb2,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "second pdb-file of ligand")
-			("ligand-pdb3,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "third pdb-file of ligand")
+			("ligand-pdb2,l"       , po::value<string>()->default_value()   	, "second pdb-file of ligand")
+			("ligand-pdb3,l"       , po::value<string>()->default_value()   	, "third pdb-file of ligand")
 			("gridrec,gr"             , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "receptor grid file")
 			("gridlig,gl"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "ligand grid file")
-			("gridlig2,gl2"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "second ligand grid file")
-			("gridlig3,gl3"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "third ligand grid file")
+			("gridlig2,gl2"             , po::value<string>()->default_value()	, "second ligand grid file")
+			("gridlig3,gl3"             , po::value<string>()->default_value()	, "third ligand grid file")
 			("par,p"	          , po::value<string>()->default_value(FILE_DEFAULT_PARAMETER)		, "attract forcefield parameter file")
 			("alphabetrec,ar"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
 			("alphabetlig,al"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
 			("modl,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
+			("modl2,ml"	          , po::value<string>()->default_value()  , "second mode file of ligand")
+			("modl3,ml"	          , po::value<string>()->default_value()  , "third mode file of ligand")
 			("modr,mr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor")
 			("numLig,mb"	          , po::value<string>()->default_value(DEFAULT_NUM_LIGANDS)	, "number of Ligands");
 	_optsDesc.add(input);
@@ -121,7 +123,11 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 	if(vm.count("modr"))
 		_args->recModesName = vm["modr"].as<string>();
 	if(vm.count("modl"))
-		_args->ligModesName = vm["modl"].as<string>();
+		_args->ligModesName.push_back(vm["modl"].as<string>());
+	if(vm.count("modl2"))
+		_args->ligModesName.push_back(vm["modl2"].as<string>());
+	if(vm.count("modl3"))
+		_args->ligModesName.push_back(vm["modl3"].as<string>());
 	if(vm.count("numCPUs"))
 		_args->numCPUs = vm["numCPUs"].as<int>();
 	if(vm.count("device"))
