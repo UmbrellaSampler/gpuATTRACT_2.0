@@ -91,7 +91,7 @@ void TwoBodyParser::enforceRules(po::variables_map const& vm) const {
 
 void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 	if(vm.count("dofRec"))
-		_args->dofName.push_back(vm["dofRec"].as<string>());
+		_args->dofName = vm["dofRec"].as<string>();
 	if(vm.count("dofLig"))
 		_args->dofNameLig.push_back(vm["dofLig"].as<string>());
 	if(vm.count("dofLig2"))
