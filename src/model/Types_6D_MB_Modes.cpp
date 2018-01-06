@@ -17,8 +17,8 @@ std::ostream& operator<< (std::ostream& s, Result_6D_MB_Modes<float> const& enGr
 template
 std::ostream& operator<< (std::ostream& s, Result_6D_MB_Modes<double> const& enGrad);
 
-unsigned int Common_Modes::numModesRec = 0;
-unsigned int Common_Modes::numModesLig[LIGANDS_MAX_NUMBER] = {0};
+unsigned int Common_MB_Modes::numModesRec = 0;
+unsigned int Common_MB_Modes::numModesLig[LIGANDS_MAX_NUMBER] = {0};
 
 }  // namespace as
 
