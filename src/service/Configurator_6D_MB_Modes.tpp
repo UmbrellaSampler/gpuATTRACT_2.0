@@ -36,6 +36,7 @@ namespace as {
 template<typename SERVICE>
 void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
+///////////////////////////////////////initialize receptor////////////////////
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
 	receptor->setNumModes(args.numModes);
@@ -66,10 +67,18 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		receptor->pivotize(hRec.pivots[0]);
 	}
 
-	std::string ligNameMB, ligAlphabetNameMB, ligModesNameMB, gridLigNameMB, dofNameMB;
-	for(int lig = 0; lig < args.numLigands; lig++){
-		std::string substitute = "_"+std::to_string(lig)+".";
+	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
+	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
+	receptor->setNumMappedTypes(1);
+	receptor->getOrCreateMappedPtr();
+	applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
+	applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
+	/* apply grid displacement */
+	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
+	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));
 
+//////////////////////////////initialize ligands////////////////////////
+	for(int lig = 0; lig < args.numLigands; lig++){
 		auto ligand = createProteinFromPDB<real_t>(args.ligName[lig]);
 		ligand->setNumModes(args.numModes);
 		Common_MB_Modes::numModesLig[lig] = args.numModes;
@@ -103,7 +112,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		}
 		// TODO: transform DOF_6D to input_t
 		//std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
-		std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(dofNameMB);
+		std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofNameLig[lig]);
 		std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
 		if(DOF_molecules.size() != 2) {
 			throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
@@ -122,21 +131,13 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 		}
 
 		gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
-				this->_ids.ligId[lig] = dataManager->add(ligand);
-				this->_ids.gridIdLig[lig] = dataManager->add(gridLig);
+		this->_ids.ligId[lig] = dataManager->add(ligand);
+		this->_ids.gridIdLig[lig] = dataManager->add(gridLig);
 	}
 
-	//ligAlphabetNameMB = std::replace(args.alphabetLigName.begin(), args.alphabetLigName.end(), '.', '_'+std::to_string(lig)+'.');
-	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
-	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
-	receptor->setNumMappedTypes(1);
-	receptor->getOrCreateMappedPtr();
-	applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
-	applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
-
-
+//////////////////////////////initialize parameters///////////////////////
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
-	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
+
 
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
@@ -151,8 +152,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 
 
-	/* apply grid displacement */
-	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));
+
 
 
 
