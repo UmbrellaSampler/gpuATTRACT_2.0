@@ -22,6 +22,7 @@
 #define SOLVERBASE_H_
 
 #include <boost/coroutine/all.hpp>
+#include <boost/version.hpp>
 #include <Eigen/Core>
 #include <cassert>
 
@@ -29,7 +30,22 @@
 
 namespace as {
 
+
+#if BOOST_VERSION <= 105400
 using coro_t = boost::coroutines::coroutine<void(void)>;
+using pull_type = coro_t;
+using push_type = coro_t::caller_type;
+#elif BOOST_VERSION == 105500
+using coro_t = boost::coroutines::coroutine<void>;
+using pull_type = coro_t::pull_type;
+using push_type = coro_t::push_type;
+#elif BOOST_VERSION >= 105600
+using coro_t = boost::coroutines::asymmetric_coroutine<void>;
+using pull_type = coro_t::pull_type;
+using push_type = coro_t::push_type;
+#endif
+
+//static_assert(false, BOOST_LIB_VERSION );
 
 struct Statistic {
 	virtual Statistic* getCopy() const = 0;
@@ -96,7 +112,7 @@ public:
 
 protected:
 
-	virtual void run(coro_t::caller_type& ca) = 0;
+	virtual void run(push_type& ca) = 0;
 
 	virtual Statistic* internal_getStats() = 0;
 
@@ -104,7 +120,7 @@ protected:
 	Vector state; // dof
 	ObjGrad objective; // energy
 
-	coro_t* coro;
+	pull_type* coro;
 
 	static bool stats;
 
