@@ -21,7 +21,7 @@
 #include "ParamTable.h"
 #include "DeviceParamTable.h"
 #include "macros.h"
-
+#include "Types_6D_Config.h"
 namespace as {
 
 template <typename REAL>
@@ -62,11 +62,11 @@ std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::s
 	REAL* d_yModes = NULL;
 	REAL* d_zModes = NULL;
 	if (numModes != 0) {
-		CUDA_CHECK(cudaMalloc((void**) d_xModes, numAtoms * numModes * sizeof(REAL)));
+		CUDA_CHECK(cudaMalloc((void**) &d_xModes, numAtoms * numModes * sizeof(REAL)));
 		CUDA_CHECK(cudaMemcpy(d_xModes, protein->xModes(), numAtoms * numModes * sizeof(REAL), cudaMemcpyHostToDevice));
-		CUDA_CHECK(cudaMalloc((void**) d_yModes, numAtoms * numModes * sizeof(REAL)));
+		CUDA_CHECK(cudaMalloc((void**) &d_yModes, numAtoms * numModes * sizeof(REAL)));
 		CUDA_CHECK(cudaMemcpy(d_yModes, protein->yModes(), numAtoms * numModes * sizeof(REAL), cudaMemcpyHostToDevice));
-		CUDA_CHECK(cudaMalloc((void**) d_zModes, numAtoms * numModes * sizeof(REAL)));
+		CUDA_CHECK(cudaMalloc((void**) &d_zModes, numAtoms * numModes * sizeof(REAL)));
 		CUDA_CHECK(cudaMemcpy(d_zModes, protein->zModes(), numAtoms * numModes * sizeof(REAL), cudaMemcpyHostToDevice));
 	}
 
@@ -82,6 +82,8 @@ std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::s
 	deviceDesc.xModes = d_xModes;
 	deviceDesc.yModes = d_yModes;
 	deviceDesc.zModes = d_zModes;
+	std::copy(protein->modeForce(), protein->modeForce() + MODES_MAX_NUMBER, deviceDesc.modeForce);
+
 
 	std::shared_ptr<DeviceProtein<REAL>> deviceProtein = std::make_shared<DeviceProtein<REAL>>();
 	deviceProtein->desc = deviceDesc;

@@ -1,19 +1,19 @@
 /*
  * transform_modes.h
  *
- *  Created on: Nov 22, 2017
+ *  Created on: Dec 5, 2017
  *      Author: glenn
  */
 
-#ifndef TRANSFORM_MODES_H_
-#define TRANSFORM_MODES_H_
+#ifndef SRC_MODEL_TRANSFORM_MODES_H_
+#define SRC_MODEL_TRANSFORM_MODES_H_
+
 
 #include "transform.h"
 #include "Types_6D_Modes.h"
 
 
  namespace as{
-
 
 
 
@@ -28,15 +28,15 @@ const DOF_6D_Modes<REAL> invertDOF( DOF_6D_Modes<REAL> ligandDOF)
 {
 	DOF_6D_Modes<REAL> invertedDOF;
 	Vec3<REAL> ang(0.0);
-	invertedDOF._6D.ang=ang;
+	invertedDOF._6D.ang=ligandDOF._6D.ang.inv();
 	invertedDOF._6D.pos=ligandDOF._6D.pos.inv();
 	const RotMat<REAL> rotMat=euler2rotmat(ligandDOF._6D.ang.x, ligandDOF._6D.ang.y, ligandDOF._6D.ang.z).getInv();
 	invertedDOF._6D.pos=rotMat*invertedDOF._6D.pos;
-
 	std::copy( ligandDOF.modesRec, ligandDOF.modesRec+MODES_MAX_NUMBER,
 				invertedDOF.modesRec);
 	std::copy(ligandDOF.modesLig, ligandDOF.modesLig+MODES_MAX_NUMBER,
 			invertedDOF.modesLig);
+
 return invertedDOF;
 }
 
@@ -165,5 +165,59 @@ void rotate_forces(
 	}
 }
 
+
+
+#ifdef CUDA
+
+template<typename REAL>
+void d_DOFPos(
+	unsigned blockSize,
+	unsigned gridSize,
+	const cudaStream_t &stream,
+	REAL const* xRec,
+	REAL const* yRec,
+	REAL const* zRec,
+	REAL const* xLig,
+	REAL const* yLig,
+	REAL const* zLig,
+	REAL const* xModesRec,
+	REAL const* yModesRec,
+	REAL const* zModesRec,
+	REAL const* xModesLig,
+	REAL const* yModesLig,
+	REAL const* zModesLig,
+	DOF_6D_Modes<REAL>* dofs,
+	unsigned numAtomsRec,
+	unsigned numAtomsLig,
+	unsigned numModesRec,
+	unsigned numModesLig,
+	unsigned numDOFsLig,
+	REAL* xRecDefo,
+	REAL* yRecDefo,
+	REAL* zRecDefo,
+	REAL* xRecTrafo,
+	REAL* yRecTrafo,
+	REAL* zRecTrafo,
+	REAL* xLigTrafo,
+	REAL* yLigTrafo,
+	REAL* zLigTrafo);
+
+template<typename REAL>
+void d_rotateForces(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		REAL* xForce,
+		REAL* yForce,
+		REAL* zForce,
+		DOF_6D_Modes<REAL>* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs
+);
+
+#endif
+
+
 }
+
 #endif /* TRANSFORM_MODES_H_ */
