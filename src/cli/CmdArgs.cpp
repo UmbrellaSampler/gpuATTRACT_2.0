@@ -14,15 +14,15 @@ using namespace std;
 namespace as {
 
 std::ostream& operator<<(std::ostream& s, CmdArgs const& args) {
-	s << "dofName     = "  << args.dofName             << endl;
+	s << "dofNames     = "  ; for (auto dofName : args.dofName) s << dofName << " "; s << endl;
 	s << "gridRecName    = "  << args.gridRecName            << endl;
-	s << "gridLigName    = "  << args.gridLigName            << endl;
-	s << "ligName     = "  << args.ligName             << endl;
+	s << "gridLigNames    = "; for (auto gridLigName : args.gridLigName) s << gridLigName << " "; s << endl;
+	s << "ligNames     = "  ; for (auto ligName : args.ligName) s << ligName << " "; s << endl;
 	s << "recName     = "  << args.recName             << endl;
 	s << "paramsName  = "  << args.paramsName          << endl;
 	s << "alphabetRecName = "  << args.alphabetRecName 	   << endl;
 	s << "alphabetLigName = "  << args.alphabetLigName 	   << endl;
-	s << "ligModesName = " <<args.ligModesName		   << endl;
+	s << "ligModesName = "; for (auto ligModesName : args.ligModesName) s << ligModesName << " "; s << endl;
 	s << "recModesName = " <<args.recModesName   	   << endl;
 	s << "numCPUs     = "  << args.numCPUs             << endl;
 	s << "devices     = [ "; for (auto device : args.deviceIds) s << device << " "; s << "]"<< endl;
