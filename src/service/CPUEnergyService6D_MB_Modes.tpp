@@ -97,11 +97,17 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 		const auto gridRec = std::dynamic_pointer_cast<GridUnion<REAL>>(this->_dataMng->get(common->gridIdRec)).get(); // _dataMng->get() returns shared_ptr<DataItem>
 		assert(gridRec != nullptr);
 
-		const auto gridLig = std::dynamic_pointer_cast<GridUnion<REAL>>(this->_dataMng->get(common->gridIdLig)).get(); // _dataMng->get() returns shared_ptr<DataItem>
-		assert(gridLig != nullptr);
+		GridUnion<REAL>* gridLig[LIGANDS_MAX_NUMBER];
+		Protein<REAL>* lig[LIGANDS_MAX_NUMBER];
 
-		const auto lig = std::dynamic_pointer_cast<Protein<REAL>>(this->_dataMng->get(common->ligId)).get();
-		assert(lig != nullptr);
+		for(int i = 0; i < Common_MB_Modes::numLigands; i++){
+				gridLig[i] = std::dynamic_pointer_cast<GridUnion<REAL>>(this->_dataMng->get(common->gridIdLig[i])).get(); // _dataMng->get() returns shared_ptr<DataItem>
+				assert(gridLig[i] != nullptr);
+
+				lig[i] = std::dynamic_pointer_cast<Protein<REAL>>(this->_dataMng->get(common->ligId[i])).get();
+				assert(lig[i] != nullptr);
+
+			}
 
 		const auto rec = std::dynamic_pointer_cast<Protein<REAL>>(this->_dataMng->get(common->recId)).get();
 		assert(rec != nullptr);
@@ -112,14 +118,15 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 		const auto simParams = std::dynamic_pointer_cast<SimParam<REAL>>(this->_dataMng->get(common->paramsId)).get();
 		assert(simParams != nullptr);
 
-		if (rec->numAtoms() > buffers->bufferSizeRec()) {
-			buffers->allocateBufferRec(rec->numAtoms());
-		}
+		for (unsigned int l = 0; l < Common_MB_Modes::numLigands; l++){
+			if (rec->numAtoms() > buffers->bufferSizeRec(l)) {
+				buffers->allocateBufferRec(rec->numAtoms(), Common_MB_Modes::numLigands);
+			}
 
-		if (lig->numAtoms() > buffers->bufferSizeLig()) {
-			buffers->allocateBufferLig(lig->numAtoms());
+			if (lig[l]->numAtoms() > buffers->bufferSizeLig(l)) {
+				buffers->allocateBufferLig(lig[l]->numAtoms(),Common_MB_Modes::numLigands,l);
+			}
 		}
-
 
 //		lig->print(lig->numAtoms());
 //		exit(1);
