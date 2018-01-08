@@ -24,7 +24,7 @@ template<typename SERVICE>
 class Configurator_6D_MB_Modes;
 
 template<typename REAL>
-class GPUEnergyService6D_MB_Modes : public GPUEnergyService<Types_6D_Modes<REAL>> {
+class GPUEnergyService6D_MB_Modes : public GPUEnergyService<Types_6D_MB_Modes<REAL>> {
 public:
 	using typename GPUEnergyService<Types_6D_MB_Modes<REAL>>::service_t;
 
