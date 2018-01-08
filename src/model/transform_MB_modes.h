@@ -16,11 +16,24 @@
  namespace as{
 
 
-/*
- *
- * only applies mode deformation to an array of coordinates. Not used anymore.
- */
+ template<typename REAL>
+ const DOF_6D_MB_Modes<REAL> invertDOF( DOF_6D_MB_Modes<REAL> ligandDOF, const unsigned int numLigands)
+ {
+ 	DOF_6D_MB_Modes<REAL> invertedDOF;
+ 	for (unsigned int lig = 0; lig < numLigands; lig++){
+		Vec3<REAL> ang(0.0);
+		invertedDOF._6D[lig].ang=ligandDOF._6D[lig].ang.inv();
+		invertedDOF._6D[lig].pos=ligandDOF._6D[lig].pos.inv();
+		const RotMat<REAL> rotMat=euler2rotmat(ligandDOF._6D[lig].ang.x, ligandDOF._6D[lig].ang.y, ligandDOF._6D[lig].ang.z).getInv();
+		invertedDOF._6D[lig].pos=rotMat*invertedDOF._6D[lig].pos;
 
+		std::copy(ligandDOF.modesLig[lig], ligandDOF.modesLig[lig]+MODES_MAX_NUMBER,
+			invertedDOF.modesLig[lig]);
+ 	}
+ 	std::copy( ligandDOF.modesRec, ligandDOF.modesRec+MODES_MAX_NUMBER,
+			invertedDOF.modesRec);
+ return invertedDOF;
+ }
 
 
 
