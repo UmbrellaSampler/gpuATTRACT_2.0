@@ -28,7 +28,7 @@
 
 // ToDo: remove
 #include <iostream>
-
+#include "Types_6D_MB_Modes.h"
 #include "CPUEnergyService6D_MB_Modes.h"
 
 namespace as {
@@ -45,27 +45,33 @@ public:
 	/**
 	 * Allocate new Buffers with size. Old buffers are automatically deallocated;
 	 */
-	void allocateBufferLig(size_t size) {
-		h_trafoLig = std::move(WorkerBuffer<REAL>(3,size));
-		h_potLig = std::move(WorkerBuffer<REAL>(4,size));
+	void allocateBufferLig(size_t size, size_t numLigands, size_t ligIdx) {
+		h_defoLig[ligIdx] = std::move(WorkerBuffer<REAL>(3,size));
+		for (unsigned int lig = 0; lig < numLigands; lig++){
+			h_trafoLig[ligIdx * numLigands + lig] = std::move(WorkerBuffer<REAL>(3,size));
+		}
+		h_potLig[ligIdx] = std::move(WorkerBuffer<REAL>(4,size));
 	}
 
-	void allocateBufferRec(size_t size) {
-		h_trafoRec = std::move(WorkerBuffer<REAL>(3,size));
+	void allocateBufferRec(size_t size, size_t numLigands) {
+		for (unsigned int lig = 0; lig < numLigands; lig++){
+			h_trafoRec[lig] = std::move(WorkerBuffer<REAL>(3,size));
+		}
 		h_defoRec = std::move(WorkerBuffer<REAL>(3,size));
 		h_potRec = std::move(WorkerBuffer<REAL>(4,size));
 	}
 
-	size_t bufferSizeRec() {
-		return h_trafoRec.bufferSize();
+	size_t bufferSizeRec(int i) {
+		return h_trafoRec[i].bufferSize();
 	}
 
-	size_t bufferSizeLig() {
-		return h_trafoLig.bufferSize();
+	size_t bufferSizeLig(i) {
+		return h_trafoLig[i].bufferSize();
 	}
 
 	WorkerBuffer<REAL> h_trafoRec;
 	WorkerBuffer<REAL> h_defoRec;
+	WorkerBuffer<REAL> h_defoLig;
 	WorkerBuffer<REAL> h_trafoLig;
 
 	WorkerBuffer<REAL> h_potRec;
