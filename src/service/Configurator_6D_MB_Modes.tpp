@@ -174,7 +174,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	// TODO: ServiceType::GPUEnergyService6DModes is not yet available
 #ifdef CUDA
 	else {
-		serviceType = ServiceType::GPUEnergyService6DModes;
+		serviceType = ServiceType::GPUEnergyService6D_MB_Modes;
 	}
 #endif
 
