@@ -15,7 +15,8 @@ enum class ServiceType {
 	CPUEnergyService6DModes,
 #ifdef CUDA
 	GPUEnergyService6D,
-	GPUEnergyService6DModes
+	GPUEnergyService6DModes,
+	GPUEnergyService6D_MB_Modes
 #endif
 };
 

@@ -32,7 +32,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
-	auto ligand = createProteinFromPDB<real_t>(args.ligName);
+	auto ligand = createProteinFromPDB<real_t>(args.ligName[0]);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
 
@@ -121,7 +121,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	Common_Modes::numModesRec = args.numModes;
 
 	readHMMode<real_t>(receptor, args.recModesName);
-	readHMMode<real_t>(ligand, args.ligModesName);
+	readHMMode<real_t>(ligand, args.ligModesName[0]);
 
 	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
 	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
@@ -130,7 +130,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	applyDefaultMapping(receptor->numAtoms(), receptor->type(), receptor->type());
 	applyMapping(typeMapLig, receptor->numAtoms(), receptor->type(), receptor->mappedType());
 
-	auto gridLig = createGridFromGridFile<real_t>(args.gridLigName);
+	auto gridLig = createGridFromGridFile<real_t>(args.gridLigName[0]);
 	gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
 	this->_ids.gridIdLig = dataManager->add(gridLig);
 
