@@ -353,16 +353,16 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 ////			exit(EXIT_SUCCESS);
 
 
+			for (int ligIdx = 0; ligIdx < Common_MB_Modes::numLigands; ligIdx++){
 
-
-			////Reduce forces on Ligand
-			PotForce_Modes<REAL> redPotForce = reducePotForce<REAL,PotForce_Modes<REAL>>(
-				buffers->h_potLig.getX(),
-				buffers->h_potLig.getY(),
-				buffers->h_potLig.getZ(),
-				buffers->h_potLig.getW(),
-				lig->numAtoms()
-			); // OK
+				////Reduce forces on Ligand
+				PotForce_Modes<REAL> redPotForce = reducePotForce<REAL,PotForce_Modes<REAL>>(
+					buffers->h_potLig[ligIdx].getX(),
+					buffers->h_potLig[ligIdx].getY(),
+					buffers->h_potLig[ligIdx].getZ(),
+					buffers->h_potLig[ligIdx].getW(),
+					lig[ligIdx]->numAtoms()
+				); // OK
 
 //			// Debug
 //			REAL x = redPotForce.pos.x;
@@ -373,21 +373,21 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 
 
 			reduceModeForce(
-				dof._6D.ang,
-				buffers->h_potLig.getX(),
-				buffers->h_potLig.getY(),
-				buffers->h_potLig.getZ(),
-				lig->xModes(),
-				lig->yModes(),
-				lig->zModes(),
-				lig->numAtoms(),
-				lig->numModes(),
+				dof._6D[ligIdx].ang,
+				buffers->h_potLig[ligIdx].getX(),
+				buffers->h_potLig[ligIdx].getY(),
+				buffers->h_potLig[ligIdx].getZ(),
+				lig[ligIdx]->xModes(),
+				lig[ligIdx]->yModes(),
+				lig[ligIdx]->zModes(),
+				lig[ligIdx]->numAtoms(),
+				lig[ligIdx]->numModes(),
 				redPotForce.modesLig
 				);
 
 			correctModeForce(
-				lig-> modeForce(),
-				lig-> numModes(),
+				lig[ligIdx]-> modeForce(),
+				lig[ligIdx]-> numModes(),
 				redPotForce.modesLig
 				);
 
@@ -413,28 +413,29 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 
 
 			//copy reduced forces
-			for( int mode = 0; mode < lig->numModes(); mode++) {
-				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
+			for( int mode = 0; mode < lig[ligIdx]->numModes(); mode++) {
+				enGrad.modesLig[ligIdx][mode]=redPotForce.modesLig[mode];
 			}
 			for( int mode = 0; mode < rec->numModes(); mode++) {
 				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
 			}
-			enGrad._6D.E = redPotForce.E;
-			enGrad._6D.pos = redPotForce.pos;
+			enGrad.E = redPotForce.E;
+			enGrad._6D[ligIdx].pos = redPotForce.pos;
 
-			enGrad._6D.ang = reduceTorque(
-					lig->xPos(),
-					lig->yPos(),
-					lig->zPos(),
-					buffers->h_potLig.getX(),
-					buffers->h_potLig.getY(),
-					buffers->h_potLig.getZ(),
-					lig->numAtoms(),
-					dof._6D.ang
+			enGrad._6D[ligIdx].ang = reduceTorque(
+					lig[ligIdx]->xPos(),
+					lig[ligIdx]->yPos(),
+					lig[ligIdx]->zPos(),
+					buffers->h_potLig[ligIdx].getX(),
+					buffers->h_potLig[ligIdx].getY(),
+					buffers->h_potLig[ligIdx].getZ(),
+					lig[ligIdx]->numAtoms(),
+					dof._6D[ligIdx].ang
 			); // OK
+			//end of iteration over ligIdx
 
 		}
-
+		}
 		item->setProcessed();
 
 		return false;
