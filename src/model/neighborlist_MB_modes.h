@@ -9,7 +9,7 @@
 #define SRC_MODEL_NEIGHBORLIST_MODES_H_
 
 
-#include "neighborlist_modes.h"
+#include "neighborlist.h"
 
 
 namespace as {
