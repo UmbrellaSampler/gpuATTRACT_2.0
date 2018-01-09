@@ -22,7 +22,7 @@ void NLPotForce(
 		SimParam<REAL> const* simParam,
 		ParamTable<REAL> const* table,
 		DOF_6D_MB_Modes<REAL> dof,
-		unsigned ligIdx,
+		unsigned int ligIdx,
 		REAL const* RecPosX,
 		REAL const* RecPosY,
 		REAL const* RecPosZ,
