@@ -30,7 +30,7 @@ void potForce(
 		IntrplGrid<REAL> const* innerGrid,
 		IntrplGrid<REAL> const* outerGrid,
 		const Protein<REAL>* prot,
-		DOF_6D_MB_Modes<T>* dofs,
+		DOF_6D_MB_Modes<REAL> dof,
 		unsigned ligIdx,
 		const REAL* LigPosX,
 		const REAL* LigPosY,

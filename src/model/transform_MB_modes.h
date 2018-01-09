@@ -17,7 +17,7 @@
 
 
  template<typename REAL>
- const DOF_6D_MB_Modes<REAL> invertDOF( DOF_6D_MB_Modes<REAL> ligandDOF, const unsigned int numLigands)
+ const DOF_6D_MB_Modes<REAL> invertDOF( DOF_6D_MB_Modes<REAL> ligandDOF, unsigned int numLigands)
  {
  	DOF_6D_MB_Modes<REAL> invertedDOF;
  	for (unsigned int lig = 0; lig < numLigands; lig++){
@@ -78,14 +78,6 @@
  		Vec3<REAL> const& displacementLig,
  		Vec3<REAL> const& angLig,
  		unsigned const& numAtoms,
- 		unsigned const& numModes,
- 		REAL const* dlig,
- 		REAL const* xModes,
- 		REAL const* yModes,
- 		REAL const* zModes,
- 		REAL* xDeformed,
- 		REAL* yDeformed,
- 		REAL* zDeformed,
  		REAL* xTr,
  		REAL* yTr,
  		REAL* zTr)
