@@ -20,8 +20,8 @@
 
 
 #include "transform_MB_modes.h"
-#include "interpolation.h"
-#include "neighborlist_modes.h"
+#include "interpolation_MB_modes.h"
+#include "neighborlist.h"
 #include "reduction_modes.h"
 #include "matrixFunctions.h"
 #include "RotMat.h"
@@ -65,17 +65,16 @@ public:
 		return h_trafoRec[i].bufferSize();
 	}
 
-	size_t bufferSizeLig(i) {
+	size_t bufferSizeLig(int i) {
 		return h_trafoLig[i].bufferSize();
 	}
 
-	WorkerBuffer<REAL> h_trafoRec;
+	WorkerBuffer<REAL> h_trafoRec[LIGANDS_MAX_NUMBER];
 	WorkerBuffer<REAL> h_defoRec;
-	WorkerBuffer<REAL> h_defoLig;
-	WorkerBuffer<REAL> h_trafoLig;
-
+	WorkerBuffer<REAL> h_defoLig[LIGANDS_MAX_NUMBER];
+	WorkerBuffer<REAL> h_trafoLig[LIGANDS_MAX_NUMBER * LIGANDS_MAX_NUMBER];
 	WorkerBuffer<REAL> h_potRec;
-	WorkerBuffer<REAL> h_potLig;
+	WorkerBuffer<REAL> h_potLig[LIGANDS_MAX_NUMBER];
 };
 
 
@@ -136,15 +135,14 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 			auto& enGrad = results[i];
 
 			//invert the receptor DOF such that it points to the receptor in the ligand system
-			DOF_6D_MB__Modes<REAL> invertedRecDOF=invertDOF(dof);
 
-			//translate the coordinates of the receptor
-			rotate_translate_deform(
+			DOF_6D_MB_Modes<REAL> invertedRecDOF = invertDOF(dof, Common_MB_Modes::numLigands);
+
+			///deform receptor only once for all configurations
+			deform(
 				rec->xPos(),
 				rec->yPos(),
 				rec->zPos(),
-				invertedRecDOF._6D.pos,
-				invertedRecDOF._6D.ang,
 				rec->numAtoms(),
 				rec->numModes(),
 				invertedRecDOF.modesRec,
@@ -153,29 +151,151 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 				rec->zModes(),
 				buffers->h_defoRec.getX(),
 				buffers->h_defoRec.getY(),
-				buffers->h_defoRec.getZ(),
-				buffers->h_trafoRec.getX(),//output
-				buffers->h_trafoRec.getY(),
-				buffers->h_trafoRec.getZ()
-			); // OK
+				buffers->h_defoRec.getZ()
+				);
 
-			//translate the coordinates of the Ligand
+
+
+			for(unsigned int ligIdx = 0; ligIdx < Common_MB_Modes::numLigands; ligIdx++){
+			//translate the receptor for each ligand
 			rotate_translate(
-				lig->xPos(),
-				lig->yPos(),
-				lig->zPos(),
-				dof._6D.pos,
-				dof._6D.ang,
-				lig->numAtoms(),
-				lig->numModes(),
-				dof.modesLig,
-				lig->xModes(),
-				lig->yModes(),
-				lig->zModes(),
-				buffers->h_trafoLig.getX(),//output
-				buffers->h_trafoLig.getY(),
-				buffers->h_trafoLig.getZ()
-			); // OK
+					buffers->h_defoRec.getX(),
+					buffers->h_defoRec.getY(),
+					buffers->h_defoRec.getZ(),
+					invertedRecDOF._6D[ligIdx].pos,
+					invertedRecDOF._6D[ligIdx].ang,
+					Vec3<REAL> (0.0,0.0,0.0),
+					Vec3<REAL> (0.0,0.0,0.0),
+					rec->numAtoms(),
+					buffers->h_trafoRec[ligIdx].getX(),//output
+					buffers->h_trafoRec[ligIdx].getY(),
+					buffers->h_trafoRec[ligIdx].getZ()
+					);
+
+			//deform each ligand
+				deform(
+					lig[ligIdx]->xPos(),
+					lig[ligIdx]->yPos(),
+					lig[ligIdx]->zPos(),
+					lig[ligIdx]->numAtoms(),
+					lig[ligIdx]->numModes(),
+					dof.modesLig[ligIdx],
+					lig[ligIdx]->xModes(),
+					lig[ligIdx]->yModes(),
+					lig[ligIdx]->zModes(),
+					buffers->h_defoLig[ligIdx].getX(),
+					buffers->h_defoLig[ligIdx].getY(),
+					buffers->h_defoLig[ligIdx].getZ()
+					);
+				//rotate all ligand with index ligIdx into system of index l. If l == ligIdx rotate ligand of index ligIdx in the system of the receptor
+				for(unsigned int l = 0; l < Common_MB_Modes::numLigands; l++){
+					if( l != ligIdx){
+						rotate_translate(
+							buffers->h_defoLig[ligIdx].getX(),
+							buffers->h_defoLig[ligIdx].getY(),
+							buffers->h_defoLig[ligIdx].getZ(),
+							dof._6D[l].pos,
+							dof._6D[l].ang,
+							dof._6D[ligIdx].pos,
+							dof._6D[ligIdx].ang,
+							lig[ligIdx]->numAtoms(),
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getX(),//output
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getY(),
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getZ()
+							);
+					}
+					else if(l == ligIdx){
+						rotate_translate(
+							buffers->h_defoLig[ligIdx].getX(),
+							buffers->h_defoLig[ligIdx].getY(),
+							buffers->h_defoLig[ligIdx].getZ(),
+							Vec3<REAL> (0.0,0.0,0.0),
+							Vec3<REAL> (0.0,0.0,0.0),
+							dof._6D[ligIdx].pos,
+							dof._6D[ligIdx].ang,
+							lig[ligIdx]->numAtoms(),
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getX(),//output
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getY(),
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getZ()
+							);
+					}
+				}
+
+			}//iteration over ligIdx for transformation
+
+			for(unsigned int ligIdx = 0; ligIdx < Common_MB_Modes::numLigands; ligIdx++){
+
+			// calculate the forces acting on the receptor via the ligand grid in the ligand system and rotate it back into the receptor frame with dof[ligIdx]
+			potForce(
+				gridLig[ligIdx]->inner.get(),
+				gridLig[ligIdx]->outer.get(),
+				rec,
+				dof,
+				ligIdx,
+				buffers->h_trafoRec[ligIdx].getX(),
+				buffers->h_trafoRec[ligIdx].getY(),
+				buffers->h_trafoRec[ligIdx].getZ(),
+				buffers->h_potRec.getX(), // output
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				buffers->h_potRec.getW()
+			);
+
+				for(unsigned int l = 0; l < Common_MB_Modes::numLigands; l++){
+					if( l != ligIdx){
+					potForce(
+						gridLig[l]->inner.get(),
+						gridLig[l]->outer.get(),
+						lig[ligIdx],
+						dof,
+						l,
+						buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getX(),
+						buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getY(),
+						buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getZ(),
+						buffers->h_potLig[ligIdx].getX(), // output
+						buffers->h_potLig[ligIdx].getY(),
+						buffers->h_potLig[ligIdx].getZ(),
+						buffers->h_potLig[ligIdx].getW()
+					); // OK
+
+					NLPotForce(
+						gridLig[l]->NL.get(),
+						rec,
+						lig[ligIdx],
+						simParams,
+						table,
+						buffers->h_defoLig[l].getX(),
+						buffers->h_defoLig[l].getY(),
+						buffers->h_defoLig[l].getZ(),
+						buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getX(),
+						buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getY(),
+						buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getZ(),
+						buffers->h_potLig[ligIdx].getX(), // output
+						buffers->h_potLig[ligIdx].getY(),
+						buffers->h_potLig[ligIdx].getZ(),
+						buffers->h_potLig[ligIdx].getW()
+					); // OK
+
+					}
+					else if(l == ligIdx){
+						//calculate forces of the receptor acting on the ligand with index ligIdx
+						potForce(
+							gridRec->inner.get(),
+							gridRec->outer.get(),
+							lig[ligIdx],
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getX(),
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getY(),
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getZ(),
+							buffers->h_potLig.getX(), // output
+							buffers->h_potLig.getY(),
+							buffers->h_potLig.getZ(),
+							buffers->h_potLig.getW()
+						); // OK
+					}
+				}//iteration over l
+			}//iteration over ligIdx
+
+
 
 			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
@@ -184,27 +304,9 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 //			}
 //			exit(EXIT_SUCCESS);
 
-			// calculate the forces acting on the receptor via the ligand grid in the ligand system
-			potForce(
-				gridLig->inner.get(),
-				gridLig->outer.get(),
-				rec,
-				buffers->h_trafoRec.getX(),
-				buffers->h_trafoRec.getY(),
-				buffers->h_trafoRec.getZ(),
-				buffers->h_potRec.getX(), // output
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ(),
-				buffers->h_potRec.getW()
-			);
 
-			//rotate forces back into the receptor frame
-			rotate_forces(invertedRecDOF._6D.ang.inv(),
-				rec-> numAtoms(),
-				buffers->h_potRec.getX(),
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ()
-			);
+
+
 
 			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
 			potForce(
