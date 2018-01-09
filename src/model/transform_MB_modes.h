@@ -36,6 +36,81 @@
  }
 
 
+ template<typename REAL>
+  void deform(
+  		REAL const* x,
+  		REAL const* y,
+  		REAL const* z,
+  		unsigned const& numAtoms,
+  		unsigned const& numModes,
+  		REAL const* dlig,
+  		REAL const* xModes,
+  		REAL const* yModes,
+  		REAL const* zModes,
+  		REAL* xDeformed,
+  		REAL* yDeformed,
+  		REAL* zDeformed
+  		)
+ {
+	for (unsigned i = 0; i < numAtoms; ++i) {
+		Vec3<REAL> posAtom(x[i], y[i], z[i]);
+		for(int mode=0;mode<numModes;mode++){
+			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
+			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
+			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];
+		}
+		xDeformed[i]=posAtom.x;
+		yDeformed[i]=posAtom.y;
+		zDeformed[i]=posAtom.z;
+	}
+
+
+
+
+  }
+ template<typename REAL>
+ void rotate_translate(
+ 		REAL const* x,
+ 		REAL const* y,
+ 		REAL const* z,
+ 		Vec3<REAL> const& displacementRec,
+		Vec3<REAL> const& angRec,
+ 		Vec3<REAL> const& displacementLig,
+ 		Vec3<REAL> const& angLig,
+ 		unsigned const& numAtoms,
+ 		unsigned const& numModes,
+ 		REAL const* dlig,
+ 		REAL const* xModes,
+ 		REAL const* yModes,
+ 		REAL const* zModes,
+ 		REAL* xDeformed,
+ 		REAL* yDeformed,
+ 		REAL* zDeformed,
+ 		REAL* xTr,
+ 		REAL* yTr,
+ 		REAL* zTr)
+ {
+ 	for (unsigned i = 0; i < numAtoms; ++i) {
+		Vec3<REAL> posAtom(x[i], y[i], z[i]);
+
+		const RotMat<REAL> rotMat = euler2rotmat(angLig.x, angLig.y, angLig.z);
+		const RotMat<REAL> rotMatInv = euler2rotmat(angRec.x, angRec.y, angRec.z).getInv();
+		//get the relative positon of ligand[ligIdx] to ligang[lig]
+		Vec3<REAL> tRel =  displacementLig - displacementRec;
+		//rotate tRel into the system of ligand[lig]
+		tRel = rotMatInv * tRel;
+		//rotate each position of ligand[ligIdx] into the system of ligand[lig] and than rotate by the angle of ligand[ligIdx]
+		posAtom = rotMatInv * posAtom;
+		posAtom = rotMat *  posAtom;
+		// add the relative translation with is now in the coordinate system of ligand[lig]
+		posAtom += tRel;
+
+		xTr[i] = posAtom.x;
+		yTr[i] = posAtom.y;
+		zTr[i] = posAtom.z;
+ 	}
+ }
+
 
 
 #ifdef CUDA
