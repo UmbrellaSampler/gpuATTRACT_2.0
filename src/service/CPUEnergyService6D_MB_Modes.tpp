@@ -21,7 +21,7 @@
 
 #include "transform_MB_modes.h"
 #include "interpolation_MB_modes.h"
-#include "neighborlist.h"
+#include "neighborlist_MB_modes.h"
 #include "reduction_modes.h"
 #include "matrixFunctions.h"
 #include "RotMat.h"
@@ -34,7 +34,7 @@
 namespace as {
 
 template<typename REAL>
-CPUEnergyService6D_MB_Modes<REAL>::CPUEnergyService6DModes(std::shared_ptr<DataManager> dataMng) :
+CPUEnergyService6D_MB_Modes<REAL>::CPUEnergyService6D_MB_Modes(std::shared_ptr<DataManager> dataMng) :
 	CPUEnergyService<Types_6D_MB_Modes<REAL>>(dataMng)
 {}
 
@@ -258,23 +258,26 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 						buffers->h_potLig[ligIdx].getW()
 					); // OK
 
-					NLPotForce(
-						gridLig[l]->NL.get(),
-						rec,
-						lig[ligIdx],
-						simParams,
-						table,
-						buffers->h_defoLig[l].getX(),
-						buffers->h_defoLig[l].getY(),
-						buffers->h_defoLig[l].getZ(),
-						buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getX(),
-						buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getY(),
-						buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getZ(),
-						buffers->h_potLig[ligIdx].getX(), // output
-						buffers->h_potLig[ligIdx].getY(),
-						buffers->h_potLig[ligIdx].getZ(),
-						buffers->h_potLig[ligIdx].getW()
-					); // OK
+					 NLPotForce(
+							gridLig[l]->NL.get(),
+							lig[l], //TODO: use receptor positions instead of receptor
+							lig[ligIdx],
+							simParams,
+							table,
+							dof,
+							l,
+							buffers->h_defoLig[l].getX(),
+							buffers->h_defoLig[l].getY(),
+							buffers->h_defoLig[l].getZ(),
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getX(),
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getY(),
+							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getZ(),
+							buffers->h_potLig[ligIdx].getX(), // output
+							buffers->h_potLig[ligIdx].getY(),
+							buffers->h_potLig[ligIdx].getZ(),
+							buffers->h_potLig[ligIdx].getW()
+							);
+
 
 					}
 					else if(l == ligIdx){
@@ -286,11 +289,32 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getX(),
 							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getY(),
 							buffers->h_trafoLig[ligIdx * Common_MB_Modes::numLigands + l].getZ(),
-							buffers->h_potLig.getX(), // output
-							buffers->h_potLig.getY(),
-							buffers->h_potLig.getZ(),
-							buffers->h_potLig.getW()
+							buffers->h_potLig[ligIdx].getX(), // output
+							buffers->h_potLig[ligIdx].getY(),
+							buffers->h_potLig[ligIdx].getZ(),
+							buffers->h_potLig[ligIdx].getW()
 						); // OK
+
+						NLPotForce(
+							gridLig[l]->NL.get(),
+							lig[l], //TODO: use receptor positions instead of receptor
+							rec,
+							simParams,
+							table,
+							dof,
+							l,
+							buffers->h_defoLig[l].getX(),
+							buffers->h_defoLig[l].getY(),
+							buffers->h_defoLig[l].getZ(),
+							buffers->h_trafoRec[ligIdx * Common_MB_Modes::numLigands + l].getX(),
+							buffers->h_trafoRec[ligIdx * Common_MB_Modes::numLigands + l].getY(),
+							buffers->h_trafoRec[ligIdx * Common_MB_Modes::numLigands + l].getZ(),
+							buffers->h_potLig[ligIdx].getX(), // output
+							buffers->h_potLig[ligIdx].getY(),
+							buffers->h_potLig[ligIdx].getZ(),
+							buffers->h_potLig[ligIdx].getW()
+							);
+
 					}
 				}//iteration over l
 			}//iteration over ligIdx
@@ -309,18 +333,7 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 
 
 			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
-			potForce(
-				gridRec->inner.get(),
-				gridRec->outer.get(),
-				lig,
-				buffers->h_trafoLig.getX(),
-				buffers->h_trafoLig.getY(),
-				buffers->h_trafoLig.getZ(),
-				buffers->h_potLig.getX(), // output
-				buffers->h_potLig.getY(),
-				buffers->h_potLig.getZ(),
-				buffers->h_potLig.getW()
-			); // OK
+
 
 //			exit(EXIT_SUCCESS);
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
@@ -330,26 +343,7 @@ auto CPUEnergyService6D_MB_Modes<REAL>::createItemProcessor() -> itemProcessor_t
 //			exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor and the ligand in the receptor system via the neighborlist
-			NLPotForce(
-				gridRec->NL.get(),
-				rec,
-				lig,
-				simParams,
-				table,
-				buffers->h_defoRec.getX(),
-				buffers->h_defoRec.getY(),
-				buffers->h_defoRec.getZ(),
-				buffers->h_trafoLig.getX(),
-				buffers->h_trafoLig.getY(),
-				buffers->h_trafoLig.getZ(),
-				buffers->h_potLig.getX(), // output
-				buffers->h_potLig.getY(),
-				buffers->h_potLig.getZ(),
-				buffers->h_potLig.getW(),
-				buffers->h_potRec.getX(), // output
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ()
-			); // OK
+
 
 ////			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
