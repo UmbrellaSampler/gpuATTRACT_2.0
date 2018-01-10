@@ -10,6 +10,7 @@
 
 
 #include "neighborlist.h"
+#include "Types_6D_Modes.h"
 
 
 namespace as {
