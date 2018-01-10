@@ -16,6 +16,10 @@
 #include "trilinIntrpl.h"
 #include <cmath>
 #include "interpolation.h"
+#include "Vec3.h"
+#include "RotMat.h"
+#include "matrixFunctions.h"
+
 #ifdef CUDA
 #include "DeviceIntrplGrid.h"
 #include "DeviceProtein.h"
@@ -31,7 +35,7 @@ void potForce(
 		IntrplGrid<REAL> const* outerGrid,
 		const Protein<REAL>* prot,
 		DOF_6D_MB_Modes<REAL> dof,
-		unsigned ligIdx,
+		unsigned int & ligIdx,
 		const REAL* LigPosX,
 		const REAL* LigPosY,
 		const REAL* LigPosZ,
