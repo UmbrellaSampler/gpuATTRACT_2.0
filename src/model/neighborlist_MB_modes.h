@@ -9,8 +9,12 @@
 #define SRC_MODEL_NEIGHBORLIST_MODES_H_
 
 
-#include "neighborlist_modes.h"
+#include "neighborlist.h"
 
+#include "Types_6D_MB_Modes.h"
+#include "Vec3.h"
+#include "RotMat.h"
+#include "matrixFunctions.h"
 
 namespace as {
 

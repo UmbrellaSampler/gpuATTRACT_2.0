@@ -1,11 +1,11 @@
 /*
- * neighborlist.cu
+ * neighborlist_MB_modes.cu
  *
  *  Created on: Sep 4, 2016
  *      Author: uwe
  */
 
-#include "neighborlist.h"
+#include "neighborlist_MB_modes.h"
 
 #include "nativeTypesWrapper.h"
 #include "DeviceNLGrid.h"
@@ -14,6 +14,7 @@
 #include "SimParam.h"
 #include "forcefield.h"
 #include "macros.h"
+
 
 namespace as {
 /*
@@ -51,7 +52,7 @@ __global__ void d_NLPotForce_rotate(
 
 		unsigned int DOFidx = i / LigNumEl;
 		auto dof = dofs[DOFidx];
-		const RotMat<REAL> rotMat = euler2rotmat(dof._6D[ligidx].ang.x, dof._6D[ligidx].ang.y, dof._6D[ligidx].ang.z);
+		const RotMat<REAL> rotMat = euler2rotmat(dof._6D[ligIdx].ang.x, dof._6D[ligIdx].ang.y, dof._6D[ligIdx].ang.z);
 
 		const unsigned LigAttrIdx = i % LigNumEl;
 
@@ -215,7 +216,7 @@ void d_NLPotForce(
 		REAL* outLigand_E)
 {
 	cudaVerifyKernel((
-			d_NLPotForce<<<gridSize, blockSize, 0, stream>>> (
+			d_NLPotForce_rotate<<<gridSize, blockSize, 0, stream>>> (
 				grid,
 				rec,
 				lig,
