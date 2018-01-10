@@ -28,7 +28,7 @@
 
 #include "transform_modes.h"
 #include "interpolation.h"
-#include "neighborlist.h"
+#include "neighborlist_modes.h"
 #include "reduction_modes.h"
 #include <algorithm>
 #include "macros.h"
@@ -125,6 +125,7 @@ public:
 		for (int i = 0; i < 2; ++i) {
 			d_potLig[i] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(4,atomBufferSize));
 		}
+		d_defoLig = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSize));
 		d_trafoLig = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSize));
 	}
 
@@ -364,17 +365,7 @@ public:
 				d_potRec[pipeIdx[1]].getZ(),
 				d_potRec[pipeIdx[1]].getW()); // OK
 
-			d_rotateForces(
-				BLSZ_INTRPL,
-				gridSizeRec,
-				streams[2],
-				d_potRec[pipeIdx[1]].getX(),
-				d_potRec[pipeIdx[1]].getY(),
-				d_potRec[pipeIdx[1]].getZ(),
-				d_dof[pipeIdx[1]].get(0),
-				stageResc.rec->numAtoms,
-				it->size()
-				);
+
 
 			// Debug
 //			cudaDeviceSynchronize();
@@ -405,6 +396,9 @@ public:
 				*stageResc.table,
 				*stageResc.simParam,
 				it->size(),
+				d_defoRec.getX(),
+				d_defoRec.getY(),
+				d_defoRec.getZ(),
 				d_trafoLig.getX(),
 				d_trafoLig.getY(),
 				d_trafoLig.getZ(),
@@ -424,6 +418,9 @@ public:
 				*stageResc.table,
 				*stageResc.simParam,
 				it->size(),
+				d_defoLig.getX(),
+				d_defoLig.getY(),
+				d_defoLig.getZ(),
 				d_trafoRec.getX(),
 				d_trafoRec.getY(),
 				d_trafoRec.getZ(),
@@ -433,6 +430,17 @@ public:
 				d_potRec[pipeIdx[1]].getW()
 				); // OK
 
+			d_rotateForces(
+				BLSZ_INTRPL,
+				gridSizeRec,
+				streams[2],
+				d_potRec[pipeIdx[1]].getX(),
+				d_potRec[pipeIdx[1]].getY(),
+				d_potRec[pipeIdx[1]].getZ(),
+				d_dof[pipeIdx[1]].get(0),
+				stageResc.rec->numAtoms,
+				it->size()
+				);
 			// Debug
 //			cudaDeviceSynchronize();
 //			size_t bufferSize = d_potLig[pipeIdx[1]].bufferSize();
@@ -581,6 +589,7 @@ public:
 	WorkerBuffer<dof_t, DeviceAllocator<dof_t>> d_dof[3];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoRec;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoRec;
+	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoLig;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoLig;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_potRec[2];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_potLig[2];
