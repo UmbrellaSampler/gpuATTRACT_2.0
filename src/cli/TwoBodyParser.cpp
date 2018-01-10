@@ -29,9 +29,9 @@ void TwoBodyParser::addOptions() noexcept {
 	po::options_description input("input files");
 	input.add_options()
 			("dofRec"     			  , po::value<string>()->required()									, "receptor structure (DOF) file")
-			("dofLig"     			  , po::value<string>()->required()									, "ligand structure (DOF) file")
-			("dofLig2"     			  , po::value<string>()->required()									, "second ligand structure (DOF) file")
-			("dofLig3"     			  , po::value<string>()->required()									, "third ligand structure (DOF) file")
+			("dofLig"     			  , po::value<string>()->default_value()								, "ligand structure (DOF) file")
+			("dofLig2"     			  , po::value<string>()->default_value()								, "second ligand structure (DOF) file")
+			("dofLig3"     			  , po::value<string>()->default_value()									, "third ligand structure (DOF) file")
 			("receptor-pdb,r"     , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_PDB)	, "pdb-file of receptor")
 			("ligand-pdb,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of ligand")
 			("ligand-pdb2,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "second pdb-file of ligand")
