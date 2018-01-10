@@ -13,7 +13,7 @@
 #include "Configurator_6D.h"
 #include "Request.h"
 #include "Server.h"
-
+#include "Types_6D_MB_Modes.h"
 namespace as {
 
 template<typename GenericTypes>
@@ -43,7 +43,7 @@ void scATTRACT<GenericTypes>::run() {
 	server->wait(request, results.data());
 
 	for (result_t const res : results) {
-		std::cout << res << std::endl;
+	//	std::cout << res << std::endl;
 	}
 
 }
