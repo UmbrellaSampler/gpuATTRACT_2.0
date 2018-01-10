@@ -29,8 +29,10 @@ constexpr auto FILE_DEFAULT_LIGAND_GRID = "ligandgrid.grid";
 constexpr auto FILE_DEFAULT_PARAMETER = "attract.par";
 constexpr auto FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR = "receptorgrid.alphabet";
 constexpr auto FILE_DEFAULT_GRID_ALPAHBET_LIGAND = "ligandgrid.alphabet";
+constexpr auto FILE_DEFAULT_DOF_LIGAND_FILE = "systemsearch.dat";
 constexpr auto DEFAULT_MODE_RECEPTOR_FILE = "modesReceptor.dat";
 constexpr auto DEFAULT_MODE_LIGAND_FILE = "modesLigand.dat";
+
 
 /* Generic */
 constexpr auto GENERIC_DEFAULT_PRECISION = "single";
