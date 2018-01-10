@@ -11,9 +11,7 @@
 #include "DeviceIntrplGrid.h"
 #include "DeviceProtein.h"
 #include "macros.h"
-#include "Vec3.h"
-#include "RotMat.h"
-#include "matrixFunctions.h"
+
 namespace as {
 
 template<typename REAL>
