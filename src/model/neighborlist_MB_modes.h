@@ -11,6 +11,10 @@
 
 #include "neighborlist.h"
 
+#include "Types_6D_MB_Modes.h"
+#include "Vec3.h"
+#include "RotMat.h"
+#include "matrixFunctions.h"
 
 namespace as {
 
