@@ -307,6 +307,9 @@ public:
 				d_trafoRec.getX(),
 				d_trafoRec.getY(),
 				d_trafoRec.getZ(),
+				d_defoLig.getX(),
+				d_defoLig.getY(),
+				d_defoLig.getZ(),
 				d_trafoLig.getX(),
 				d_trafoLig.getY(),
 				d_trafoLig.getZ()
