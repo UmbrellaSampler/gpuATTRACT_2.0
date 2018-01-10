@@ -16,9 +16,11 @@
 #include "trilinIntrpl.h"
 #include <cmath>
 #include "interpolation.h"
+
 #include "Vec3.h"
 #include "RotMat.h"
 #include "matrixFunctions.h"
+
 
 #ifdef CUDA
 #include "DeviceIntrplGrid.h"
@@ -27,6 +29,7 @@
 #endif
 
 namespace as {
+
 
 
 template<typename REAL>
@@ -83,6 +86,7 @@ void potForce(
 
 	return;
 }
+
 
 
 

@@ -102,6 +102,7 @@
 		zTr[i] = posAtom.z;
  	}
  }
+>>>>>>> AS35_mb_scoring_func
 
 
 
