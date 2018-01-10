@@ -142,8 +142,8 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->epsilon = vm["epsilon"].as<double>();
 	if(vm.count("numModes"))
 		_args->numModes = vm["numModes"].as<int>();
-	if(vm.count("numLigands"))
-		_args->numLigands = vm["numLigands"].as<int>();
+	if(vm.count("numLig"))
+		_args->numLigands = vm["numLig"].as<int>();
 
 }
 
