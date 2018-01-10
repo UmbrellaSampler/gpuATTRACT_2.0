@@ -14,6 +14,7 @@
 #include "SimParam.h"
 #include "forcefield.h"
 #include "macros.h"
+#include "Types_6D_Modes.h"
 
 namespace as {
 
