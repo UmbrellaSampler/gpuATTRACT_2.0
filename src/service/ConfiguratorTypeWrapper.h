@@ -12,8 +12,10 @@
 
 #include "Configurator_6D.h"
 #include "Configurator_6D_Modes.h"
+#include "Configurator_6D_MB_Modes.h"
 #include "Types_6D.h"
 #include "Types_6D_Modes.h"
+#include "Types_6D_MB_Modes.h"
 
 namespace as {
 
@@ -28,7 +30,13 @@ struct ConfiguratorTypeWrapper {
 			Configurator_6D<double>,
 			typename std::conditional<std::is_same<GenericTypes, Types_6D_Modes<float>>::value,
 			Configurator_6D_Modes<float>,
-			Configurator_6D_Modes<double>>
+			typename std::conditional<std::is_same<GenericTypes, Types_6D_Modes<double>>::value,
+			Configurator_6D_Modes<double>,
+			typename std::conditional<std::is_same<GenericTypes, Types_6D_MB_Modes<float>>::value,
+			Configurator_6D_MB_Modes<float>,
+			Configurator_6D_MB_Modes<double>>
+			::type>
+			::type>
 			::type>
 			::type>
 			::type;

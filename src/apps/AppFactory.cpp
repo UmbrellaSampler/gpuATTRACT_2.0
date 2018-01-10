@@ -20,18 +20,41 @@ std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
 
 	std::unique_ptr<App> app;
 	const bool useModes = args.numModes > 0;
+	const bool useMB = args.numLigands > 1;
 	if (args.precision == "single") {
-		if (useModes) {
-			app = create<Types_6D_Modes<float>>(args.app);
-		} else {
-			app = create<Types_6D<float>>(args.app);
+		if (useMB) {
+			if (useModes) {
+				app = create<Types_6D_MB_Modes<float>>(args.app);
+			} else {
+				//ToDo integrate not Modetype for MB
+				app = create<Types_6D<float>>(args.app);
+			}
+		}
+		else{
+			if (useModes) {
+				app = create<Types_6D_Modes<float>>(args.app);
+			} else {
+				//ToDo integrate not Modetype for MB
+				app = create<Types_6D<float>>(args.app);
+			}
 		}
 	} else if (args.precision == "double") {
-		if (useModes) {
-			app = create<Types_6D_Modes<double>>(args.app);
 
-		} else {
-			app = create<Types_6D<double>>(args.app);
+		if (useMB) {
+			if (useModes) {
+				app = create<Types_6D_MB_Modes<double>>(args.app);
+			} else {
+				//ToDo integrate not Modetype for MB
+				app = create<Types_6D<double>>(args.app);
+			}
+		}
+		else{
+			if (useModes) {
+				app = create<Types_6D_Modes<double>>(args.app);
+			} else {
+				//ToDo integrate not Modetype for MB
+				app = create<Types_6D<double>>(args.app);
+			}
 		}
 	} else {
 		throw std::invalid_argument("unknown precision specification: " + args.precision);

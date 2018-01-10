@@ -21,5 +21,11 @@ class scATTRACT<Types_6D_Modes<float>>;
 template
 class scATTRACT<Types_6D_Modes<double>>;
 
+template
+class scATTRACT<Types_6D_MB_Modes<float>>;
+
+template
+class scATTRACT<Types_6D_MB_Modes<double>>;
+
 }  // namespace as
 
