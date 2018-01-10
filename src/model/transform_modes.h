@@ -198,6 +198,9 @@ void d_DOFPos(
 	REAL* xRecTrafo,
 	REAL* yRecTrafo,
 	REAL* zRecTrafo,
+	REAL* xLigDefo,
+	REAL* yLigDefo,
+	REAL* zLigDefo,
 	REAL* xLigTrafo,
 	REAL* yLigTrafo,
 	REAL* zLigTrafo);
