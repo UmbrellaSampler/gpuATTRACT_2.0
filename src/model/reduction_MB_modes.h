@@ -15,12 +15,6 @@ namespace as {
 
 
 
-
-
-
-
-
-
 #ifdef CUDA
 
 template <class T>

@@ -16,78 +16,35 @@ template<typename REAL>
 __global__ void d_DOFPos(
 		unsigned numLigands,
 		unsigned ligIdx,
-		REAL const* xRec,
-		REAL const* yRec,
-		REAL const* zRec,
 		REAL const* xLig,
 		REAL const* yLig,
 		REAL const* zLig,
-		REAL const* xModesRec,
-		REAL const* yModesRec,
-		REAL const* zModesRec,
 		REAL const* xModesLig,
 		REAL const* yModesLig,
 		REAL const* zModesLig,
 		DOF_6D_MB_Modes<REAL>* dofs,
-		unsigned numAtomsRec,
 		unsigned numAtomsLig,
-		unsigned numModesRec,
 		unsigned numModesLig,
 		unsigned numDOFs,
-		REAL* xRecDefo,
-		REAL* yRecDefo,
-		REAL* zRecDefo,
-		REAL* xRecTrafo,
-		REAL* yRecTrafo,
-		REAL* zRecTrafo,
 		REAL* xLigDefo,
 		REAL* yLigDefo,
 		REAL* zLigDefo,
-		REAL** xLigTrafo,
-		REAL** yLigTrafo,
-		REAL** zLigTrafo
+		REAL* xLigTrafo,
+		REAL* yLigTrafo,
+		REAL* zLigTrafo
 		)
 {
 	/* calculate element index that is to be prcessed */
 	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
-	const unsigned int maxNumAtoms = max(numAtomsRec, numAtomsLig);
 
+	/* load DOF from global memory */
+	unsigned DOFidx = idx / numAtomsLig;
+	auto dof = dofs[DOFidx];
+	unsigned atomIdx = idx % numAtomsLig;
 
-	if (idx < maxNumAtoms*numDOFs) {
-		/* load DOF from global memory */
-		unsigned DOFidx = idx / maxNumAtoms;
-		auto dof = dofs[DOFidx];
-		unsigned atomIdx = idx % maxNumAtoms;
-
-		const RotMat<REAL> rotMat = euler2rotmat(dof._6D[ligIdx].ang.x, dof._6D[ligIdx].ang.y, dof._6D[ligIdx].ang.z);
-
-		if (atomIdx < numAtomsRec ){
-			int bufIdx = numAtomsRec * DOFidx + atomIdx;
-			Vec3<REAL> posAtomRec(xRec[atomIdx], yRec[atomIdx], zRec[atomIdx]);
-
-			for(int mode=0; mode < numModesRec; mode++){
-				posAtomRec.x += dof.modesRec[mode] * xModesRec[atomIdx*numModesRec+mode];
-				posAtomRec.y += dof.modesRec[mode] * yModesRec[atomIdx*numModesRec+mode];
-				posAtomRec.z += dof.modesRec[mode] * zModesRec[atomIdx*numModesRec+mode];
-			}
-
-			xRecDefo[bufIdx] = posAtomRec.x;
-			yRecDefo[bufIdx] = posAtomRec.y;
-			zRecDefo[bufIdx] = posAtomRec.z;
-
-			const RotMat<REAL> rotMatInv = rotMat.getInv();
-			Vec3<REAL> posInv = rotMatInv * dof._6D[ligIdx].pos.inv();
-			posAtomRec = rotMatInv*posAtomRec;
-			posAtomRec += posInv;
-
-
-			xRecTrafo[bufIdx] = posAtomRec.x;
-			yRecTrafo[bufIdx] = posAtomRec.y;
-			zRecTrafo[bufIdx] = posAtomRec.z;
-		}
-
-		if (atomIdx < numAtomsLig && idx < numAtomsRec*numDOFs){
-
+		if (idx < numAtomsLig * numDOFs) {
+			const RotMat<REAL> rotMat = euler2rotmat(dof._6D[ligIdx].ang.x, dof._6D[ligIdx].ang.y, dof._6D[ligIdx].ang.z);
+			unsigned bufSize = numDOFs * numAtomsLig *numLigands;
 			int bufIdx = numAtomsLig * DOFidx + atomIdx;
 
 			Vec3<REAL> posAtomLig(xLig[atomIdx], yLig[atomIdx], zLig[atomIdx]);
@@ -105,6 +62,7 @@ __global__ void d_DOFPos(
 
 
 			for( int lig = 0; lig < numLigands; lig++){
+				unsigned bufIdxMB = lig * bufSize + bufIdx;
 				if( lig != ligIdx){
 					//get the invers of the rotationmatrix of each ligand
 					const RotMat<REAL> rotMatInv = euler2rotmat(dof._6D[lig].ang.x, dof._6D[lig].ang.y, dof._6D[lig].ang.z).getInv();
@@ -118,21 +76,22 @@ __global__ void d_DOFPos(
 					// add the relative translation with is now in the coordinate system of ligand[lig]
 					posAtomLig += tRel;
 
-					xLigTrafo[lig][bufIdx] = posAtomLig.x;
-					yLigTrafo[lig][bufIdx] = posAtomLig.y;
-					zLigTrafo[lig][bufIdx] = posAtomLig.z;
+					xLigTrafo[bufIdxMB] = posAtomLig.x;
+					yLigTrafo[bufIdxMB] = posAtomLig.y;
+					zLigTrafo[bufIdxMB] = posAtomLig.z;
 				}
 				//if lig == ligIdx calculate the orientation of ligand[ligIdx] relative to the receptor
 				else if( lig == ligIdx){
 					posAtomLig = rotMat*posAtomLig;
 					posAtomLig += dof._6D[lig].pos;
-					xLigTrafo[lig][bufIdx] = posAtomLig.x;
-					yLigTrafo[lig][bufIdx] = posAtomLig.y;
-					zLigTrafo[lig][bufIdx] = posAtomLig.z;
+
+					xLigTrafo[bufIdxMB] = posAtomLig.x;
+					yLigTrafo[bufIdxMB] = posAtomLig.y;
+					zLigTrafo[bufIdxMB] = posAtomLig.z;
 				}
 			}
 		}
-	}
+
 }
 
 
@@ -167,6 +126,67 @@ __global__ void d_rotateForces(
 	}
 }
 
+template<typename REAL>
+__global__ void d_DOFPos_receptor(
+		unsigned numLigands,
+		REAL const* xRec,
+		REAL const* yRec,
+		REAL const* zRec,
+		REAL const* xModesRec,
+		REAL const* yModesRec,
+		REAL const* zModesRec,
+		DOF_6D_MB_Modes<REAL>* dofs,
+		unsigned numAtomsRec,
+		unsigned numModesRec,
+		unsigned numDOFs,
+		REAL* xRecDefo,
+		REAL* yRecDefo,
+		REAL* zRecDefo,
+		REAL* xRecTrafo,
+		REAL* yRecTrafo,
+		REAL* zRecTrafo
+		)
+{
+	/* calculate element index that is to be prcessed */
+	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+
+
+
+	if (idx < numAtomsRec * numDOFs) {
+		unsigned DOFidx = idx / numAtomsRec;
+		unsigned atomIdx = idx % numAtomsRec;
+		unsigned bufSize = numAtomsRec * numLigands * numDOFs;
+		int bufIdx = numAtomsRec * DOFidx + atomIdx;
+		auto dof = dofs[DOFidx];
+
+
+		Vec3<REAL> posAtomRec(xRec[bufIdx], yRec[bufIdx], zRec[bufIdx]);
+
+		for(int mode=0; mode < numModesRec; mode++){
+			posAtomRec.x += dof.modesRec[mode] * xModesRec[atomIdx*numModesRec+mode];
+			posAtomRec.y += dof.modesRec[mode] * yModesRec[atomIdx*numModesRec+mode];
+			posAtomRec.z += dof.modesRec[mode] * zModesRec[atomIdx*numModesRec+mode];
+		}
+
+		xRecDefo[bufIdx] = posAtomRec.x;
+		yRecDefo[bufIdx] = posAtomRec.y;
+		zRecDefo[bufIdx] = posAtomRec.z;
+		for(unsigned ligIdx = 0; ligIdx < numLigands; ligIdx++){
+			unsigned bufIdxMB = ligIdx * bufSize + bufIdx;
+			const RotMat<REAL> rotMat = euler2rotmat(dof._6D[ligIdx].ang.x, dof._6D[ligIdx].ang.y, dof._6D[ligIdx].ang.z);
+			const RotMat<REAL> rotMatInv = rotMat.getInv();
+			Vec3<REAL> posInv = rotMatInv * dof._6D[ligIdx].pos.inv();
+
+			posAtomRec = rotMatInv*posAtomRec;
+			posAtomRec += posInv;
+
+			xRecTrafo[bufIdxMB] = posAtomRec.x;
+			yRecTrafo[bufIdxMB] = posAtomRec.y;
+			zRecTrafo[bufIdxMB] = posAtomRec.z;
+		}
+	}
+
+}
 
 
 template<typename REAL>
@@ -204,73 +224,92 @@ void d_DOFPos(
 		const cudaStream_t &stream,
 		unsigned numLigands,
 		unsigned ligIdx,
-		REAL const* xRec,
-		REAL const* yRec,
-		REAL const* zRec,
 		REAL const* xLig,
 		REAL const* yLig,
 		REAL const* zLig,
-		REAL const* xModesRec,
-		REAL const* yModesRec,
-		REAL const* zModesRec,
 		REAL const* xModesLig,
 		REAL const* yModesLig,
 		REAL const* zModesLig,
 		DOF_6D_MB_Modes<REAL>* dofs,
-		unsigned numAtomsRec,
 		unsigned numAtomsLig,
-		unsigned numModesRec,
 		unsigned numModesLig,
+		unsigned numDOFs,
+		REAL* xLigDefo,
+		REAL* yLigDefo,
+		REAL* zLigDefo,
+		REAL* xLigTrafo,
+		REAL* yLigTrafo,
+		REAL* zLigTrafo
+		)
+{
+	cudaVerifyKernel((
+			d_DOFPos<<<gridSize, blockSize, 0, stream>>> (
+				numLigands,
+				ligIdx,
+				xLig,
+				yLig,
+				zLig,
+				xModesLig,
+				yModesLig,
+				zModesLig,
+				dofs,
+				numAtomsLig,
+				numModesLig,
+				numDOFs,
+				xLigDefo,
+				yLigDefo,
+				zLigDefo,
+				xLigTrafo,
+				yLigTrafo,
+				zLigTrafo
+				))
+		);
+}
+
+template<typename REAL>
+void d_DOFPos_receptor(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		unsigned numLigands,
+		REAL const* xRec,
+		REAL const* yRec,
+		REAL const* zRec,
+		REAL const* xModesRec,
+		REAL const* yModesRec,
+		REAL const* zModesRec,
+		DOF_6D_MB_Modes<REAL>* dofs,
+		unsigned numAtomsRec,
+		unsigned numModesRec,
 		unsigned numDOFs,
 		REAL* xRecDefo,
 		REAL* yRecDefo,
 		REAL* zRecDefo,
 		REAL* xRecTrafo,
 		REAL* yRecTrafo,
-		REAL* zRecTrafo,
-		REAL* xLigDefo,
-		REAL* yLigDefo,
-		REAL* zLigDefo,
-		REAL** xLigTrafo,
-		REAL** yLigTrafo,
-		REAL** zLigTrafo
+		REAL* zRecTrafo
 		)
 {
 	cudaVerifyKernel((
-			d_DOFPos<<<gridSize, blockSize, 0, stream>>> (
-			numLigands,
-			ligIdx,
-			xRec,
-			yRec,
-			zRec,
-			xLig,
-			yLig,
-			zLig,
-			xModesRec,
-			yModesRec,
-			zModesRec,
-			xModesLig,
-			yModesLig,
-			zModesLig,
-			dofs,
-			numAtomsRec,
-			numAtomsLig,
-			numModesRec,
-			numModesLig,
-			numDOFs,
-			xRecDefo,
-			yRecDefo,
-			zRecDefo,
-			xRecTrafo,
-			yRecTrafo,
-			zRecTrafo,
-			xLigDefo,
-			yLigDefo,
-			zLigDefo,
-			xLigTrafo,
-			yLigTrafo,
-			zLigTrafo
-			))
+			d_DOFPos_receptor<<<gridSize, blockSize, 0, stream>>> (
+				numLigands,
+				xRec,
+				yRec,
+				zRec,
+				xModesRec,
+				yModesRec,
+				zModesRec,
+				dofs,
+				numAtomsRec,
+				numModesRec,
+				numDOFs,
+				xRecDefo,
+				yRecDefo,
+				zRecDefo,
+				xRecTrafo,
+				yRecTrafo,
+				zRecTrafo
+))
 		);
 }
 
@@ -281,36 +320,22 @@ void d_DOFPos<float>(
 		const cudaStream_t &stream,
 		unsigned numLigands,
 		unsigned ligIdx,
-		float const* xRec,
-		float const* yRec,
-		float const* zRec,
 		float const* xLig,
 		float const* yLig,
 		float const* zLig,
-		float const* xModesRec,
-		float const* yModesRec,
-		float const* zModesRec,
 		float const* xModesLig,
 		float const* yModesLig,
 		float const* zModesLig,
 		DOF_6D_MB_Modes<float>* dofs,
-		unsigned numAtomsRec,
 		unsigned numAtomsLig,
-		unsigned numModesRec,
 		unsigned numModesLig,
 		unsigned numDOFs,
-		float* xRecDefo,
-		float* yRecDefo,
-		float* zRecDefo,
-		float* xRecTrafo,
-		float* yRecTrafo,
-		float* zRecTrafo,
 		float* xLigDefo,
 		float* yLigDefo,
 		float* zLigDefo,
-		float** xLigTrafo,
-		float** yLigTrafo,
-		float** zLigTrafo
+		float* xLigTrafo,
+		float* yLigTrafo,
+		float* zLigTrafo
 		);
 
 template
@@ -320,38 +345,71 @@ void d_DOFPos<double>(
 		const cudaStream_t &stream,
 		unsigned numLigands,
 		unsigned ligIdx,
-		double const* xRec,
-		double const* yRec,
-		double const* zRec,
 		double const* xLig,
 		double const* yLig,
 		double const* zLig,
-		double const* xModesRec,
-		double const* yModesRec,
-		double const* zModesRec,
 		double const* xModesLig,
 		double const* yModesLig,
 		double const* zModesLig,
 		DOF_6D_MB_Modes<double>* dofs,
-		unsigned numAtomsRec,
 		unsigned numAtomsLig,
-		unsigned numModesRec,
 		unsigned numModesLig,
+		unsigned numDOFs,
+		double* xLigDefo,
+		double* yLigDefo,
+		double* zLigDefo,
+		double* xLigTrafo,
+		double* yLigTrafo,
+		double* zLigTrafo
+		);
+
+template
+void d_DOFPos_receptor<float>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		unsigned numLigands,
+		float const* xRec,
+		float const* yRec,
+		float const* zRec,
+		float const* xModesRec,
+		float const* yModesRec,
+		float const* zModesRec,
+		DOF_6D_MB_Modes<float>* dofs,
+		unsigned numAtomsRec,
+		unsigned numModesRec,
+		unsigned numDOFs,
+		float* xRecDefo,
+		float* yRecDefo,
+		float* zRecDefo,
+		float* xRecTrafo,
+		float* yRecTrafo,
+		float* zRecTrafo
+		);
+
+template
+void d_DOFPos_receptor<double>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		unsigned numLigands,
+		double const* xRec,
+		double const* yRec,
+		double const* zRec,
+		double const* xModesRec,
+		double const* yModesRec,
+		double const* zModesRec,
+		DOF_6D_MB_Modes<double>* dofs,
+		unsigned numAtomsRec,
+		unsigned numModesRec,
 		unsigned numDOFs,
 		double* xRecDefo,
 		double* yRecDefo,
 		double* zRecDefo,
 		double* xRecTrafo,
 		double* yRecTrafo,
-		double* zRecTrafo,
-		double* xLigDefo,
-		double* yLigDefo,
-		double* zLigDefo,
-		double** xLigTrafo,
-		double** yLigTrafo,
-		double** zLigTrafo
+		double* zRecTrafo
 		);
-
 
 template
 void d_rotateForces<float>(

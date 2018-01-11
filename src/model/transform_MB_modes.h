@@ -102,7 +102,7 @@
 		zTr[i] = posAtom.z;
  	}
  }
->>>>>>> AS35_mb_scoring_func
+
 
 
 
@@ -115,36 +115,46 @@
  		const cudaStream_t &stream,
  		unsigned numLigands,
  		unsigned ligIdx,
- 		REAL const* xRec,
- 		REAL const* yRec,
- 		REAL const* zRec,
  		REAL const* xLig,
  		REAL const* yLig,
  		REAL const* zLig,
- 		REAL const* xModesRec,
- 		REAL const* yModesRec,
- 		REAL const* zModesRec,
  		REAL const* xModesLig,
  		REAL const* yModesLig,
  		REAL const* zModesLig,
  		DOF_6D_MB_Modes<REAL>* dofs,
- 		unsigned numAtomsRec,
  		unsigned numAtomsLig,
- 		unsigned numModesRec,
  		unsigned numModesLig,
+ 		unsigned numDOFs,
+ 		REAL* xLigDefo,
+ 		REAL* yLigDefo,
+ 		REAL* zLigDefo,
+ 		REAL* xLigTrafo,
+ 		REAL* yLigTrafo,
+ 		REAL* zLigTrafo
+ 		);
+
+ template<typename REAL>
+ void d_DOFPos_receptor(
+ 		unsigned blockSize,
+ 		unsigned gridSize,
+ 		const cudaStream_t &stream,
+ 		unsigned numLigands,
+ 		REAL const* xRec,
+ 		REAL const* yRec,
+ 		REAL const* zRec,
+ 		REAL const* xModesRec,
+ 		REAL const* yModesRec,
+ 		REAL const* zModesRec,
+ 		DOF_6D_MB_Modes<REAL>* dofs,
+ 		unsigned numAtomsRec,
+ 		unsigned numModesRec,
  		unsigned numDOFs,
  		REAL* xRecDefo,
  		REAL* yRecDefo,
  		REAL* zRecDefo,
  		REAL* xRecTrafo,
  		REAL* yRecTrafo,
- 		REAL* zRecTrafo,
- 		REAL* xLigDefo,
- 		REAL* yLigDefo,
- 		REAL* zLigDefo,
- 		REAL** xLigTrafo,
- 		REAL** yLigTrafo,
- 		REAL** zLigTrafo
+ 		REAL* zRecTrafo
  		);
 
 template<typename REAL>

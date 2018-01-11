@@ -17,14 +17,21 @@ template<typename REAL, typename ALLOC = std::allocator<REAL>>
 class WorkerBuffer {
 public:
 
-	WorkerBuffer() : _buffers(0), _bufferSize(0) {}
+	WorkerBuffer() : _buffers(0), _bufferSize(0), _bufferDim(0) {}
 
-	WorkerBuffer(std::size_t numBuffers, std::size_t size) : _buffers(numBuffers), _bufferSize(size) {
+	WorkerBuffer(std::size_t numBuffers, std::size_t size) : _buffers(numBuffers),  _bufferSize(size), _bufferDim(0) {
 		auto alloc = ALLOC();
 		for (auto& buffer : _buffers) {
 			buffer = alloc.allocate(size);
 		}
 	}
+
+	WorkerBuffer(std::size_t numBuffers, std::size_t dimBuffer, std::size_t size) : _buffers(numBuffers),  _bufferSize(size), _bufferDim(dimBuffer) {
+			auto alloc = ALLOC();
+			for (auto& buffer : _buffers) {
+				buffer = alloc.allocate(size);
+			}
+		}
 
 	WorkerBuffer(WorkerBuffer const& obj) = delete;
 	WorkerBuffer& operator=(WorkerBuffer const& rhs) = delete;
@@ -70,6 +77,18 @@ public:
 		return get(4);
 	}
 
+	REAL* getX(int i) const noexcept {
+		return get(0) + _bufferDim * i;
+	}
+
+	REAL* getY(int i) const noexcept {
+		return get(1) + _bufferDim * i;
+	}
+
+	REAL* getZ(int i) const noexcept {
+		return get(2) + _bufferDim * i;
+	}
+
 	std::size_t numBuffers() const noexcept {
 		return _buffers.size();
 	}
@@ -81,6 +100,7 @@ public:
 private:
 	std::vector<REAL*> _buffers;
 	std::size_t _bufferSize;
+	std::size_t _bufferDim;
 };
 
 }  // namespace as

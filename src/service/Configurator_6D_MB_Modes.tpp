@@ -42,7 +42,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	receptor->setNumModes(args.numModes);
 	Common_Modes::numModesRec = args.numModes;
 	readHMMode<real_t>(receptor, args.recModesName);
-
+	Common_Modes::numModesRec = args.numLigands-1;
 	/* add items to dataMng */
 		std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
 	/* apply mapping according to receptor grid alphabet to ligand */
@@ -81,7 +81,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 	this->_ids.gridIdRec = dataManager->add(gridRec);
 
 //////////////////////////////initialize ligands////////////////////////
-	for(int lig = 0; lig < args.numLigands; lig++){
+	for(int lig = 0; lig < args.numLigands-1; lig++){
 		auto ligand = createProteinFromPDB<real_t>(args.ligName[lig]);
 		ligand->setNumModes(args.numModes);
 		Common_MB_Modes::numModesLig[lig] = args.numModes;
@@ -168,7 +168,7 @@ void Configurator_6D_MB_Modes<SERVICE>::init(CmdArgs const& args) noexcept {
 
 	ServiceType serviceType;
 	if (args.numCPUs > 0) {
-		serviceType = ServiceType::CPUEnergyService6DModes;
+		serviceType = ServiceType::CPUEnergyService6D_MB_Modes;
 	}
 
 	// TODO: ServiceType::GPUEnergyService6DModes is not yet available
