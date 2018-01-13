@@ -204,6 +204,33 @@ void NLPotForce(
 		} // for i
 	}
 }
+
+#ifdef CUDA
+
+template<typename REAL>
+void d_NLPotForce(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		const d_NLGrid<REAL>& grid,
+		const d_Protein<REAL>& rec,
+		const d_Protein<REAL>& lig,
+		const d_ParamTable<REAL>& table,
+		const SimParam<REAL>& simParam,
+		const unsigned& numDOFs,
+		const REAL* RecPosX,
+		const REAL* RecPosY,
+		const REAL* RecPosZ,
+		const REAL* LigPosX,
+		const REAL* LigPosY,
+		const REAL* LigPosZ,
+		REAL* outLig_fx,
+		REAL* outLig_fy,
+		REAL* outLig_fz,
+		REAL* outLigand_E);
+
+#endif
+
 }//end Namespace as
 
 #endif /* NEIGHBORLIST_MODES_H_ */

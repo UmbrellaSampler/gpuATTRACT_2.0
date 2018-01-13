@@ -59,6 +59,9 @@ __global__ void d_DOFPos(
 		REAL* xRecTrafo,
 		REAL* yRecTrafo,
 		REAL* zRecTrafo,
+		REAL* xLigDefo,
+		REAL* yLigDefo,
+		REAL* zLigDefo,
 		REAL* xLigTrafo,
 		REAL* yLigTrafo,
 		REAL* zLigTrafo
@@ -114,8 +117,13 @@ __global__ void d_DOFPos(
 				posAtomLig.z += dof.modesLig[mode] * zModesLig[atomIdx*numModesLig+mode];
 			}
 
+			xLigDefo[bufIdx] = posAtomLig.x;
+			yLigDefo[bufIdx] = posAtomLig.y;
+			zLigDefo[bufIdx] = posAtomLig.z;
+
 			posAtomLig = rotMat*posAtomLig;
 			posAtomLig += dof._6D.pos;
+
 			xLigTrafo[bufIdx] = posAtomLig.x;
 			yLigTrafo[bufIdx] = posAtomLig.y;
 			zLigTrafo[bufIdx] = posAtomLig.z;
@@ -211,6 +219,9 @@ void d_DOFPos(
 		REAL* xRecTrafo,
 		REAL* yRecTrafo,
 		REAL* zRecTrafo,
+		REAL* xLigDefo,
+		REAL* yLigDefo,
+		REAL* zLigDefo,
 		REAL* xLigTrafo,
 		REAL* yLigTrafo,
 		REAL* zLigTrafo)
@@ -241,6 +252,9 @@ void d_DOFPos(
 			xRecTrafo,
 			yRecTrafo,
 			zRecTrafo,
+			xLigDefo,
+			yLigDefo,
+			zLigDefo,
 			xLigTrafo,
 			yLigTrafo,
 			zLigTrafo
@@ -277,6 +291,9 @@ void d_DOFPos<float>(
 		float* xRecTrafo,
 		float* yRecTrafo,
 		float* zRecTrafo,
+		float* xLigDefo,
+		float* yLigDefo,
+		float* zLigDefo,
 		float* xLigTrafo,
 		float* yLigTrafo,
 		float* zLigTrafo);
@@ -310,6 +327,9 @@ void d_DOFPos<double>(
 		double* xRecTrafo,
 		double* yRecTrafo,
 		double* zRecTrafo,
+		double* xLigDefo,
+		double* yLigDefo,
+		double* zLigDefo,
 		double* xLigTrafo,
 		double* yLigTrafo,
 		double* zLigTrafo);
