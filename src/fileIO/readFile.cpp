@@ -518,6 +518,7 @@ std::vector<AttractEnGrad> readEnGradFromFile(std::string filename) {
 	using namespace std;
 
 	ifstream file(filename);
+
 	vector<AttractEnGrad> enGrads;
 
 	string line;
@@ -570,6 +571,9 @@ std::vector<std::vector<DOF>> readDOF(std::string filename) {
 	std::vector<std::vector<DOF>> DOF_molecules;
 
 	ifstream file(filename);
+	if (!file.good()) {
+		throw IOException("File does not exist");
+	}
 
 	string line;
 	size_t lineNo = 0;
@@ -594,7 +598,8 @@ std::vector<std::vector<DOF>> readDOF(std::string filename) {
 				}
 
 				std::vector<DOF>& vec = DOF_molecules[i];
-				DOF dof ;
+				DOF dof;
+				dof.numDofs = 6;
 				{
 					stringstream stream(line);
 					stream >> dof._6D.ang.x >> dof._6D.ang.y >> dof._6D.ang.z
@@ -606,6 +611,7 @@ std::vector<std::vector<DOF>> readDOF(std::string filename) {
 						dof.dofs[k] = value;
 						k++;
 					}
+					dof.numDofs += k;
 				}
 				vec.push_back(dof);
 

@@ -24,6 +24,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include "IOException.h"
 #include "nativeTypesWrapper.h"
 #include "Vec3.h"
 #include "Types_6D.h"
