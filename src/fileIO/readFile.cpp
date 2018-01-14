@@ -572,7 +572,7 @@ std::vector<std::vector<DOF>> readDOF(std::string filename) {
 
 	ifstream file(filename);
 	if (!file.good()) {
-		throw IOException("File does not exist");
+		throw IOException("Error reading file '" + filename + "'. The file does not exist");
 	}
 
 	string line;

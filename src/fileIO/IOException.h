@@ -14,6 +14,7 @@
 namespace as {
 
 class IOException : public std::logic_error {
+public:
 	explicit IOException (const std::string& what_arg) :
 			logic_error(what_arg) {}
 	explicit IOException (const char* what_arg) :

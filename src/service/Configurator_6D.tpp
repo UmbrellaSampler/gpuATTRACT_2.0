@@ -28,7 +28,7 @@
 namespace as {
 
 template<typename SERVICE>
-void Configurator_6D<SERVICE>::init(CmdArgs const& args) noexcept {
+void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);

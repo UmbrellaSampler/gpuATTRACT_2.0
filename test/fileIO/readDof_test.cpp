@@ -8,12 +8,13 @@
 
 #include <gtest/gtest.h>
 #include "readFile.h"
+#include "IOException.h"
 #include <vector>
 
 using namespace std;
 using namespace as;
 
-TEST(readFile, readDof) {
+TEST(readFile, readDof_content) {
 	const std::string filename ="./test/resources/readDof_test.dat";
 	vector<vector<DOF>> dofs = readDOF(filename);
 	ASSERT_EQ(3, dofs.size());
@@ -32,6 +33,19 @@ TEST(readFile, readDof) {
 			ASSERT_DOUBLE_EQ(7.0, dof.dofs[0]);
 			ASSERT_DOUBLE_EQ(8.0, dof.dofs[1]);
 		}
+	}
+}
+
+TEST(readFile, readDof_wrong_filename) {
+	const std::string filename ="non-existing filename";
+
+	try {
+		vector<vector<DOF>> dofs = readDOF(filename);
+		FAIL();
+	} catch (IOException& e) {
+		ASSERT_STREQ( std::string("Error reading file '" + filename + "'. The file does not exist").c_str(), e.what() );
+	} catch (std::exception& e) {
+		FAIL();
 	}
 }
 

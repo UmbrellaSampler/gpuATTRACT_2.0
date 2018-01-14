@@ -23,6 +23,7 @@ TEST ?= OFF
 CUDA ?= ON
 
 SOURCE_FOLDERS = $(shell find $(SOURCE_DIR) -maxdepth 2 -type d)
+SOURCE_TEST_FOLDERS = $(shell find $(SOURCE_DIR_TEST) -maxdepth 2 -type d)
 
 
 ifeq ($(TEST), OFF)
@@ -36,7 +37,7 @@ else ifeq ($(TEST), ON)
 	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp"  ! -name $(EXCLUDE)) \
 		$(shell find $(SOURCE_DIR_TEST) -name "*.cpp")	
 	LIBS_TEST = -lgtest -lgmock
-	VPATH = $(SOURCE_DIR_TEST):$(foreach d, $(SOURCE_FOLDERS), $d:)
+	VPATH = $(foreach d, $(SOURCE_TEST_FOLDERS), $d:):$(foreach d, $(SOURCE_FOLDERS), $d:)
 endif
 
 OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))
