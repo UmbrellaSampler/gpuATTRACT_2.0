@@ -27,7 +27,7 @@ public:
 	using typename ConfiguratorBase<genericTypes_t>::real_t;
 	using typename ConfiguratorBase<genericTypes_t>::server_t;
 
-	void init(CmdArgs const& args) noexcept override;
+	void init(CmdArgs const& args) override;
 	void finalize() noexcept override;
 
 	virtual ~Configurator_6D() {}
