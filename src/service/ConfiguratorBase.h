@@ -42,7 +42,7 @@ public:
 		return _ids;
 	}
 
-	virtual void init(CmdArgs const& args) noexcept = 0;
+	virtual void init(CmdArgs const& args) = 0;
 	virtual void finalize() noexcept = 0;
 
 	virtual ~ConfiguratorBase() {}
