@@ -82,7 +82,9 @@ std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::s
 	deviceDesc.xModes = d_xModes;
 	deviceDesc.yModes = d_yModes;
 	deviceDesc.zModes = d_zModes;
-	std::copy(protein->modeForce(), protein->modeForce() + MODES_MAX_NUMBER, deviceDesc.modeForce);
+	if (numModes != 0) {
+		std::copy(protein->modeForce(), protein->modeForce() + MODES_MAX_NUMBER, deviceDesc.modeForce);
+	}
 
 
 	std::shared_ptr<DeviceProtein<REAL>> deviceProtein = std::make_shared<DeviceProtein<REAL>>();

@@ -31,13 +31,13 @@ void TwoBodyParser::addOptions() noexcept {
 			("dof"     			  , po::value<string>()->required()									, "structure (DOF) file")
 			("receptor-pdb,r"     , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_PDB)	, "pdb-file of receptor")
 			("ligand-pdb,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of ligand")
-			("gridrec,gr"             , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "receptor grid file")
-			("gridlig,gl"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "ligand grid file")
+			("gridrec"             , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "receptor grid file")
+			("gridlig"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "ligand grid file")
 			("par,p"	          , po::value<string>()->default_value(FILE_DEFAULT_PARAMETER)		, "attract forcefield parameter file")
-			("alphabetrec,ar"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
-			("alphabetlig,al"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
-			("modl,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
-			("modr,mr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor");
+			("alphabetrec"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
+			("alphabetlig"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
+			("modesl"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
+			("modesr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor");
 	_optsDesc.add(input);
 
 	po::options_description concurrency("concurrency");
