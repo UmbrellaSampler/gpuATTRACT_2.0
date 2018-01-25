@@ -468,26 +468,33 @@ public:
 			cudaVerify(cudaStreamWaitEvent(streams[3], events[3+pipeIdx[0]], 0));
 
 
-			deviceReduce(
-				blockSizeReduce,
-				it->size(),
-				stageResc.rec->numAtoms,	stageResc.lig->numAtoms,
-				stageResc.rec->numModes, 	stageResc.lig->numModes,
-				d_dof[pipeIdxDof[2]].get(0),
-				stageResc.rec->xModes, 	stageResc.rec->yModes, stageResc.rec->zModes,
-				stageResc.lig->xModes, stageResc.lig->yModes, stageResc.lig->zModes,
-				stageResc.lig->xPos, stageResc.lig->yPos, stageResc.lig->zPos,
-				d_potRec[pipeIdx[0]].getX(), d_potRec[pipeIdx[0]].getY(), d_potRec[pipeIdx[0]].getZ(),
-				d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
-				d_potLig[pipeIdx[0]].getW(),
-				d_res[pipeIdx[0]].get(0),
-				streams[3]);
+			deviceReduce<REAL, 0, true>(
+							blockSizeReduce,
+							it->size(),
+							stageResc.rec,
+							d_dof[pipeIdxDof[2]].get(0),
+							stageResc.rec->xPos, stageResc.rec->yPos, stageResc.rec->zPos,
+							d_potRec[pipeIdx[0]].getX(), d_potRec[pipeIdx[0]].getY(), d_potRec[pipeIdx[0]].getZ(),
+							d_potRec[pipeIdx[0]].getW(),
+							d_res[pipeIdx[0]].get(0),
+							streams[3]);
 
-			cudaDeviceSynchronize();
-			unsigned numDofs = it->size();
-			WorkerBuffer<REAL> h_potLig(1,23*numDofs);
-			size_t cpySize = h_potLig.bufferSize()*sizeof(REAL);
-			cudaMemcpy(h_potLig.get(0),d_res[pipeIdx[0]].get(0), cpySize, cudaMemcpyDeviceToHost);
+						deviceReduce<REAL, 1, true>(
+							blockSizeReduce,
+							it->size(),
+							stageResc.lig,
+							d_dof[pipeIdxDof[2]].get(0),
+							stageResc.lig->xPos, stageResc.lig->yPos, stageResc.lig->zPos,
+							d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
+							d_potLig[pipeIdx[0]].getW(),
+							d_res[pipeIdx[0]].get(1),
+							streams[3]);
+
+//			cudaDeviceSynchronize();
+//			unsigned numDofs = it->size();
+//			WorkerBuffer<REAL> h_potLig(1,23*numDofs);
+//			size_t cpySize = h_potLig.bufferSize()*sizeof(REAL);
+//			cudaMemcpy(h_potLig.get(0),d_res[pipeIdx[0]].get(0), cpySize, cudaMemcpyDeviceToHost);
 
 //			for(size_t i = 0; i < numDofs; ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
