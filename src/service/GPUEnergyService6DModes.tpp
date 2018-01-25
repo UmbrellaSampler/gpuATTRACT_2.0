@@ -181,13 +181,11 @@ public:
 
 	void swapBuffers() {
 		std::swap(pipeIdx[0], pipeIdx[1]);
-		int 	  tmp = pipeIdxDof[2];
+		int 	  tmp = pipeIdxDof[3];
+		pipeIdxDof[3] = pipeIdxDof[2];
 		pipeIdxDof[2] = pipeIdxDof[1];
 		pipeIdxDof[1] = pipeIdxDof[0];
 		pipeIdxDof[0] = tmp;
-
-
-
 	}
 
 	bool pipelineEmpty() const {
