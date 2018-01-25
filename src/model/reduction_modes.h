@@ -10,7 +10,7 @@
 
 #include "Types_6D_Modes.h"
 #include "reduction.h"
-
+#include "DeviceProtein.h"
 namespace as {
 
 template<typename REAL>
@@ -164,15 +164,7 @@ void h_finalReduce(
 				}
 			}
 			enGrad._6D.E = deviceOut[i*dofSize + 3];
-		}else{
-			enGrad._6D.pos.x -= deviceOut[i*dofSize + 0];
-			enGrad._6D.pos.y -= deviceOut[i*dofSize + 1];
-			enGrad._6D.pos.z -= deviceOut[i*dofSize + 2];
-		}
 
-
-
-		if(PROTEINTYPE == 1){
 			Torque<REAL> torque;
 			torque.mat[0][0] = deviceOut[i*dofSize + 4 ];
 			torque.mat[0][1] = deviceOut[i*dofSize + 5 ];
@@ -190,7 +182,11 @@ void h_finalReduce(
 			enGrad._6D.ang.x = result.x;
 			enGrad._6D.ang.y = result.y;
 			enGrad._6D.ang.z = result.z;
-		}
+		}else{
+					enGrad._6D.pos.x -= deviceOut[i*dofSize + 0];
+					enGrad._6D.pos.y -= deviceOut[i*dofSize + 1];
+					enGrad._6D.pos.z -= deviceOut[i*dofSize + 2];
+				}
 
 		if(MODES){
 			if(PROTEINTYPE == 1){

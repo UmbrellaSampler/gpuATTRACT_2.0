@@ -11,7 +11,7 @@
 
 #include "transform.h"
 #include "Types_6D_Modes.h"
-
+#include "DeviceProtein.h"
 
  namespace as{
 
