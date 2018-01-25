@@ -143,8 +143,8 @@ public:
 			d_dof[i]    = std::move(WorkerBuffer<dof_t,DeviceAllocator<dof_t>>(1,numDOFs));
 		}
 		for (int i = 0; i < 2; ++i) {
-			d_res[i]    = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(1,(dofSize)*numDOFs));
-			h_res[i]    = std::move(WorkerBuffer<REAL, HostPinnedAllocator<REAL>>(1,(dofSize)*numDOFs));
+			d_res[i]    = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(2,(dofSize)*numDOFs));
+			h_res[i]    = std::move(WorkerBuffer<REAL, HostPinnedAllocator<REAL>>(2,(dofSize)*numDOFs));
 		}
 	}
 
@@ -260,53 +260,33 @@ public:
 			/* Perform cuda kernel calls */
 			size_t gridSizeLig = ( numElLig + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 			size_t gridSizeRec = ( numElRec + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
-			size_t gridSize = ( max(numElRec, numElLig) + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
+
 
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
 			cudaVerify(cudaStreamWaitEvent(streams[2], events[0], 0));
 
-//			d_DOF2Pos(
-//					BLSZ_TRAFO,
-//					gridSize,
-//					streams[2],
-//					stageResc.lig->xPos,
-//					stageResc.lig->yPos,
-//					stageResc.lig->zPos,
-//					d_dof[pipeIdx[1]].get(0),
-//					stageResc.lig->numAtoms,
-//					it->size(),
-//					d_trafoLig.getX(),
-//					d_trafoLig.getY(),
-//					d_trafoLig.getZ()); //OK
-
-			d_DOFPos(
+			 d_DOFPos<REAL, 0, true>(
 				BLSZ_TRAFO,
-				gridSize,
+				gridSizeRec,
 				streams[2],
-				stageResc.rec->xPos,
-				stageResc.rec->yPos,
-				stageResc.rec->zPos,
-				stageResc.lig->xPos,
-				stageResc.lig->yPos,
-				stageResc.lig->zPos,
-				stageResc.rec->xModes,
-				stageResc.rec->yModes,
-				stageResc.rec->zModes,
-				stageResc.lig->xModes,
-				stageResc.lig->yModes,
-				stageResc.lig->zModes,
+				stageResc.rec,
 				d_dof[pipeIdxDof[1]].get(0),
-				stageResc.rec->numAtoms,
-				stageResc.lig->numAtoms,
-				stageResc.rec->numModes,
-				stageResc.lig->numModes,
 				it->size(),
 				d_defoRec.getX(),
 				d_defoRec.getY(),
 				d_defoRec.getZ(),
 				d_trafoRec.getX(),
 				d_trafoRec.getY(),
-				d_trafoRec.getZ(),
+				d_trafoRec.getZ()
+				);
+
+			 d_DOFPos<REAL, 1, true>(
+				BLSZ_TRAFO,
+				gridSizeLig,
+				streams[2],
+				stageResc.lig,
+				d_dof[pipeIdxDof[1]].get(0),
+				it->size(),
 				d_defoLig.getX(),
 				d_defoLig.getY(),
 				d_defoLig.getZ(),
@@ -545,6 +525,8 @@ public:
 
 			/* copy results to host */
 			cudaVerify(cudaMemcpyAsync(h_res[pipeIdx[1]].get(0), d_res[pipeIdx[1]].get(0), dofSize*it->size()*sizeof(REAL),
+					cudaMemcpyDeviceToHost, streams[1]));
+			cudaVerify(cudaMemcpyAsync(h_res[pipeIdx[1]].get(1), d_res[pipeIdx[1]].get(1), dofSize*it->size()*sizeof(REAL),
 					cudaMemcpyDeviceToHost, streams[1]));
 
 			/* Device: Signal event when transfere has completed */
