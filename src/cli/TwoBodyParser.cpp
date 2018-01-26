@@ -43,10 +43,12 @@ void TwoBodyParser::addOptions() noexcept {
 			("par,p"	          , po::value<string>()->default_value(FILE_DEFAULT_PARAMETER)		, "attract forcefield parameter file")
 			("alphabetrec,ar"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
 			("alphabetlig,al"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
-			("modl,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
-			("modl2,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "second mode file of ligand")
-			("modl3,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "third mode file of ligand")
-			("modr,mr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor")
+			("alphabetlig2,al"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "second ligand grid alphabet file")
+			("alphabetlig3,al"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "third ligand grid alphabet file")
+			("modeslig,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
+			("modeslig2,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "second mode file of ligand")
+			("modeslig3,ml"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "third mode file of ligand")
+			("modesrec,mr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor")
 			("numLig,mb"	          , po::value<int>()->default_value(DEFAULT_NUM_LIGANDS)	, "number of Ligands");
 	_optsDesc.add(input);
 
@@ -119,15 +121,19 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 	if(vm.count("alphabetrec"))
 		_args->alphabetRecName = vm["alphabetrec"].as<string>();
 	if(vm.count("alphabetlig"))
-		_args->alphabetLigName = vm["alphabetlig"].as<string>();
-	if(vm.count("modr"))
-		_args->recModesName = vm["modr"].as<string>();
-	if(vm.count("modl"))
-		_args->ligModesName.push_back(vm["modl"].as<string>());
-	if(vm.count("modl2"))
-		_args->ligModesName.push_back(vm["modl2"].as<string>());
-	if(vm.count("modl3"))
-		_args->ligModesName.push_back(vm["modl3"].as<string>());
+		_args->alphabetLigName.push_back(vm["alphabetlig"].as<string>());
+	if(vm.count("alphabetlig2"))
+		_args->alphabetLigName.push_back(vm["alphabetlig2"].as<string>());
+	if(vm.count("alphabetlig3"))
+		_args->alphabetLigName.push_back(vm["alphabetlig3"].as<string>());
+	if(vm.count("modesrec"))
+		_args->recModesName = vm["modesrec"].as<string>();
+	if(vm.count("modeslig"))
+		_args->ligModesName.push_back(vm["modeslig"].as<string>());
+	if(vm.count("modeslig2"))
+		_args->ligModesName.push_back(vm["modeslig2"].as<string>());
+	if(vm.count("modeslig3"))
+		_args->ligModesName.push_back(vm["modeslig3"].as<string>());
 	if(vm.count("numCPUs"))
 		_args->numCPUs = vm["numCPUs"].as<int>();
 	if(vm.count("device"))

@@ -21,7 +21,7 @@ std::ostream& operator<<(std::ostream& s, CmdArgs const& args) {
 	s << "recName     = "  << args.recName             << endl;
 	s << "paramsName  = "  << args.paramsName          << endl;
 	s << "alphabetRecName = "  << args.alphabetRecName 	   << endl;
-	s << "alphabetLigName = "  << args.alphabetLigName 	   << endl;
+	s << "alphabetLigName = " ;for (auto alphabetLigName : args.alphabetLigName)   s << alphabetLigName << " "; s << endl;
 	s << "ligModesName = "; for (auto ligModesName : args.ligModesName) s << ligModesName << " "; s << endl;
 	s << "recModesName = " <<args.recModesName   	   << endl;
 	s << "numCPUs     = "  << args.numCPUs             << endl;

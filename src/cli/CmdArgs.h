@@ -27,7 +27,7 @@ public:
 	std::string recName;
 	std::string paramsName;
 	std::string alphabetRecName;
-	std::string alphabetLigName;
+	std::vector<std::string> alphabetLigName;
 	std::string recModesName;
 	std::vector<std::string> ligModesName;
  
