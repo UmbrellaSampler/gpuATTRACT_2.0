@@ -663,11 +663,21 @@ std::vector<Result> readResult(std::string filename) {
 
 	string line;
 	size_t lineNo = 0;
-	int i_molecules = 0;
+	unsigned i_molecules = 0;
+	bool nextAlreadyRead = false;
+
+//	while (lineNo < 50) {
+//		getline(file, line); ++lineNo;
+//		cout << line << endl;
+//	}
+//	exit(1);
+
 	if (file.is_open()) {
 		while (!file.eof()) {
 
-			getline(file, line); ++lineNo;
+			if (!nextAlreadyRead) {
+				getline(file, line); ++lineNo;
+			}
 
 			if (!line.compare(0,1, "#")) { // 0 == true
 				continue;
@@ -684,103 +694,73 @@ std::vector<Result> readResult(std::string filename) {
 					string tmp; stream >> tmp;
 					stream >> result.E;
 				}
+				// skip next line
+				getline(file, line); ++lineNo;
 				getline(file, line); ++lineNo;
 
-				// read lines until next " Energy"
+				// read gradients and mode gradients
 				Result::Gradients gradients;
-				while (line.compare(0,8, " Energy:")) {
+
+				while (line.compare(0,8, " Energy:") != 0) {
 					// read gradients
-					if (!line.compare(0,8, " Gradients:")) {
+					if (!line.compare(0, 11, " Gradients:")) {
 						stringstream stream(line);
-						string tmp; stream >> tmp;
-						std::vector<double> grad_6D(6);
-						for (double& grad : grad_6D) {
-							stream >> grad;
+						string tmp;	stream >> tmp;
+
+						std::vector<double> grad_6D;
+						for (int i = 0; i < 6; ++i) {
+							double val;
+							stream >> val;
+							grad_6D.push_back(val);
 						}
 						gradients._6D = grad_6D;
-						getline(file, line); ++lineNo;
-						continue;
+						if (!file.eof()) {
+							getline(file, line); ++lineNo;
+							nextAlreadyRead = true;
+						} else {
+							break;
+						}
 					}
 
 					// read mode gradients
-					if (!line.compare(0,8, " Mode gradients:")) {
-						getline(file, line); ++lineNo;
+					if (!line.compare(0, 16, " Mode gradients:")) {
+						getline(file, line);
+						++lineNo;
 						std::vector<double> grad_modes;
 						while (isNumber(line)) {
 							double val;
 							stringstream stream(line);
 							stream >> val;
 							grad_modes.push_back(val);
-							getline(file, line); ++lineNo;
+							if (!file.eof()) {
+								getline(file, line); ++lineNo;
+								nextAlreadyRead = true;
+							}
 						}
 						gradients.modes = grad_modes;
-
-						continue;
-
 					}
-
-					result.gradients = gradients;
-
-					getline(file, line); ++lineNo;
-				}
-
-
-
-
-			}
-
-
-
-
-
-
-			unsigned i = 0;
-			while (line.compare(0,8, " Energy:") != 0 && !file.eof()) {
-
-				if (i_molecules == 0) {
-					result_molecules.push_back(std::vector<DOF> ());
-				}
-
-				std::vector<DOF>& vec = result_molecules[i];
-				DOF dof;
-				dof.numDofs = 6;
-				{
-					stringstream stream(line);
-					stream >> dof._6D.ang.x >> dof._6D.ang.y >> dof._6D.ang.z
-						>> dof._6D.pos.x >> dof._6D.pos.y >> dof._6D.pos.z;
-
-					size_t k = 0;
-					double value;
-					while( stream >> value ){
-						dof.dofs[k] = value;
-						k++;
+					result.gradients.push_back(gradients);
+					if (file.eof()) {
+						break;
 					}
-					dof.numDofs += k;
 				}
-				vec.push_back(dof);
-
-				++i;
-				getline(file, line);
-				++lineNo;
+				result_molecules.push_back(result);
 			}
-			/* check if i equals the number of molecules == DOF_molecules.size(),
+			/* check if num equals the number of molecules == DOF_molecules.size(),
 			 * otherwise we miss a molecule in the definition */
-			if (i != result_molecules.size()) {
+			if (i_molecules != result_molecules.size()) {
 				errorDOFFormat(filename);
 				cerr << "The DOF definition is incomplete at #" << i_molecules << " (line " << lineNo << ")" << endl;
 						exit(EXIT_FAILURE);
 			}
-			++i_molecules;
 		}
 	} else {
 		cerr << "Error: Failed to open file " << filename << endl;
 		exit(EXIT_FAILURE);
 	}
-
 	file.close();
 
 	return result_molecules;
-
 }
 
 template<typename REAL>

@@ -21,6 +21,7 @@
 #include "ConfiguratorTypeWrapper.h"
 #include "Request.h"
 #include "Server.h"
+#include "readFile.h"
 
 
 using namespace as;
@@ -28,6 +29,7 @@ using namespace std;
 //using ::testing::;
 
 TEST(Scoring, CPU) {
+	constexpr double eps = 0.0005;
 
 	using GenericTypes = Types_6D<double>;
 	using input_t = typename GenericTypes::input_t;
@@ -44,6 +46,9 @@ TEST(Scoring, CPU) {
 	const string paramFile  = path + "attract.par";
 	const string dofFileSystsearch = path + "systsearch.dat";
 	const string dofFileDocking = path + "out_docking_orig.dat";
+	const string scoreFileSystsearch = path + "out_systsearch_orig.score";
+	const string scoreFileDocking = path + "out_docking_orig.score";
+//	const string scoreFileSystsearch = path + "out_attract_modes_no_fixRec.score";
 
 	const string cmd = string("command")
 			+ " sc "
@@ -56,23 +61,12 @@ TEST(Scoring, CPU) {
 			+ " -c " 			+ "1"
 			+ " --prec " 		+ "double";
 
-//	cout << cmd << endl;
-
 	StringToArgConverter converter(cmd);
-
-//	cout << converter.argc() << endl;
-
-//	for (int i = 0; i < converter.argc(); ++i) {
-//		cout << converter.argv()[i] << " ";
-//	}
-//	cout << endl;
 
 	CmdParser parser;
 	parser.parse(converter.argc(), converter.argv());
 
 	CmdArgs cmdArgs = parser.args();
-
-//	cout << appParams << endl;
 
 	configurator_t serverConfigurator;
 	serverConfigurator.init(cmdArgs);
@@ -87,24 +81,25 @@ TEST(Scoring, CPU) {
 	auto results = std::vector<result_t>(dofs.size());
 	server->wait(request, results.data());
 
-	std::cout << results[0] << std::endl;
+	vector<Result> refResults = readResult(scoreFileDocking);
 
+	ASSERT_EQ(refResults.size(), results.size());
+	bool passed = true;
+	for (size_t i = 0; i < refResults.size(); ++i) {
+		if (abs((refResults[i].E -results[i].E)/refResults[i].E) > eps) {
+			passed = false;
+			cout << "s" << i << " E:  " << refResults[i].E << " " << results[i].E << endl;
+			cout << "s" << i << " G0: " << refResults[i].gradients[0]._6D[0] << " " << results[i].ang.x << endl;
+			cout << "s" << i << " G1: " << refResults[i].gradients[0]._6D[1] << " " << results[i].ang.y << endl;
+			cout << "s" << i << " G2: " << refResults[i].gradients[0]._6D[2] << " " << results[i].ang.z << endl;
+			cout << "s" << i << " G3: " << refResults[i].gradients[0]._6D[3] << " " << results[i].pos.x << endl;
+			cout << "s" << i << " G4: " << refResults[i].gradients[0]._6D[4] << " " << results[i].pos.y << endl;
+			cout << "s" << i << " G5: " << refResults[i].gradients[0]._6D[5] << " " << results[i].pos.z << endl;
+			cout << endl;
+		}
 
-
-
-
-//	shared_ptr<Protein<double>> receptor = createProteinFromPDB<Protein<double>>(receptorPdb);
-//	shared_ptr<Protein<double>> ligand = createProteinFromPDB<Protein<double>>(ligandPdb);
-//	shared_ptr<GridUnion<double>> grid = createGridFromGridFile<GridUnion<double>>(gridFile);
-//	shared
-//
-//
-//	CPUEnergyService6D<double> service(make_shared<DataManager>());
-//
-//	CPUEnergyService6D<double>::itemProcessor_t itemProcessor = service.createItemProcessor();
-//	unique_ptr<CPUEnergyService6D<double>::workItem_t> workItem = make_unique<CPUEnergyService6D<double>::workItem_t>();
-//
-//	itemProcessor(workItem.get());
+	}
+	ASSERT_TRUE(passed);
 }
 
 

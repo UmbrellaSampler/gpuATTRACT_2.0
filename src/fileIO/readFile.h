@@ -117,6 +117,7 @@ public:
 class Result {
 public:
 	class Gradients {
+	public:
 		std::vector<double> _6D;
 		std::vector<double> modes;
 	};
