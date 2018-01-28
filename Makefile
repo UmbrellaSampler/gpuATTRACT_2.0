@@ -25,6 +25,7 @@ CUDA ?= ON
 SOURCE_FOLDERS = $(shell find $(SOURCE_DIR) -maxdepth 2 -type d)
 SOURCE_TEST_FOLDERS = $(shell find $(SOURCE_DIR_TEST) -maxdepth 2 -type d)
 
+INCLUDES = $(foreach d, $(SOURCE_FOLDERS), -I$d) 
 
 ifeq ($(TEST), OFF)
 #	SOURCES_CPP = $(shell find $(SOURCE_DIR) -name "*.cpp" -and -not -path "*emATTRACT*")
@@ -38,6 +39,7 @@ else ifeq ($(TEST), ON)
 		$(shell find $(SOURCE_DIR_TEST) -name "*.cpp")	
 	LIBS_TEST = -lgtest -lgmock
 	VPATH = $(foreach d, $(SOURCE_TEST_FOLDERS), $d:):$(foreach d, $(SOURCE_FOLDERS), $d:)
+	INCLUDES += $(foreach d, $(SOURCE_TEST_FOLDERS), -I$d) 
 endif
 
 OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))
@@ -58,7 +60,6 @@ else
 endif
 
 CXXFLAGS =  $(OFLAGS) -std=c++11 -fmessage-length=0
-INCLUDES = $(foreach d, $(SOURCE_FOLDERS), -I$d) 
 #INCLUDES = -I$(CURDIR)/src -I$(CURDIR)/src/fileIO 
 LDFLAGS =  #-L...
 LIBS =  -lpthread -lrt $(LIBS_TEST) -lboost_program_options -lgfortran -lboost_coroutine -lboost_context -lboost_system

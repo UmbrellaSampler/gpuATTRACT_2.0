@@ -114,7 +114,20 @@ public:
 	unsigned numDofs;
 };
 
+class Result {
+public:
+	class Gradients {
+	public:
+		std::vector<double> _6D;
+		std::vector<double> modes;
+	};
+
+	double E;
+	std::vector<Gradients> gradients;
+};
+
 std::vector<std::vector<DOF>> readDOF(std::string filename);
+std::vector<Result> readResult(std::string filename);
 
 template<typename REAL>
 DOFHeader<REAL> readDOFHeader(std::string filename);

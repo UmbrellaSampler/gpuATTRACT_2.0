@@ -22,7 +22,7 @@
 
 //#include "grid_orig.h"
 
-#include "../fileIO/readFile.h"
+#include "readFile.h"
 
 #include <sstream>
 #include <fstream>
@@ -37,7 +37,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "../fileIO/grid_orig.h"
+#include "grid_orig.h"
 #include "Vec3.h"
 #include "Protein.h"
 #include "GridUnion.h"
@@ -80,6 +80,19 @@ static std::vector<std::string> line2Strings(std::string const& line) {
 	istringstream iss(line);
 	return vector<string> { istream_iterator<string> { iss },
 					istream_iterator<string> { } };
+}
+
+static bool isNumber(const std::string& s)
+{
+    try
+    {
+        std::stod(s);
+    }
+    catch(...)
+    {
+        return false;
+    }
+    return true;
 }
 
 template<typename REAL>
@@ -552,7 +565,6 @@ std::vector<AttractEnGrad> readEnGradFromFile(std::string filename) {
 				enGrads.push_back(enGrad);
 			}
 
-
 		}
 	} else {
 		cerr << "Failed to open file " << filename << endl;
@@ -583,7 +595,6 @@ std::vector<std::vector<DOF>> readDOF(std::string filename) {
 
 			getline(file, line);
 			++lineNo;
-
 
 			if (!line.compare(0,1, "#")) { // 0 == true
 				continue;
@@ -637,6 +648,119 @@ std::vector<std::vector<DOF>> readDOF(std::string filename) {
 
 	return DOF_molecules;
 
+}
+
+std::vector<Result> readResult(std::string filename) {
+	using namespace std;
+	using namespace as;
+
+	std::vector<Result> result_molecules;
+
+	ifstream file(filename);
+	if (!file.good()) {
+		throw IOException("Error reading file '" + filename + "'. The file does not exist");
+	}
+
+	string line;
+	size_t lineNo = 0;
+	unsigned i_molecules = 0;
+	bool nextAlreadyRead = false;
+
+//	while (lineNo < 50) {
+//		getline(file, line); ++lineNo;
+//		cout << line << endl;
+//	}
+//	exit(1);
+
+	if (file.is_open()) {
+		while (!file.eof()) {
+
+			if (!nextAlreadyRead) {
+				getline(file, line); ++lineNo;
+			}
+
+			if (!line.compare(0,1, "#")) { // 0 == true
+				continue;
+			}
+
+			/* read all results until the next " Energy" */
+			if (!line.compare(0,8, " Energy:")) {
+				++i_molecules;
+
+				// read energy value
+				Result result;
+				{
+					stringstream stream(line);
+					string tmp; stream >> tmp;
+					stream >> result.E;
+				}
+				// skip next line
+				getline(file, line); ++lineNo;
+				getline(file, line); ++lineNo;
+
+				// read gradients and mode gradients
+				Result::Gradients gradients;
+
+				while (line.compare(0,8, " Energy:") != 0) {
+					// read gradients
+					if (!line.compare(0, 11, " Gradients:")) {
+						stringstream stream(line);
+						string tmp;	stream >> tmp;
+
+						std::vector<double> grad_6D;
+						for (int i = 0; i < 6; ++i) {
+							double val;
+							stream >> val;
+							grad_6D.push_back(val);
+						}
+						gradients._6D = grad_6D;
+						if (!file.eof()) {
+							getline(file, line); ++lineNo;
+							nextAlreadyRead = true;
+						} else {
+							break;
+						}
+					}
+
+					// read mode gradients
+					if (!line.compare(0, 16, " Mode gradients:")) {
+						getline(file, line);
+						++lineNo;
+						std::vector<double> grad_modes;
+						while (isNumber(line)) {
+							double val;
+							stringstream stream(line);
+							stream >> val;
+							grad_modes.push_back(val);
+							if (!file.eof()) {
+								getline(file, line); ++lineNo;
+								nextAlreadyRead = true;
+							}
+						}
+						gradients.modes = grad_modes;
+					}
+					result.gradients.push_back(gradients);
+					if (file.eof()) {
+						break;
+					}
+				}
+				result_molecules.push_back(result);
+			}
+			/* check if num equals the number of molecules == DOF_molecules.size(),
+			 * otherwise we miss a molecule in the definition */
+			if (i_molecules != result_molecules.size()) {
+				errorDOFFormat(filename);
+				cerr << "The DOF definition is incomplete at #" << i_molecules << " (line " << lineNo << ")" << endl;
+						exit(EXIT_FAILURE);
+			}
+		}
+	} else {
+		cerr << "Error: Failed to open file " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+	file.close();
+
+	return result_molecules;
 }
 
 template<typename REAL>

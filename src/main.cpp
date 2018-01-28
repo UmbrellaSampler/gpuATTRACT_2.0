@@ -21,9 +21,9 @@ using namespace as;
 int main(int argc, char* argv[]) {
 
 #ifdef CUDA
-	std::cerr << "CUDA available" << std::endl;
+	std::cerr << "CUDA enabled" << std::endl;
 #else
-	std::cerr << "CUDA not available" << std::endl;
+	std::cerr << "CUDA not enabled" << std::endl;
 #endif
 
 	try {
