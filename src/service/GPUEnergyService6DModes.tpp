@@ -152,6 +152,21 @@ public:
 		}
 	}
 
+	void
+	if (blockSizeReduceRec == 0) {
+				int id;
+				cudaVerify(cudaGetDevice(&id));
+				cudaDeviceProp deviceProp;
+				cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
+				size_t sharedMem = deviceProp.sharedMemPerBlock;
+				size_t pow2 = 16;
+				while (pow2* (Common_Modes::numModesRec + 13)*sizeof(REAL) < sharedMem) {
+					pow2 *= 2;
+				}
+
+				blockSizeReduceRec = pow2 / 2;
+			}
+
 
 	size_t bufferSizeLig() const {
 		return d_trafoLig.bufferSize();
@@ -229,31 +244,26 @@ public:
 
 	void configureDevice() {
 
+		int id;
+		cudaVerify(cudaGetDevice(&id));
+		cudaDeviceProp deviceProp;
+		cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
+		size_t sharedMem = deviceProp.sharedMemPerBlock;
+		size_t pow2;
+
 		if (blockSizeReduceRec == 0) {
-			int id;
-			cudaVerify(cudaGetDevice(&id));
-			cudaDeviceProp deviceProp;
-			cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
-			size_t sharedMem = deviceProp.sharedMemPerBlock;
-			size_t pow2 = 16;
+			pow2 = 16;
 			while (pow2* (Common_Modes::numModesRec + 13)*sizeof(REAL) < sharedMem) {
 				pow2 *= 2;
 			}
-
 			blockSizeReduceRec = pow2 / 2;
 		}
 
 		if (blockSizeReduceLig == 0) {
-			int id;
-			cudaVerify(cudaGetDevice(&id));
-			cudaDeviceProp deviceProp;
-			cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
-			size_t sharedMem = deviceProp.sharedMemPerBlock;
-			size_t pow2 = 16;
+			pow2 = 16;
 			while (pow2* (Common_Modes::numModesLig + 13)*sizeof(REAL) < sharedMem) {
 				pow2 *= 2;
 			}
-
 			blockSizeReduceLig = pow2 / 2;
 		}
 	}
