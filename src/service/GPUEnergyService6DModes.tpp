@@ -152,20 +152,6 @@ public:
 		}
 	}
 
-	void
-	if (blockSizeReduceRec == 0) {
-				int id;
-				cudaVerify(cudaGetDevice(&id));
-				cudaDeviceProp deviceProp;
-				cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
-				size_t sharedMem = deviceProp.sharedMemPerBlock;
-				size_t pow2 = 16;
-				while (pow2* (Common_Modes::numModesRec + 13)*sizeof(REAL) < sharedMem) {
-					pow2 *= 2;
-				}
-
-				blockSizeReduceRec = pow2 / 2;
-			}
 
 
 	size_t bufferSizeLig() const {
@@ -221,6 +207,25 @@ public:
 		}
 	}
 
+	unsigned getMaxBlockSize(int dofSize){
+		int id;
+		int blockSizeReduce = 0;
+		cudaVerify(cudaGetDevice(&id));
+		cudaDeviceProp deviceProp;
+		cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
+		size_t sharedMem = deviceProp.sharedMemPerBlock;
+		size_t pow2;
+
+		if (blockSizeReduce == 0) {
+			pow2 = 16;
+			while (pow2* dofSize*sizeof(REAL) < sharedMem) {
+				pow2 *= 2;
+			}
+			blockSizeReduce = pow2 / 2;
+		}
+		return blockSizeReduce;
+	}
+
 	void S0_copyH2D() {
 		/* check if new item enters the pipeline */
 		if (predicates[pipeIdx[0]][0])
@@ -243,29 +248,9 @@ public:
 	}
 
 	void configureDevice() {
-
-		int id;
-		cudaVerify(cudaGetDevice(&id));
-		cudaDeviceProp deviceProp;
-		cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
-		size_t sharedMem = deviceProp.sharedMemPerBlock;
-		size_t pow2;
-
-		if (blockSizeReduceRec == 0) {
-			pow2 = 16;
-			while (pow2* (Common_Modes::numModesRec + 13)*sizeof(REAL) < sharedMem) {
-				pow2 *= 2;
-			}
-			blockSizeReduceRec = pow2 / 2;
-		}
-
-		if (blockSizeReduceLig == 0) {
-			pow2 = 16;
-			while (pow2* (Common_Modes::numModesLig + 13)*sizeof(REAL) < sharedMem) {
-				pow2 *= 2;
-			}
-			blockSizeReduceLig = pow2 / 2;
-		}
+		const int dofSize {13};
+		blockSizeReduceRec = getMaxBlockSize(dofSize + Common_Modes::numModesRec);
+		blockSizeReduceLig = getMaxBlockSize(dofSize + Common_Modes::numModesLig);
 	}
 
 	void S1_transform_potForce() {
