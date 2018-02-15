@@ -59,11 +59,8 @@ std::unique_ptr<App> AppFactory::create(AppType appType) {
 		break;
 
 	case AppType::EM:
-		// TODO: emATTRACT for Types_6D_Modes not yet implemented. This is a temporary workaround
 		if(std::is_same<GenericTypes, Types_6D_Modes<typename GenericTypes::input_t::real_t>>::value) {
-			//throw std::logic_error("Only scATTRACT is allowed with Modes!");
 			app = std::unique_ptr<App> (new emATTRACT<Types_6D_Modes<typename GenericTypes::input_t::real_t>>());
-
 		}
 		else{
 			app = std::unique_ptr<App> (new emATTRACT<Types_6D<typename GenericTypes::input_t::real_t>>());
