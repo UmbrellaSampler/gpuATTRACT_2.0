@@ -96,7 +96,7 @@ void Server<GenericTypes>::submit(request_t& request) {
 
 	/* Client */
 	{
-		if (_requestMng->isValid(request)) {
+		if (_requestMng->isValid(&request)) {
 			throw std::invalid_argument("Request has already been submitted.");
 		} else if (request.data() == nullptr) {
 			throw std::invalid_argument("Invalid input buffer (nullptr).");
