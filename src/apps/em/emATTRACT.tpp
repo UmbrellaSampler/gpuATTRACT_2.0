@@ -11,6 +11,7 @@
 #include <iostream>
 #include "emATTRACT.h"
 #include "Configurator_6D.h"
+#include "Configurator_6D_Modes.h"
 #include "Request.h"
 #include "Server.h"
 #include "RequestHandler.h"
@@ -43,7 +44,7 @@ void emATTRACT<GenericTypes>::run() {
 			.withServer(server)
 			.withCommon(common)
 			.withDofs(dofs)
-			.withSolverName("sdf")
+			.withSolverName("VA13")
 			.build();
 
 	requestHandler.run();
