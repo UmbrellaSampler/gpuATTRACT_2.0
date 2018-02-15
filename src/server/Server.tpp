@@ -29,7 +29,7 @@
 #include "ThreadSafeQueue.h"
 #include "ServerFunctions.h"
 #include "macros.h"
-#include <iostream>
+
 namespace as {
 
 template<typename GenericTypes>
@@ -92,8 +92,7 @@ void Server<GenericTypes>::setItemSize(size_t itemSize) {
 }
 
 template<typename GenericTypes>
-//void Server<GenericTypes>::submit(request_t& request) {
-void Server<GenericTypes>::submit(std::shared_ptr<request_t> const&  request) {
+void Server<GenericTypes>::submit(request_t& request) {
 
 	/* Client */
 	{
@@ -150,9 +149,6 @@ template<typename GenericTypes>
 void Server<GenericTypes>::wait(request_t const& request, result_t* clientBuffer)
 {
 	if (!_requestMng->isValid(&request) || clientBuffer == nullptr) {
-		if(clientBuffer == nullptr){std::cout<<"reqsize"<<std::endl;}
-		if(!_requestMng->isValid(&request)){std::cout<<"no req"<<std::endl;}
-		///std::cout<<"reqsize"<< _requestMng->reqSize()<<std::endl;
 		throw std::invalid_argument("Either request has not been submitted or clientBuffer invalid (nullptr).");
 	}
 
