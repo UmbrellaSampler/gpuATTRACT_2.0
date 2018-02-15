@@ -96,10 +96,10 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->alphabetRecName = vm["alphabetrec"].as<string>();
 	if(vm.count("alphabetlig"))
 		_args->alphabetLigName = vm["alphabetlig"].as<string>();
-	if(vm.count("modr"))
-		_args->recModesName = vm["modr"].as<string>();
-	if(vm.count("modl"))
-		_args->ligModesName = vm["modl"].as<string>();
+	if(vm.count("modesr"))
+		_args->recModesName = vm["modesr"].as<string>();
+	if(vm.count("modesl"))
+		_args->ligModesName = vm["modesl"].as<string>();
 	if(vm.count("numCPUs"))
 		_args->numCPUs = vm["numCPUs"].as<int>();
 	if(vm.count("device"))
