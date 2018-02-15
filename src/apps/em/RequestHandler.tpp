@@ -103,7 +103,6 @@ void RequestHandler<GenericTypes>::run() {
 
 	_collectedRequests.reserve(_chunkList.begin()->size());
 	_collectedResults.reserve(_chunkList.begin()->size());
-
 //	RingArray<int> reqIds;
 
 	/* initial loop: start solvers and collect first requests and submit*/
@@ -115,15 +114,16 @@ void RequestHandler<GenericTypes>::run() {
 		}
 
 		request_t request(_collectedRequests.data(), _collectedRequests.size(), _common);
+		std::shared_ptr<request_t> sh_request = std::make_shared<request_t>(request);
 		try {
-			_server->submit(request);
+			_server->submit(sh_request);
 		} catch (std::invalid_argument &e) {
 			cerr << "Error while submitting request: " << e.what() << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
 		chunk.setFetchSize(chunk.size());
-		chunk.setRequest(request);
+		chunk.setRequest(sh_request);
 
 		_collectedRequests.resize(0);
 	}
@@ -213,13 +213,14 @@ void RequestHandler<GenericTypes>::run() {
 			/* submit request */
 			if (_collectedRequests.size() > 0) { // there is still something to submit
 				request_t request(_collectedRequests.data(), _collectedRequests.size(), _common);
+				std::shared_ptr<request_t> sharedrequest = std::make_shared<request_t>(request);
 				try {
-					_server->submit(request);
+					_server->submit(sharedrequest);
 				} catch (std::invalid_argument &e) {
 					cerr << "Error while submitting request: " << e.what() << std::endl;
 					exit(EXIT_FAILURE);
 				}
-				chunk.setRequest(request);
+				chunk.setRequest(sharedrequest);
 			}
 
 			++chunkListIter;

@@ -45,12 +45,12 @@ public:
 	/**
 	 * Allocate new Buffers with size. Old buffers are automatically deallocated;
 	 */
-	void allocateBufferRec(size_t size) {
+	void allocateBufferLig(size_t size) {
 		h_trafoLig = std::move(WorkerBuffer<REAL>(3,size));
 		h_potLig = std::move(WorkerBuffer<REAL>(4,size));
 	}
 
-	void allocateBufferLig(size_t size) {
+	void allocateBufferRec(size_t size) {
 		h_trafoRec = std::move(WorkerBuffer<REAL>(3,size));
 		h_defoRec = std::move(WorkerBuffer<REAL>(3,size));
 		h_potRec = std::move(WorkerBuffer<REAL>(4,size));

@@ -13,7 +13,7 @@
 #include "Configurator_6D.h"
 #include "Request.h"
 #include "Server.h"
-
+#include <memory>
 namespace as {
 
 template<typename GenericTypes>
@@ -37,10 +37,11 @@ void scATTRACT<GenericTypes>::run() {
 	auto& common = _config->common();
 	size_t numDofs = dofs.size();
 	Request<input_t, common_t> request(dofs.data(), numDofs, common);
-	server->submit(request);
+	std::shared_ptr<Request<input_t, common_t>> sh_request = std::make_shared<Request<input_t, common_t>>(request);
+	server->submit(sh_request);
 
 	auto results = std::vector<result_t>(dofs.size());
-	server->wait(request, results.data());
+	server->wait(sh_request, results.data());
 
 	for (result_t const res : results) {
 		std::cout << res << std::endl;
