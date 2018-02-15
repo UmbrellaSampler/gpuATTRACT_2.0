@@ -101,19 +101,34 @@ template<typename REAL>
 void correctModeForce(
 		const REAL* modeForceConstant,
 		unsigned const& numModes,
+		const REAL* dlig,
 		REAL* delta
 		)
 {
 	constexpr REAL factor = 4.0;
-	constexpr int exp = 4;
+	constexpr int exp = 3;
 	REAL counterForce;
 
 	for(int mode = 0; mode < numModes; mode++){
-		counterForce=factor*modeForceConstant[mode]*pow(delta[mode],exp);
+		counterForce=factor*modeForceConstant[mode]*pow(dlig[mode],exp);
 		delta[mode]=delta[mode]+counterForce;
 	}
 }
 
+template<typename REAL>
+REAL getModeEngergy(
+		const REAL* modeForceConstant,
+		unsigned const& numModes,
+		const REAL* dlig
+		)
+{
+	constexpr int exp = 4;
+	REAL energy;
+	for(int mode = 0; mode < numModes; mode++){
+		energy += modeForceConstant[mode]*pow(dlig[mode],exp);
+	}
+	return energy;
+}
 
 #ifdef CUDA
 template<typename REAL,int PROTEINTYPE, bool MODES>
@@ -147,6 +162,7 @@ void h_finalReduce(
 	for (unsigned i = 0; i < numDOFs; ++i)
 	{
 		auto &enGrad = enGrads[i];
+		const auto &dof = dofs[i];
 		if(PROTEINTYPE == 1){
 			enGrad._6D.pos.x = deviceOut[i*dofSize + 0];
 			enGrad._6D.pos.y = deviceOut[i*dofSize + 1];
@@ -175,7 +191,7 @@ void h_finalReduce(
 			torque.mat[2][0] = deviceOut[i*dofSize + 10];
 			torque.mat[2][1] = deviceOut[i*dofSize + 11];
 			torque.mat[2][2] = deviceOut[i*dofSize + 12];
-			const auto &dof = dofs[i];
+
 			const TorqueMat<REAL> torqueMat = euler2torquemat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
 			Vec3<REAL> result = torqueMat.rotateReduce(torque);
 
@@ -196,7 +212,12 @@ void h_finalReduce(
 				correctModeForce(
 					protein->modeForce,
 					protein->numModes,
+					dof.modesRec,
 					enGrad.modesLig
+					);
+				enGrad._6D.E += getModeEngergy(protein->modeForce,
+					protein->numModes,
+					dof.modesLig
 					);
 			}
 			else{
@@ -207,7 +228,13 @@ void h_finalReduce(
 				correctModeForce(
 					protein->modeForce,
 					protein->numModes,
+					dof.modesLig,
 					enGrad.modesRec
+					);
+
+				enGrad._6D.E += getModeEngergy(protein->modeForce,
+					protein->numModes,
+					dof.modesRec
 					);
 			}
 

@@ -279,6 +279,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			correctModeForce(
 				lig-> modeForce(),
 				lig-> numModes(),
+				dof.modesLig,
 				redPotForce.modesLig
 				);
 
@@ -299,6 +300,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			correctModeForce(
 				rec->modeForce(),
 				rec-> numModes(),
+				dof.modesRec,
 				redPotForce.modesRec
 				);
 
