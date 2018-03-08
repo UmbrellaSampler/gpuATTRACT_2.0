@@ -7,7 +7,7 @@
 
 #ifndef SRC_MODEL_TRANSFORM_MODES_H_
 #define SRC_MODEL_TRANSFORM_MODES_H_
-
+#include <iostream>
 
 #include "transform.h"
 #include "Types_6D_Modes.h"
@@ -27,11 +27,12 @@ template<typename REAL>
 const DOF_6D_Modes<REAL> invertDOF( DOF_6D_Modes<REAL> ligandDOF)
 {
 	DOF_6D_Modes<REAL> invertedDOF;
+
 	Vec3<REAL> ang(0.0);
-	invertedDOF._6D.ang=ligandDOF._6D.ang.inv();
-	invertedDOF._6D.pos=ligandDOF._6D.pos.inv();
+	invertedDOF._6D.ang=ligandDOF._6D.ang;
+	invertedDOF._6D.pos=ligandDOF._6D.pos.inv() ;
 	const RotMat<REAL> rotMat=euler2rotmat(ligandDOF._6D.ang.x, ligandDOF._6D.ang.y, ligandDOF._6D.ang.z).getInv();
-	invertedDOF._6D.pos=rotMat*invertedDOF._6D.pos;
+	invertedDOF._6D.pos=rotMat*invertedDOF._6D.pos  ;
 	std::copy( ligandDOF.modesRec, ligandDOF.modesRec+MODES_MAX_NUMBER,
 				invertedDOF.modesRec);
 	std::copy(ligandDOF.modesLig, ligandDOF.modesLig+MODES_MAX_NUMBER,
@@ -68,10 +69,20 @@ void rotate_translate_deform(
 		REAL* zDeformed,
 		REAL* xTr,
 		REAL* yTr,
-		REAL* zTr)
+		REAL* zTr,
+		unsigned prottype
+		)
 {
-	const RotMat<REAL> rotMat = euler2rotmat(ang.x, ang.y, ang.z);
+	 RotMat<REAL> rotMat ;
 	 Vec3<REAL> center(0.0f) ;
+	 if ( prottype == 1)
+	 	{
+	 		rotMat = euler2rotmat(ang.x, ang.y, ang.z);
+	 	}
+	 	else if ( prottype == 0 )
+	 	{
+	 		rotMat = euler2rotmat(ang.x, ang.y, ang.z).getInv();
+	 	}
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> posAtom(x[i], y[i], z[i]);
 		for(int mode=0;mode<numModes;mode++){
@@ -111,8 +122,10 @@ void rotate_translate_deform(
 		REAL const* zModes,
 		REAL* xTr,
 		REAL* yTr,
-		REAL* zTr)
+		REAL* zTr
+		)
 {
+
 	const RotMat<REAL> rotMat = euler2rotmat(ang.x, ang.y, ang.z);
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> posAtom(x[i], y[i], z[i]);

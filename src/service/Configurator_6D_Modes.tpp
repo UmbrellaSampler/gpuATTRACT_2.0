@@ -24,7 +24,7 @@
 #include "DOFTransform.h"
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
-
+#include <iostream>
 namespace as {
 
 template<typename SERVICE>
@@ -87,6 +87,12 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 			ligand->pivotize(h.pivots[1]);
 		}
 
+		receptor->setNumModes(args.numModes);
+		ligand->setNumModes(args.numModes);
+
+
+		readHMMode<real_t>(receptor, args.recModesName);
+		readHMMode<real_t>(ligand, args.ligModesName);
 	/* transform ligand dofs assuming that the receptor is always centered in the origin */
 	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
 
@@ -95,11 +101,12 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	for (size_t i = 0; i < DOF_molecules[1].size(); ++i) {
 		this->_dofs[i]._6D.pos = DOF_molecules[1][i]._6D.pos;
 		this->_dofs[i]._6D.ang = DOF_molecules[1][i]._6D.ang;
-		std::copy(DOF_molecules[1][i].modesRec, DOF_molecules[1][i].modesRec + receptor->numModes(), this->_dofs[i].modesRec);
+		std::copy(DOF_molecules[0][i].modesRec, DOF_molecules[0][i].modesRec + receptor->numModes(), this->_dofs[i].modesRec);
 		std::copy(DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig + ligand->numModes(), this->_dofs[i].modesLig);
 	}
 
-
+std::cout << "ligand pivot" << ligand->pivot() << std::cout;
+std::cout << "receptor pivot" << receptor->pivot() << std::cout;
 
 	/* apply grid displacement */
 	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));
@@ -115,12 +122,6 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 
 
 
-	receptor->setNumModes(args.numModes);
-	ligand->setNumModes(args.numModes);
-
-
-	readHMMode<real_t>(receptor, args.recModesName);
-	readHMMode<real_t>(ligand, args.ligModesName);
 
 	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
 	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);

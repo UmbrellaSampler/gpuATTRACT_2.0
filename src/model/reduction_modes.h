@@ -42,8 +42,8 @@ void reduceModeForce(
 	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
 	//rotate forces into ligand frame
 	const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
-	for( int i=0; i<numModes;i++){result[i]=0;}
-
+	//for( int i=0; i<numModes;i++){result[i]=0;}
+	std::fill(result, result + numModes, 0.0);
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
 		forceAtom = rotMatInv * forceAtom;
@@ -123,7 +123,7 @@ REAL getModeEngergy(
 		)
 {
 	constexpr int exp = 4;
-	REAL energy;
+	REAL energy = 0;
 	for(int mode = 0; mode < numModes; mode++){
 		energy += modeForceConstant[mode]*pow(dlig[mode],exp);
 	}

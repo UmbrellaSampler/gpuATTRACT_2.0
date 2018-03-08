@@ -84,6 +84,11 @@ std::shared_ptr<ParamTable<REAL>> createParamTableFromFile(std::string filename)
 template<typename REAL>
 void readParamTableFromFile(std::shared_ptr<ParamTable<REAL>>, std::string filename);
 
+
+template<typename REAL>
+std::vector<std::vector<REAL>> readArray(std::string filename);
+
+
 struct AttractEnGrad {
 	double E;
 	double E_VdW;
@@ -119,7 +124,8 @@ public:
 	class Gradients {
 	public:
 		std::vector<double> _6D;
-		std::vector<double> modes;
+		std::vector<double> modesRec;
+		std::vector<double> modesLig;
 	};
 
 	double E;

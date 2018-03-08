@@ -702,26 +702,6 @@ std::vector<Result> readResult(std::string filename) {
 				Result::Gradients gradients;
 
 				while (line.compare(0,8, " Energy:") != 0) {
-					// read gradients
-					if (!line.compare(0, 11, " Gradients:")) {
-						stringstream stream(line);
-						string tmp;	stream >> tmp;
-
-						std::vector<double> grad_6D;
-						for (int i = 0; i < 6; ++i) {
-							double val;
-							stream >> val;
-							grad_6D.push_back(val);
-						}
-						gradients._6D = grad_6D;
-						if (!file.eof()) {
-							getline(file, line); ++lineNo;
-							nextAlreadyRead = true;
-						} else {
-							break;
-						}
-					}
-
 					// read mode gradients
 					if (!line.compare(0, 16, " Mode gradients:")) {
 						getline(file, line);
@@ -737,13 +717,51 @@ std::vector<Result> readResult(std::string filename) {
 								nextAlreadyRead = true;
 							}
 						}
-						gradients.modes = grad_modes;
+					gradients.modesRec = grad_modes;
+					}
+					// read gradients
+					if (!line.compare(0, 11, " Gradients:")) {
+						stringstream stream(line);
+						string tmp;	stream >> tmp;
+
+						std::vector<double> grad_6D;
+						for (int i = 0; i < 6; ++i) {
+							double val;
+							stream >> val;
+							grad_6D.push_back(val);
+						}
+						gradients._6D = grad_6D;
+
+						if (!file.eof()) {
+							getline(file, line); ++lineNo;
+							nextAlreadyRead = true;
+						} else {
+							break;
+						}
+					}
+					// read mode gradients
+					if (!line.compare(0, 16, " Mode gradients:")) {
+						getline(file, line);
+						++lineNo;
+						std::vector<double> grad_modes;
+						while (isNumber(line)) {
+							double val;
+							stringstream stream(line);
+							stream >> val;
+							grad_modes.push_back(val);
+							if (!file.eof()) {
+								getline(file, line); ++lineNo;
+								nextAlreadyRead = true;
+							}
+						}
+						gradients.modesLig = grad_modes;
 					}
 					result.gradients.push_back(gradients);
 					if (file.eof()) {
 						break;
 					}
 				}
+
 				result_molecules.push_back(result);
 			}
 			/* check if num equals the number of molecules == DOF_molecules.size(),
@@ -926,6 +944,51 @@ std::vector<unsigned> readGridAlphabetFromFile(std::string filename) {
 }
 
 
+
+template<typename REAL>
+std::vector<std::vector<REAL>> readArray(std::string filename)
+{
+	using namespace std;
+
+	ifstream file(filename);
+	string line;
+	std::vector<std::vector<REAL>> array;
+
+
+	if (file.is_open()) {
+		getline(file, line);
+		while (!file.eof()) {
+			vector<REAL> lineVec;
+			if (line.empty()) {
+				getline(file, line);
+				continue;
+			}
+
+			/* split line to vector of strings */
+			stringstream stream(line);
+			REAL value;
+			while( stream >> value ){
+				lineVec.push_back( value );
+			}
+			array.push_back( lineVec );
+
+			getline(file, line);
+
+		}
+	} else {
+		cerr << "Failed to open file " << filename << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	return array;
+}
+
+template
+std::vector<std::vector<double>> readArray(std::string filename);
+
+template
+std::vector<std::vector<float>> readArray(std::string filename);
+
 template
 std::shared_ptr<Protein<float>> createProteinFromPDB(std::string filename);
 
@@ -975,6 +1038,9 @@ template
 DOFHeader<double> readDOFHeader<double>(std::string filename);
 
 } // namespace as
+
+
+
 
 
 

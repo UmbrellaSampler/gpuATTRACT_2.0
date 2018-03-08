@@ -69,10 +69,10 @@ std::vector<std::vector<DOF_6D_Modes<REAL>>> DOFConverter_Modes(std::vector<std:
 
 		for (int mode=0; mode < Common_Modes::numModesRec; mode++){
 			if ( in[0][i].numDofs < Common_Modes::numModesRec || std::isnan(in[0][i].dofs[mode])){
-				outLig[i].modesRec[mode] = 0;
+				outRec[i].modesRec[mode] = 0;
 			}
 			else{
-				outLig[i].modesRec[mode] =  in[0][i].dofs[mode];
+				outRec[i].modesRec[mode] =  in[0][i].dofs[mode];
 			}
 		}
 		for (int mode=0; mode < Common_Modes::numModesLig; mode++){
