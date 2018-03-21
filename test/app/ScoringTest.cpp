@@ -76,10 +76,11 @@ TEST(Scoring, CPU) {
 	auto& common = serverConfigurator.common();
 	size_t numDofs = dofs.size();
 	Request<input_t, common_t> request(dofs.data(), numDofs, common);
-	server->submit(request);
+	std::shared_ptr<Request<input_t, common_t>> shared_request= std::make_shared<Request<input_t,common_t>>(request);
+	server->submit(shared_request);
 
 	auto results = std::vector<result_t>(dofs.size());
-	server->wait(request, results.data());
+	server->wait(shared_request, results.data());
 
 	vector<Result> refResults = readResult(scoreFileDocking);
 

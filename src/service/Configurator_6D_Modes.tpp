@@ -105,8 +105,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 		std::copy(DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig + ligand->numModes(), this->_dofs[i].modesLig);
 	}
 
-std::cout << "ligand pivot" << ligand->pivot() << std::cout;
-std::cout << "receptor pivot" << receptor->pivot() << std::cout;
+//std::cout << "ligand pivot" << ligand->pivot() << std::cout;
+//std::cout << "receptor pivot" << receptor->pivot() << std::cout;
 
 	/* apply grid displacement */
 	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));

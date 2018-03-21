@@ -89,7 +89,8 @@ TEST(Server, Interface_submit) {
 		.Times(AtLeast(0));
 	server.createWorkers(1);
 
-	request_t request;
+	request_t request_notshared;
+	std::shared_ptr<request_t> request = std::make_shared<request_t> (request_notshared);
 	try {
 		server.submit(request);
 		FAIL();
@@ -101,10 +102,10 @@ TEST(Server, Interface_submit) {
 	int size = 100000;
 	int input[size];
 	int result[size];
-	request.setDataAndSize(input, size);
+	request_notshared.setDataAndSize(input, size);
 	try {
 		server.submit(request);
-		request.setDataAndSize(input, size);
+		request_notshared.setDataAndSize(input, size);
 		server.submit(request);
 		FAIL();
 	} catch (std::exception& e) {
@@ -115,7 +116,7 @@ TEST(Server, Interface_submit) {
 	request.reset();
 	try {
 		for (int i = 0; i < 10; ++i) {
-			request.setDataAndSize(input, 0);
+			request_notshared.setDataAndSize(input, 0);
 			server.submit(request);
 			EXPECT_TRUE(true);
 			server.wait(request, result);
@@ -136,24 +137,26 @@ TEST(Server, Interface_wait) {
 		.Times(AtLeast(0));
 	server.createWorkers(1);
 
-	request_t request;
+	request_t request_notshared;
+	std::shared_ptr<request_t> request = std::make_shared<request_t> (request_notshared);
 	request.reset();
 	int size = 1;
 	int input[size];
 	int result[size];
 
-	request.setDataAndSize(input, size);
+	request_notshared.setDataAndSize(input, size);
 	try {
 		server.submit(request);
 		request_t otherRequest;
-		server.wait(otherRequest, result);
+		std::shared_ptr<request_t> otherRequest_shared = std::make_shared<request_t>(otherRequest);
+		server.wait(otherRequest_shared, result);
 		FAIL();
 	} catch (std::exception& e) {
 		ASSERT_STREQ( "Either request has not been submitted or clientBuffer invalid (nullptr).", e.what() );
 		server.wait(request, result); // to ensure that buffer return to buffer manager
 	}
 
-	request.setDataAndSize(input, size);
+	request_notshared.setDataAndSize(input, size);
 	try {
 		server.submit(request);
 		server.wait(request, nullptr);
@@ -170,10 +173,11 @@ TEST(Server, Interface_wait) {
 	server_to.setWaitTime(10);
 
 	request_t request_to;
+	std::shared_ptr<request_t> request_to_shared = std::make_shared<request_t>(request_to);
 	request_to.setDataAndSize(input, size);
 	try {
-		server_to.submit(request_to);
-		server_to.wait(request_to, result);
+		server_to.submit(request_to_shared);
+		server_to.wait(request_to_shared, result);
 		FAIL();
 	} catch (std::exception& e) {
 		ASSERT_STREQ( "Request takes too long to finish for unknown reasons", e.what() );
@@ -263,7 +267,8 @@ TEST_F(ServerIntegration, WithServiceMock)
 
 		for (unsigned inputSize : inputSizes) {
 			for (unsigned itemSize : itemSizes) {
-				request_t request = createRequest(inputSize);
+				request_t request_notshared = createRequest(inputSize);
+				std::shared_ptr<request_t> request= std::make_shared<request_t> (request_notshared);
 				server.setItemSize(itemSize);
 				server.submit(request);
 				server.wait(request, result);

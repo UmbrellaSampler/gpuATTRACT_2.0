@@ -97,6 +97,7 @@ Vec3<REAL> reduceTorque(
 		torque.mat[2][2] += z[i]*fz[i];
 	}
 
+
 	const TorqueMat<REAL> torqueMat = euler2torquemat(ang.x, ang.y, ang.z);
 	Vec3<REAL> result = torqueMat.rotateReduce(torque);
 

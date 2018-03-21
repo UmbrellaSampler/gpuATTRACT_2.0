@@ -131,7 +131,7 @@ void RequestHandler<GenericTypes>::run() {
 
 	unsigned count = 1;
 	while(_finishedObjects.size () < _numObjects && count < 100000) {
-
+    std::cout << _finishedObjects.size () << std::endl;
 		/* load balancing */
 
 		/* Adjust chunk sizes to balance the workload of each chunk.

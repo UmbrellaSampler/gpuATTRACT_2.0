@@ -181,8 +181,18 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			const auto& dof = dofs[i];
 			auto& enGrad = results[i];
 
+			Vec3<REAL> pr(32.823001861572266, -6.3949999809265137, 23.483999252319336);
+			Vec3<REAL> pl(51.143001556396484, 7.6799998283386230, 38.110000610351562);
+			DOF_6D_Modes<REAL> test = dof;
+			test._6D.pos = test._6D.pos + pr - pl;
+
+
+			//std::cout << test << std::endl;
+
 			//invert the receptor DOF such that it points to the receptor in the ligand system
 			DOF_6D_Modes<REAL> invertedRecDOF=invertDOF(dof);
+
+
 
 			//translate the coordinates of the receptor
 			rotate_translate_deform(
@@ -230,262 +240,262 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 
-			std::vector<std::vector<REAL>> ligandPivoOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformBeforeLigandPivotized_0000.dat" );
-			std::vector<std::vector<REAL>> receptorPivoOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformBeforeReceptorPivotized_0000.dat" );
-
-			std::vector<std::vector<REAL>> receptorModesOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/writtenReceptorModes.dat" );
-			std::vector<std::vector<REAL>> ligandModesOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/writtenLigandModes.dat" );
-
-			std::vector<std::vector<REAL>> ligandTransOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformAfterLigand_0000.dat" );
-			std::vector<std::vector<REAL>> receptorTransOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformAfterReceptor_0000.dat" );
-
-			std::vector<std::vector<REAL>> ligandDefoOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformBeforeLigand_0000.dat" );
-			std::vector<std::vector<REAL>> receptorDefoOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformBeforeReceptor_0000.dat" );
-
-			std::vector<std::vector<REAL>> ligandDefoAmplitudeOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/lig_deform_amplitude.dat" );
-			std::vector<std::vector<REAL>> receptorDefoAmplitudeOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/rec_deform_amplitude.dat" );
-
-			Vec3<REAL> pr(32.823001861572266, -6.3949999809265137, 23.483999252319336);
-			Vec3<REAL> pl(51.143001556396484, 7.6799998283386230, 38.110000610351562);
-
-			REAL epsmod = 0.001;
-			unsigned modeIdx = 0;
-			unsigned realIdx = 0;
-			std::cout << "ligand sizes. size orig" << ligandTransOrig.size () << "neew size" << lig->numAtoms() << std::endl;
-			std::cout << "receptor sizes. orig" << receptorTransOrig.size () << "neew size" << rec->numAtoms() << std::endl;
-
-
-			std::cout << "\n Compare ligand Modes" << std::endl;
-			for(size_t mode = 0; mode < 1; ++mode)
-			{
-				for(size_t i = 0; i < lig->numAtoms(); ++i)
-				{
-					realIdx = (lig->numAtoms() + 1) * mode + i + 1;
-					Vec3<REAL> origModeLig(ligandModesOrig[realIdx][0], ligandModesOrig[realIdx][1], ligandModesOrig[realIdx][2] );
-					Vec3<REAL> newModeLig(lig->xModes()[i * 5 + mode],lig->yModes()[i * 5 + mode], lig->zModes()[i * 5 + mode] );
-					compareTwoVec3(origModeLig, newModeLig, epsmod);
-				}
-			}
-
-
-			std::cout << "\n Compare receptor modes" << std::endl;
-			for(size_t mode = 0; mode < 5; ++mode)
-			{
-				for(size_t i = 0; i < rec->numAtoms(); ++i)
-				{
-					realIdx = (rec->numAtoms() + 1) * mode + i + 1;
-				//	Vec3<REAL> modeRec(receptorModesOrig[realIdx][0], receptorModesOrig[realIdx][1], receptorModesOrig[realIdx][2] );
-					Vec3<REAL> origModeRec(receptorModesOrig[realIdx][0],receptorModesOrig[realIdx][1], receptorModesOrig[realIdx][2] );
-					Vec3<REAL> newModeRec(rec->xModes()[i * 5 + mode],rec->yModes()[i * 5 + mode], rec->zModes()[i * 5 + mode] );
-					compareTwoVec3(origModeRec, newModeRec, epsmod);
-				}
-			}
-
-			REAL epsloc = 0.005;
-
-			std::cout << "\n Compare receptor Location" << std::endl;
-			for(size_t i = 0; i < rec->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> diffNewRec( buffers->h_trafoRec.getX()[i]- buffers->h_defoLig.getX()[0],
-									   buffers->h_trafoRec.getY()[i]- buffers->h_defoLig.getY()[0],
-									   buffers->h_trafoRec.getZ()[i]- buffers->h_defoLig.getZ()[0] );
-				Vec3<REAL> diffOrigRec(receptorTransOrig[i][0] - ligandDefoOrig[0][0],
-									   receptorTransOrig[i][1] - ligandDefoOrig[0][1],
-									   receptorTransOrig[i][2] - ligandDefoOrig[0][2]);
-				compareTwoVec3(diffOrigRec, diffNewRec, epsloc);
-			}
-
-			std::cout << "\n Compare ligand Location" << std::endl;
-			for(size_t i = 0; i < lig->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> diffNewLig ( buffers->h_trafoLig.getX()[i] - buffers->h_defoRec.getX()[10] + pr.x,
-										buffers->h_trafoLig.getY()[i] - buffers->h_defoRec.getY()[10] + pr.y,
-										buffers->h_trafoLig.getZ()[i] - buffers->h_defoRec.getZ()[10] + pr.z);
-				//diffNewLig = diffNewLig - pr;
-				Vec3<REAL> diffOrigLig( ligandTransOrig[i][0] - receptorPivoOrig[10][0],
-										ligandTransOrig[i][1] - receptorPivoOrig[10][1],
-										ligandTransOrig[i][2] - receptorPivoOrig[10][2]);
-
-				compareTwoVec3(diffOrigLig, diffNewLig, epsloc);
-			}
-
-
-			std::cout << "\n Compare receptor internal location Difference deformation" << std::endl;
-			for(size_t i = 1; i < rec->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> diffNewRec( buffers->h_defoRec.getX()[i] - buffers->h_defoRec.getX()[0],
-									   buffers->h_defoRec.getY()[i] - buffers->h_defoRec.getY()[0],
-									   buffers->h_defoRec.getZ()[i] - buffers->h_defoRec.getZ()[0] );
-				Vec3<REAL> diffOrigRec(receptorDefoOrig[i][0] - receptorDefoOrig[0][0],
-									   receptorDefoOrig[i][1] - receptorDefoOrig[0][1],
-									   receptorDefoOrig[i][2] - receptorDefoOrig[0][2]);
-				//diffNewRec = diffNewRec - pl;
-				if( abs(abs( diffNewRec.x / diffOrigRec.x ) - 1.0 ) > epsloc ||
-					abs(abs( diffNewRec.y / diffOrigRec.y ) - 1.0 ) > epsloc  ||
-					abs(abs( diffNewRec.z / diffOrigRec.z ) - 1.0 ) > epsloc )
-					compareTwoVec3(diffOrigRec, diffNewRec, epsloc);
-			}
-
-			std::cout << "\n Compare receptor internal location Difference transformation" << std::endl;
-			for(size_t i = 1; i < rec->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> diffNewRec( buffers->h_trafoRec.getX()[i] - buffers->h_trafoRec.getX()[0],
-									   buffers->h_trafoRec.getY()[i] - buffers->h_trafoRec.getY()[0],
-									   buffers->h_trafoRec.getZ()[i] - buffers->h_trafoRec.getZ()[0] );
-				Vec3<REAL> diffOrigRec(receptorTransOrig[i][0] - receptorTransOrig[0][0],
-									   receptorTransOrig[i][1] - receptorTransOrig[0][1],
-									   receptorTransOrig[i][2] - receptorTransOrig[0][2]);
-				compareTwoVec3(diffOrigRec, diffNewRec, epsloc);
-			}
-
-
-
-
-			std::cout << "\n Compare ligand internal location Difference" << std::endl;
-			for(size_t i = 1; i < rec->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> diffNewLig( buffers->h_trafoLig.getX()[i] - buffers->h_trafoLig.getX()[0],
-									   buffers->h_trafoLig.getY()[i] - buffers->h_trafoLig.getY()[0],
-									   buffers->h_trafoLig.getZ()[i] - buffers->h_trafoLig.getZ()[0] );
-				Vec3<REAL> diffOrigLig(ligandTransOrig[i][0] - ligandTransOrig[0][0],
-									   ligandTransOrig[i][1] - ligandTransOrig[0][1],
-									   ligandTransOrig[i][2] - ligandTransOrig[0][2]);
-				//diffNewRec = diffNewRec - pl;
-				compareTwoVec3(diffOrigLig, diffNewLig, epsloc);
-			}
-
-
-			REAL epslocpivo = 0.01;
-
-
-
-			std::cout << "\n Compare ligand original pivotized coordinates" << std::endl;
-			for(size_t i = 0; i < lig->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> pivoNewLig ( lig->xPos()[i],
-										lig->yPos()[i],
-										lig->zPos()[i]);
-
-				Vec3<REAL> pivoOrigLig( ligandPivoOrig[i][0],
-										ligandPivoOrig[i][1],
-										ligandPivoOrig[i][2]);
-				compareTwoVec3(pivoOrigLig, pivoNewLig, epslocpivo);
-			}
-
-			std::cout << "\n Compare receptor original pivotized coordinates" << std::endl;
-			for(size_t i = 0; i < rec->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> pivoNewRec ( rec->xPos()[i],
-										rec->yPos()[i],
-										rec->zPos()[i]);
-
-				Vec3<REAL> pivoOrigRec( receptorPivoOrig[i][0],
-										receptorPivoOrig[i][1],
-										receptorPivoOrig[i][2]);
-				if( 	abs(abs( pivoNewRec.x / pivoOrigRec.x ) - 1.0 ) > epsloc ||
-						abs(abs( pivoNewRec.y / pivoOrigRec.y ) - 1.0 ) > epsloc ||
-						abs(abs( pivoNewRec.z / pivoOrigRec.z ) - 1.0 ) > epsloc )
-				{
-//					std::cout << "gpuattract pivo " << i << " " << pivoNewRec << std::endl;
-//					std::cout << "original   pivo " << i << " " << pivoOrigRec << std::endl;
+//			std::vector<std::vector<REAL>> ligandPivoOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformBeforeLigandPivotized_0000.dat" );
+//			std::vector<std::vector<REAL>> receptorPivoOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformBeforeReceptorPivotized_0000.dat" );
+//
+//			std::vector<std::vector<REAL>> receptorModesOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/writtenReceptorModes.dat" );
+//			std::vector<std::vector<REAL>> ligandModesOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/1AVX/reference/writtenLigandModes.dat" );
+//
+//			std::vector<std::vector<REAL>> ligandTransOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformAfterLigand_0000.dat" );
+//			std::vector<std::vector<REAL>> receptorTransOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformAfterReceptor_0000.dat" );
+//
+//			std::vector<std::vector<REAL>> ligandDefoOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformBeforeLigand_0000.dat" );
+//			std::vector<std::vector<REAL>> receptorDefoOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/deformBeforeReceptor_0000.dat" );
+//
+//			std::vector<std::vector<REAL>> ligandDefoAmplitudeOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/lig_deform_amplitude.dat" );
+//			std::vector<std::vector<REAL>> receptorDefoAmplitudeOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/rec_deform_amplitude.dat" );
+//
+//			Vec3<REAL> pr(32.823001861572266, -6.3949999809265137, 23.483999252319336);
+//			Vec3<REAL> pl(51.143001556396484, 7.6799998283386230, 38.110000610351562);
+//
+//			REAL epsmod = 0.001;
+//			unsigned modeIdx = 0;
+//			unsigned realIdx = 0;
+//			std::cout << "ligand sizes. size orig" << ligandTransOrig.size () << "neew size" << lig->numAtoms() << std::endl;
+//			std::cout << "receptor sizes. orig" << receptorTransOrig.size () << "neew size" << rec->numAtoms() << std::endl;
+//
+//
+//			std::cout << "\n Compare ligand Modes" << std::endl;
+//			for(size_t mode = 0; mode < 1; ++mode)
+//			{
+//				for(size_t i = 0; i < lig->numAtoms(); ++i)
+//				{
+//					realIdx = (lig->numAtoms() + 1) * mode + i + 1;
+//					Vec3<REAL> origModeLig(ligandModesOrig[realIdx][0], ligandModesOrig[realIdx][1], ligandModesOrig[realIdx][2] );
+//					Vec3<REAL> newModeLig(lig->xModes()[i * 5 + mode],lig->yModes()[i * 5 + mode], lig->zModes()[i * 5 + mode] );
+//					compareTwoVec3(origModeLig, newModeLig, epsmod);
+//				}
+//			}
+//
+//
+//			std::cout << "\n Compare receptor modes" << std::endl;
+//			for(size_t mode = 0; mode < 5; ++mode)
+//			{
+//				for(size_t i = 0; i < rec->numAtoms(); ++i)
+//				{
+//					realIdx = (rec->numAtoms() + 1) * mode + i + 1;
+//				//	Vec3<REAL> modeRec(receptorModesOrig[realIdx][0], receptorModesOrig[realIdx][1], receptorModesOrig[realIdx][2] );
+//					Vec3<REAL> origModeRec(receptorModesOrig[realIdx][0],receptorModesOrig[realIdx][1], receptorModesOrig[realIdx][2] );
+//					Vec3<REAL> newModeRec(rec->xModes()[i * 5 + mode],rec->yModes()[i * 5 + mode], rec->zModes()[i * 5 + mode] );
+//					compareTwoVec3(origModeRec, newModeRec, epsmod);
+//				}
+//			}
+//
+//			REAL epsloc = 0.005;
+//
+//			std::cout << "\n Compare receptor Location" << std::endl;
+//			for(size_t i = 0; i < rec->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> diffNewRec( buffers->h_trafoRec.getX()[i]- buffers->h_defoLig.getX()[0],
+//									   buffers->h_trafoRec.getY()[i]- buffers->h_defoLig.getY()[0],
+//									   buffers->h_trafoRec.getZ()[i]- buffers->h_defoLig.getZ()[0] );
+//				Vec3<REAL> diffOrigRec(receptorTransOrig[i][0] - ligandDefoOrig[0][0],
+//									   receptorTransOrig[i][1] - ligandDefoOrig[0][1],
+//									   receptorTransOrig[i][2] - ligandDefoOrig[0][2]);
+//				compareTwoVec3(diffOrigRec, diffNewRec, epsloc);
+//			}
+//
+//			std::cout << "\n Compare ligand Location" << std::endl;
+//			for(size_t i = 0; i < lig->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> diffNewLig ( buffers->h_trafoLig.getX()[i] - buffers->h_defoRec.getX()[10] + pr.x,
+//										buffers->h_trafoLig.getY()[i] - buffers->h_defoRec.getY()[10] + pr.y,
+//										buffers->h_trafoLig.getZ()[i] - buffers->h_defoRec.getZ()[10] + pr.z);
+//				//diffNewLig = diffNewLig - pr;
+//				Vec3<REAL> diffOrigLig( ligandTransOrig[i][0] - receptorPivoOrig[10][0],
+//										ligandTransOrig[i][1] - receptorPivoOrig[10][1],
+//										ligandTransOrig[i][2] - receptorPivoOrig[10][2]);
+//
+//				compareTwoVec3(diffOrigLig, diffNewLig, epsloc);
+//			}
+//
+//
+//			std::cout << "\n Compare receptor internal location Difference deformation" << std::endl;
+//			for(size_t i = 1; i < rec->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> diffNewRec( buffers->h_defoRec.getX()[i] - buffers->h_defoRec.getX()[0],
+//									   buffers->h_defoRec.getY()[i] - buffers->h_defoRec.getY()[0],
+//									   buffers->h_defoRec.getZ()[i] - buffers->h_defoRec.getZ()[0] );
+//				Vec3<REAL> diffOrigRec(receptorDefoOrig[i][0] - receptorDefoOrig[0][0],
+//									   receptorDefoOrig[i][1] - receptorDefoOrig[0][1],
+//									   receptorDefoOrig[i][2] - receptorDefoOrig[0][2]);
+//				//diffNewRec = diffNewRec - pl;
+//				if( abs(abs( diffNewRec.x / diffOrigRec.x ) - 1.0 ) > epsloc ||
+//					abs(abs( diffNewRec.y / diffOrigRec.y ) - 1.0 ) > epsloc  ||
+//					abs(abs( diffNewRec.z / diffOrigRec.z ) - 1.0 ) > epsloc )
+//					compareTwoVec3(diffOrigRec, diffNewRec, epsloc);
+//			}
+//
+//			std::cout << "\n Compare receptor internal location Difference transformation" << std::endl;
+//			for(size_t i = 1; i < rec->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> diffNewRec( buffers->h_trafoRec.getX()[i] - buffers->h_trafoRec.getX()[0],
+//									   buffers->h_trafoRec.getY()[i] - buffers->h_trafoRec.getY()[0],
+//									   buffers->h_trafoRec.getZ()[i] - buffers->h_trafoRec.getZ()[0] );
+//				Vec3<REAL> diffOrigRec(receptorTransOrig[i][0] - receptorTransOrig[0][0],
+//									   receptorTransOrig[i][1] - receptorTransOrig[0][1],
+//									   receptorTransOrig[i][2] - receptorTransOrig[0][2]);
+//				compareTwoVec3(diffOrigRec, diffNewRec, epsloc);
+//			}
+//
+//
+//
+//
+//			std::cout << "\n Compare ligand internal location Difference" << std::endl;
+//			for(size_t i = 1; i < rec->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> diffNewLig( buffers->h_trafoLig.getX()[i] - buffers->h_trafoLig.getX()[0],
+//									   buffers->h_trafoLig.getY()[i] - buffers->h_trafoLig.getY()[0],
+//									   buffers->h_trafoLig.getZ()[i] - buffers->h_trafoLig.getZ()[0] );
+//				Vec3<REAL> diffOrigLig(ligandTransOrig[i][0] - ligandTransOrig[0][0],
+//									   ligandTransOrig[i][1] - ligandTransOrig[0][1],
+//									   ligandTransOrig[i][2] - ligandTransOrig[0][2]);
+//				//diffNewRec = diffNewRec - pl;
+//				compareTwoVec3(diffOrigLig, diffNewLig, epsloc);
+//			}
+//
+//
+//			REAL epslocpivo = 0.01;
+//
+//
+//
+//			std::cout << "\n Compare ligand original pivotized coordinates" << std::endl;
+//			for(size_t i = 0; i < lig->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> pivoNewLig ( lig->xPos()[i],
+//										lig->yPos()[i],
+//										lig->zPos()[i]);
+//
+//				Vec3<REAL> pivoOrigLig( ligandPivoOrig[i][0],
+//										ligandPivoOrig[i][1],
+//										ligandPivoOrig[i][2]);
+//				compareTwoVec3(pivoOrigLig, pivoNewLig, epslocpivo);
+//			}
+//
+//			std::cout << "\n Compare receptor original pivotized coordinates" << std::endl;
+//			for(size_t i = 0; i < rec->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> pivoNewRec ( rec->xPos()[i],
+//										rec->yPos()[i],
+//										rec->zPos()[i]);
+//
+//				Vec3<REAL> pivoOrigRec( receptorPivoOrig[i][0],
+//										receptorPivoOrig[i][1],
+//										receptorPivoOrig[i][2]);
+//				if( 	abs(abs( pivoNewRec.x / pivoOrigRec.x ) - 1.0 ) > epsloc ||
+//						abs(abs( pivoNewRec.y / pivoOrigRec.y ) - 1.0 ) > epsloc ||
+//						abs(abs( pivoNewRec.z / pivoOrigRec.z ) - 1.0 ) > epsloc )
+//				{
+////					std::cout << "gpuattract pivo " << i << " " << pivoNewRec << std::endl;
+////					std::cout << "original   pivo " << i << " " << pivoOrigRec << std::endl;
+////					std::cout <<  std::endl;
+//				}
+//			}
+//
+//
+//
+//			std::cout << "\n Compare ligand deformation amplitude" << std::endl;
+//			for(size_t i = 0; i < rec->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> defoAmplNewLig (buffers->h_defoLig.getX()[i],
+//										   	buffers->h_defoLig.getY()[i],
+//										   	buffers->h_defoLig.getZ()[i]);
+//
+//				Vec3<REAL> defoAmplOrigLig(   ligandDefoAmplitudeOrig[i][0],
+//										   	   ligandDefoAmplitudeOrig[i][1],
+//										   	   ligandDefoAmplitudeOrig[i][2]);
+//				if( 	abs(abs( defoAmplNewLig.x / defoAmplOrigLig.x ) - 1.0 ) > 0.1 ||
+//						abs(abs( defoAmplNewLig.y / defoAmplOrigLig.y ) - 1.0 ) > 0.1 ||
+//						abs(abs( defoAmplNewLig.z / defoAmplOrigLig.z ) - 1.0 ) > 0.1 )
+//				{
+//					std::cout << "gpuattract deformation ampplitude " << i << " " << defoAmplNewLig << std::endl;
+//					std::cout << "original   deformation ampplitude " << i << " " << defoAmplOrigLig << std::endl;
 //					std::cout <<  std::endl;
-				}
-			}
-
-
-
-			std::cout << "\n Compare ligand deformation amplitude" << std::endl;
-			for(size_t i = 0; i < rec->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> defoAmplNewLig (buffers->h_defoLig.getX()[i],
-										   	buffers->h_defoLig.getY()[i],
-										   	buffers->h_defoLig.getZ()[i]);
-
-				Vec3<REAL> defoAmplOrigLig(   ligandDefoAmplitudeOrig[i][0],
-										   	   ligandDefoAmplitudeOrig[i][1],
-										   	   ligandDefoAmplitudeOrig[i][2]);
-				if( 	abs(abs( defoAmplNewLig.x / defoAmplOrigLig.x ) - 1.0 ) > 0.1 ||
-						abs(abs( defoAmplNewLig.y / defoAmplOrigLig.y ) - 1.0 ) > 0.1 ||
-						abs(abs( defoAmplNewLig.z / defoAmplOrigLig.z ) - 1.0 ) > 0.1 )
-				{
-					std::cout << "gpuattract deformation ampplitude " << i << " " << defoAmplNewLig << std::endl;
-					std::cout << "original   deformation ampplitude " << i << " " << defoAmplOrigLig << std::endl;
-					std::cout <<  std::endl;
-				}
-			}
-
-			std::cout << "\n Compare receptor deformation amplitude" << std::endl;
-			for(size_t i = 0; i < rec->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> defoAmplNewRec ( 	buffers->h_defoRec.getX()[i],
-												buffers->h_defoRec.getY()[i],
-												buffers->h_defoRec.getZ()[i]);
-
-				Vec3<REAL> defoAmplOrigRec( 	receptorDefoAmplitudeOrig[i][0],
-												receptorDefoAmplitudeOrig[i][1],
-												receptorDefoAmplitudeOrig[i][2]);
-				if( 	abs(abs( defoAmplNewRec.x / defoAmplOrigRec.x ) - 1.0 ) > 0.1 ||
-						abs(abs( defoAmplNewRec.y / defoAmplOrigRec.y ) - 1.0 ) > 0.1 ||
-						abs(abs( defoAmplNewRec.z / defoAmplOrigRec.z ) - 1.0 ) > 0.1 )
-				{
-//					std::cout << "gpuattract deformation amplitude " << i << " " << defoAmplNewRec << std::endl;
-//					std::cout << "original   deformation amplitude " << i << " " << defoAmplOrigRec << std::endl;
-//					std::cout << abs( defoAmplNewRec.x / defoAmplOrigRec.x ) << " " << abs( defoAmplNewRec.y / defoAmplOrigRec.y )<< " " <<abs( defoAmplNewRec.z / defoAmplOrigRec.z )<< std::endl;
-				}
-			}
-
-
-			std::cout << "\n Compare ligand deformed coordinates" << std::endl;
-			for(size_t i = 0; i < lig->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> defoNewLig ( buffers->h_defoLig.getX()[i],
-										buffers->h_defoLig.getY()[i],
-										buffers->h_defoLig.getZ()[i]);
-				defoNewLig = defoNewLig + pl;
-				Vec3<REAL> defoOrigLig( ligandDefoOrig[i][0],
-										ligandDefoOrig[i][1],
-										ligandDefoOrig[i][2]);
-				if( 	abs(abs( defoNewLig.x / defoOrigLig.x ) - 1.0 ) > epsloc ||
-						abs(abs( defoNewLig.y / defoOrigLig.y ) - 1.0 ) > epsloc ||
-						abs(abs( defoNewLig.z / defoOrigLig.z ) - 1.0 ) > epsloc )
-				{
-//					std::cout << "gpuattract defo  " << i << " " << defoNewLig << std::endl;
-//					std::cout << "original defo " << i << " " << defoOrigLig << std::endl;
-//					std::cout <<  std::endl;
-				}
-			}
-
-
-			std::cout << "\n Compare receptor deformed coordinates" << std::endl;
-			for(size_t i = 0; i < rec->numAtoms(); ++i)
-			{
-
-				Vec3<REAL> defoNewRec ( buffers->h_defoRec.getX()[i],
-										buffers->h_defoRec.getY()[i],
-										buffers->h_defoRec.getZ()[i]);
-				defoNewRec = defoNewRec + pr;
-				Vec3<REAL> defoOrigRec( receptorDefoOrig[i][0],
-										receptorDefoOrig[i][1],
-										receptorDefoOrig[i][2]);
-			if( abs(abs( defoNewRec.x / defoOrigRec.x ) - 1.0 ) > epsloc ||
-				abs(abs( defoNewRec.y / defoOrigRec.y ) - 1.0 ) > epsloc ||
-				abs(abs( defoNewRec.z / defoOrigRec.z ) - 1.0 ) > epsloc )
-				{
-//					std::cout << "gpuattract defo  " << i << " " << defoNewRec << std::endl;
-//					std::cout << "original defo " << i << " " << defoOrigRec << std::endl;
-//					std::cout <<  std::endl;
-				}
-			}
+//				}
+//			}
+//
+//			std::cout << "\n Compare receptor deformation amplitude" << std::endl;
+//			for(size_t i = 0; i < rec->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> defoAmplNewRec ( 	buffers->h_defoRec.getX()[i],
+//												buffers->h_defoRec.getY()[i],
+//												buffers->h_defoRec.getZ()[i]);
+//
+//				Vec3<REAL> defoAmplOrigRec( 	receptorDefoAmplitudeOrig[i][0],
+//												receptorDefoAmplitudeOrig[i][1],
+//												receptorDefoAmplitudeOrig[i][2]);
+//				if( 	abs(abs( defoAmplNewRec.x / defoAmplOrigRec.x ) - 1.0 ) > 0.1 ||
+//						abs(abs( defoAmplNewRec.y / defoAmplOrigRec.y ) - 1.0 ) > 0.1 ||
+//						abs(abs( defoAmplNewRec.z / defoAmplOrigRec.z ) - 1.0 ) > 0.1 )
+//				{
+////					std::cout << "gpuattract deformation amplitude " << i << " " << defoAmplNewRec << std::endl;
+////					std::cout << "original   deformation amplitude " << i << " " << defoAmplOrigRec << std::endl;
+////					std::cout << abs( defoAmplNewRec.x / defoAmplOrigRec.x ) << " " << abs( defoAmplNewRec.y / defoAmplOrigRec.y )<< " " <<abs( defoAmplNewRec.z / defoAmplOrigRec.z )<< std::endl;
+//				}
+//			}
+//
+//
+//			std::cout << "\n Compare ligand deformed coordinates" << std::endl;
+//			for(size_t i = 0; i < lig->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> defoNewLig ( buffers->h_defoLig.getX()[i],
+//										buffers->h_defoLig.getY()[i],
+//										buffers->h_defoLig.getZ()[i]);
+//				defoNewLig = defoNewLig + pl;
+//				Vec3<REAL> defoOrigLig( ligandDefoOrig[i][0],
+//										ligandDefoOrig[i][1],
+//										ligandDefoOrig[i][2]);
+//				if( 	abs(abs( defoNewLig.x / defoOrigLig.x ) - 1.0 ) > epsloc ||
+//						abs(abs( defoNewLig.y / defoOrigLig.y ) - 1.0 ) > epsloc ||
+//						abs(abs( defoNewLig.z / defoOrigLig.z ) - 1.0 ) > epsloc )
+//				{
+////					std::cout << "gpuattract defo  " << i << " " << defoNewLig << std::endl;
+////					std::cout << "original defo " << i << " " << defoOrigLig << std::endl;
+////					std::cout <<  std::endl;
+//				}
+//			}
+//
+//
+//			std::cout << "\n Compare receptor deformed coordinates" << std::endl;
+//			for(size_t i = 0; i < rec->numAtoms(); ++i)
+//			{
+//
+//				Vec3<REAL> defoNewRec ( buffers->h_defoRec.getX()[i],
+//										buffers->h_defoRec.getY()[i],
+//										buffers->h_defoRec.getZ()[i]);
+//				defoNewRec = defoNewRec + pr;
+//				Vec3<REAL> defoOrigRec( receptorDefoOrig[i][0],
+//										receptorDefoOrig[i][1],
+//										receptorDefoOrig[i][2]);
+//			if( abs(abs( defoNewRec.x / defoOrigRec.x ) - 1.0 ) > epsloc ||
+//				abs(abs( defoNewRec.y / defoOrigRec.y ) - 1.0 ) > epsloc ||
+//				abs(abs( defoNewRec.z / defoOrigRec.z ) - 1.0 ) > epsloc )
+//				{
+////					std::cout << "gpuattract defo  " << i << " " << defoNewRec << std::endl;
+////					std::cout << "original defo " << i << " " << defoOrigRec << std::endl;
+////					std::cout <<  std::endl;
+//				}
+//			}
 
 
 
@@ -582,6 +592,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			); // OK
 
 
+			//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
+			for(size_t i = 0; i < 20; ++i) {
+				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << std::endl;//<< " " << buffers->h_potLig.getW()[i] << std::endl;
+			}
+
 //			NLPotForce(
 //				gridRec->NL.get(),
 //				rec,
@@ -644,60 +659,60 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 ////			// Debug
 
-			std::vector<std::vector<REAL>> ligandForcesOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/forcesLigand_0000.dat" );
-			std::vector<std::vector<REAL>> receptorForcesOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/forcesReceptor_0000.dat" );
-
-
-			REAL eps = 0.01;
-
-			std::cout << " ligand sizes. size orig" << ligandForcesOrig.size () << "neew size" << lig->numAtoms() << std::endl;
-			std::cout << " receptor sizes. orig" << receptorForcesOrig.size () << "neew size" << rec->numAtoms() << std::endl;
-			Vec3<REAL> diffSumRec(0.0);
-			Vec3<REAL> diffSumLig(0.0);
-
-			assert( lig->numAtoms() ==   ligandForcesOrig.size() );
-			assert( rec->numAtoms() == receptorForcesOrig.size() );
-			std::cout << "\n Compare ligand Forces" << std::endl;
-
-			for(size_t i = 0; i < lig->numAtoms(); ++i)
-			{
-				if( abs( abs( buffers->h_potLig.getX()[i] / ligandForcesOrig[i][0]) -1.0 ) > eps || abs(abs( buffers->h_potLig.getY()[i] / ligandForcesOrig[i][1]) -1.0 ) > eps || abs(abs( buffers->h_potLig.getZ()[i] / ligandForcesOrig[i][2]) - 1.0 ) > eps )
-				{
-					//std::cout << "gpuattractForces  " << i << " " << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << std::endl;
-					//std::cout << "original Forces   " << i << " " << ligandForcesOrig[i][0] << " " << ligandForcesOrig[i][1] << " " << ligandForcesOrig[i][2] << std::endl;
-
-					diffSumLig.x += buffers->h_potLig.getX()[i] - ligandForcesOrig[i][0];
-					diffSumLig.y += buffers->h_potLig.getY()[i] - ligandForcesOrig[i][1];
-					diffSumLig.z += buffers->h_potLig.getZ()[i] - ligandForcesOrig[i][2];
-					//std::cout << "difference     " << i << " " << diffSumLig << std::endl;
-					//std::cout <<  std::endl;
-
-				}
-			}
-
-
-
-			std::cout << "\n Compare receptor Forces" << std::endl;
-			for(size_t i = 0; i < rec->numAtoms(); ++i)
-			{
-				if( abs(abs( buffers->h_potRec.getX()[i] / receptorForcesOrig[i][0]) - 1.0 ) > eps ||
-					abs(abs( buffers->h_potRec.getY()[i] / receptorForcesOrig[i][1]) -1.0 ) > eps ||
-					abs(abs( buffers->h_potRec.getZ()[i] / receptorForcesOrig[i][2]) -1.0 ) > eps )
-				{
-				//	std::cout << "gpuattractForces " << i << " " << buffers->h_potRec.getX()[i] << " " << buffers->h_potRec.getY()[i] << " " << buffers->h_potRec.getZ()[i] << std::endl;
-				//	std::cout << "original Forces  " << i << " " << receptorForcesOrig[i][0] << " " << receptorForcesOrig[i][1] << " " << receptorForcesOrig[i][2] << std::endl;
-
-
-					diffSumRec.x = buffers->h_potRec.getX()[i] - receptorForcesOrig[i][0];
-					diffSumRec.y = buffers->h_potRec.getY()[i] - receptorForcesOrig[i][1];
-					diffSumRec.z = buffers->h_potRec.getZ()[i] - receptorForcesOrig[i][2];
-				//	std::cout << "difference     " << i << " " << diffSumRec << std::endl;
-				//	std::cout <<  std::endl;
-				}
-			}
-
-			std::cout << "forces difference receptor" << diffSumRec << std::endl;
-			std::cout << "forces difference ligand " << diffSumLig << std::endl;
+//			std::vector<std::vector<REAL>> ligandForcesOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/forcesLigand_0000.dat" );
+//			std::vector<std::vector<REAL>> receptorForcesOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/forcesReceptor_0000.dat" );
+//
+//
+//			REAL eps = 0.01;
+//
+//			std::cout << " ligand sizes. size orig" << ligandForcesOrig.size () << "neew size" << lig->numAtoms() << std::endl;
+//			std::cout << " receptor sizes. orig" << receptorForcesOrig.size () << "neew size" << rec->numAtoms() << std::endl;
+//			Vec3<REAL> diffSumRec(0.0);
+//			Vec3<REAL> diffSumLig(0.0);
+//
+//			assert( lig->numAtoms() ==   ligandForcesOrig.size() );
+//			assert( rec->numAtoms() == receptorForcesOrig.size() );
+//			std::cout << "\n Compare ligand Forces" << std::endl;
+//
+//			for(size_t i = 0; i < lig->numAtoms(); ++i)
+//			{
+//				if( abs( abs( buffers->h_potLig.getX()[i] / ligandForcesOrig[i][0]) -1.0 ) > eps || abs(abs( buffers->h_potLig.getY()[i] / ligandForcesOrig[i][1]) -1.0 ) > eps || abs(abs( buffers->h_potLig.getZ()[i] / ligandForcesOrig[i][2]) - 1.0 ) > eps )
+//				{
+//					//std::cout << "gpuattractForces  " << i << " " << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << std::endl;
+//					//std::cout << "original Forces   " << i << " " << ligandForcesOrig[i][0] << " " << ligandForcesOrig[i][1] << " " << ligandForcesOrig[i][2] << std::endl;
+//
+//					diffSumLig.x += buffers->h_potLig.getX()[i] - ligandForcesOrig[i][0];
+//					diffSumLig.y += buffers->h_potLig.getY()[i] - ligandForcesOrig[i][1];
+//					diffSumLig.z += buffers->h_potLig.getZ()[i] - ligandForcesOrig[i][2];
+//					//std::cout << "difference     " << i << " " << diffSumLig << std::endl;
+//					//std::cout <<  std::endl;
+//
+//				}
+//			}
+//
+//
+//
+//			std::cout << "\n Compare receptor Forces" << std::endl;
+//			for(size_t i = 0; i < rec->numAtoms(); ++i)
+//			{
+//				if( abs(abs( buffers->h_potRec.getX()[i] / receptorForcesOrig[i][0]) - 1.0 ) > eps ||
+//					abs(abs( buffers->h_potRec.getY()[i] / receptorForcesOrig[i][1]) -1.0 ) > eps ||
+//					abs(abs( buffers->h_potRec.getZ()[i] / receptorForcesOrig[i][2]) -1.0 ) > eps )
+//				{
+//				//	std::cout << "gpuattractForces " << i << " " << buffers->h_potRec.getX()[i] << " " << buffers->h_potRec.getY()[i] << " " << buffers->h_potRec.getZ()[i] << std::endl;
+//				//	std::cout << "original Forces  " << i << " " << receptorForcesOrig[i][0] << " " << receptorForcesOrig[i][1] << " " << receptorForcesOrig[i][2] << std::endl;
+//
+//
+//					diffSumRec.x = buffers->h_potRec.getX()[i] - receptorForcesOrig[i][0];
+//					diffSumRec.y = buffers->h_potRec.getY()[i] - receptorForcesOrig[i][1];
+//					diffSumRec.z = buffers->h_potRec.getZ()[i] - receptorForcesOrig[i][2];
+//				//	std::cout << "difference     " << i << " " << diffSumRec << std::endl;
+//				//	std::cout <<  std::endl;
+//				}
+//			}
+//
+//			std::cout << "forces difference receptor" << diffSumRec << std::endl;
+//			std::cout << "forces difference ligand " << diffSumLig << std::endl;
 			//exit(EXIT_SUCCESS);
 
 
@@ -731,7 +746,8 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			reduceModeForce(
-				invertedRecDOF._6D.ang,
+				//invertedRecDOF._6D.ang,
+				Vec3<REAL> (0.0),
 				buffers->h_potLig.getX(),
 				buffers->h_potLig.getY(),
 				buffers->h_potLig.getZ(),
@@ -775,9 +791,9 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			//copy reduced forces
 			for( int mode = 0; mode < lig->numModes(); mode++) {
 				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
-				std::cout << redPotForce.modesLig[mode] << " ";
+			//	std::cout << redPotForce.modesLig[mode] << " ";
 			}
-			std::cout << std::endl;
+			//std::cout << std::endl;
 			for( int mode = 0; mode < rec->numModes(); mode++) {
 				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
 			}
@@ -793,7 +809,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					);
 
 			enGrad._6D.E = redPotForce.E + modeEnergyReceptor + modeEnergyLigand;
-			enGrad._6D.pos = redPotForce.pos - redPotForceReceptor.pos;
+			enGrad._6D.pos = redPotForce.pos ;//- redPotForceReceptor.pos;
 
 			enGrad._6D.ang = reduceTorque(
 					lig->xPos(),
@@ -806,6 +822,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					dof._6D.ang
 			); // OK
 
+
+			for( int i = 0; i< 10; i++){
+			//	std::cout << buffers->h_potRec.getX()[i] << " " << buffers->h_potRec.getY()[i] << " " << buffers->h_potRec.getZ()[i]<< std::endl;
+
+			}
 			Vec3<REAL> angForce = reduceTorque(
 					rec->xPos(),
 					rec->yPos(),
@@ -814,28 +835,29 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					buffers->h_potRec.getY(),
 					buffers->h_potRec.getZ(),
 					rec->numAtoms(),
-					invertedRecDOF._6D.ang.inv()
+					Vec3<REAL>(0.0)
 						); // OK
 			std::cout << std::endl;
-			std::cout << "Ligand Forces  " << std::endl;
-			std::cout << "TRANSLATIONAL  " << redPotForce.pos << std::endl;
+			std::cout << "Ligand Deltas  " << std::endl;
+
 			std::cout << "ROTATIONAL     " << enGrad._6D.ang << std::endl;
+			std::cout << "TRANSLATIONAL  " << redPotForce.pos << std::endl;
 			std::cout << "MODES          " ;
 			for( int mode = 0; mode < lig->numModes(); mode++) {
 				std::cout << redPotForce.modesLig[mode] << " ";
 			}
 			std::cout << std::endl;
 			std::cout << std::endl;
-			std::cout << "Receptor Forces" << std::endl;
-			std::cout << "TRANSLATIONAL  " << redPotForceReceptor.pos << std::endl;
+			std::cout << "Receptor Deltas" << std::endl;
 
 			std::cout << "ROTATIONAL     " << angForce << std::endl;
+			std::cout << "TRANSLATIONAL  " << redPotForceReceptor.pos << std::endl;
 			std::cout << "MODES          " ;
 			for( int mode = 0; mode < rec->numModes(); mode++) {
 				std::cout << redPotForce.modesRec[mode] << " ";
 			}
 			std::cout << std::endl;
-			double what = 1;
+//			double what = 1;
 		}
 
 		item->setProcessed();
