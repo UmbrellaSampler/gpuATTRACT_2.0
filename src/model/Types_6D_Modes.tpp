@@ -32,7 +32,8 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D_Modes<REAL> const& dof)
 				for(int mode=0;mode<Common_Modes::numModesRec;mode++){
 					outStream<< setw(w) << dof.modesRec[mode];
 				}
-
+	outStream	<< std::endl;
+	//outStream << ";";
 	outStream 	<< setw(w) << dof._6D.pos.x << setw(w) << dof._6D.pos.y << setw(w) << dof._6D.pos.z
 				<< setw(w) << dof._6D.ang.x << setw(w) << dof._6D.ang.y << setw(w) << dof._6D.ang.z;
 				for(int mode=0;mode<Common_Modes::numModesLig;mode++){
@@ -60,6 +61,7 @@ std::ostream& operator<<(std::ostream& s, Result_6D_Modes<REAL> const& enGrad) {
 	s.setf(ios::fixed);
 	s.precision(3);
 	s << setw(12) << enGrad._6D.E << endl;
+	//s << setw(12) << enGrad._6D.E<< " ; ";
 	s.unsetf(ios::fixed);
 
 	s.setf(ios::scientific);
@@ -72,13 +74,13 @@ std::ostream& operator<<(std::ostream& s, Result_6D_Modes<REAL> const& enGrad) {
 		for(int mode=0;mode<Common_Modes::numModesRec;mode++){
 			s<< setw(width) << enGrad.modesRec[mode];
 		}
-
+	//s << " ; ";
 	s 	<< setw(width) << enGrad._6D.ang.x  << setw(width) << enGrad._6D.ang.y  << setw(width) << enGrad._6D.ang.z
 		<< setw(width) << enGrad._6D.pos.x  << setw(width) << enGrad._6D.pos.y  << setw(width) << enGrad._6D.pos.z;
 		for(int mode=0;mode<Common_Modes::numModesLig;mode++){
 			s<< setw(width) << enGrad.modesLig[mode];
 		}
-
+	//	s << " ; ";
 	s.unsetf(ios::scientific);
 
 	s.precision(precisionSetting);

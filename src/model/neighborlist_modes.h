@@ -181,7 +181,7 @@ void NLPotForce(
 					fAcc.z -= fEl.z;
 					eAcc -= eEl;
 
-					fRec.x += fEl.x;;
+					fRec.x += fEl.x;
 					fRec.y += fEl.y;
 					fRec.z += fEl.z;
 

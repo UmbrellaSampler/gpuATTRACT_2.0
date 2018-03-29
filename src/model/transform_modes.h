@@ -56,6 +56,8 @@ void rotate_translate_deform(
 		REAL const* x,
 		REAL const* y,
 		REAL const* z,
+		Vec3<REAL> pivot_rec,
+		Vec3<REAL> pivot_lig,
 		Vec3<REAL> const& displacement,
 		Vec3<REAL> const& ang,
 		unsigned const& numAtoms,
@@ -73,6 +75,62 @@ void rotate_translate_deform(
 		unsigned prottype
 		)
 {
+
+
+	 RotMat<REAL> rotMat ;
+	 Vec3<REAL> center(0.0f) ;
+	 if ( prottype == 1)
+	 	{
+	 		rotMat = euler2rotmat(ang.x, ang.y, ang.z);
+	 	}
+	 	else if ( prottype == 0 )
+	 	{
+	 		rotMat = euler2rotmat(ang.x, ang.y, ang.z).getInv();
+	 	}
+	for (unsigned i = 0; i < numAtoms; ++i) {
+		Vec3<REAL> posAtom(x[i], y[i], z[i]);
+		for(int mode=0;mode<numModes;mode++){
+			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
+			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
+			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];
+		}
+		xDeformed[i]=posAtom.x;
+		yDeformed[i]=posAtom.y;
+		zDeformed[i]=posAtom.z;
+
+		posAtom = rotMat*posAtom;
+		posAtom += displacement;
+
+		xTr[i] = posAtom.x;
+		yTr[i] = posAtom.y;
+		zTr[i] = posAtom.z;
+	}
+}
+
+template<typename REAL>
+void rotate_translate_deform(
+		REAL const* x,
+		REAL const* y,
+		REAL const* z,
+		Vec3<REAL> const& displacement,
+		Vec3<REAL> const& ang,
+		unsigned const& numAtoms,
+		unsigned const& numModes,
+		REAL const* dlig,
+		REAL const* xModes,
+		REAL const* yModes,
+		REAL const* zModes,
+		REAL* xDeformed,
+		REAL* yDeformed,
+		REAL* zDeformed,
+		REAL* xTr,
+		REAL* yTr,
+		REAL* zTr,
+		unsigned prottype
+		)
+{
+
+
 	 RotMat<REAL> rotMat ;
 	 Vec3<REAL> center(0.0f) ;
 	 if ( prottype == 1)

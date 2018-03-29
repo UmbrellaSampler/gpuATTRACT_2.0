@@ -37,7 +37,7 @@ c     Local variables
        ga(i)=xnull
        d(i)=xnull
        xaa(i)=x(i)
-c       write(ERROR_UNIT,*)'xaa',i,xaa(i)
+c      write(ERROR_UNIT,*)'xaa',i,xaa(i)
       enddo
 
 
@@ -57,6 +57,7 @@ c     set the hessian to a diagonal matrix
        h(k)=0.01d0*c
        k=k+np-i
       enddo
+
 c     set some variables for the first iteration
       dff=xnull
       call energy_for_fortran_to_call(smug, xaa, gesa, g)
@@ -124,6 +125,12 @@ c     store this function value if it is the smallest so far
       if (gl2.ge.gl1) go to 220
 200   isfv=3
       gesa=fb
+c CHANGED
+      write(*,*),"Gradients"
+c      write(*,*),energies(1)
+      write(*,*),"rota        ", xbb(1), xbb(2),xbb(3)
+      write(*,*),"translation ", xbb(4), xbb(5), xbb(6)
+      write(*,*)," "
       do i=1,jn
        x(i) = xbb(i)
        g(i)=gb(i)

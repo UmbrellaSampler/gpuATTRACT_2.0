@@ -49,15 +49,17 @@ std::ostream& operator<<(std::ostream& s, Result_6D<REAL> const& enGrad) {
 
 	s.setf(ios::fixed);
 	s.precision(3);
-	s << setw(12) << enGrad.E << endl;
+	s << setw(12) << enGrad.E <<endl;
+	//s << setw(12) << " ; ";// << endl;
 	s.unsetf(ios::fixed);
 
 	s.setf(ios::scientific);
 	s.precision(8);
 	int width = 20;
-	s << " Gradients: "
-			<< setw(width) << enGrad.ang.x  << setw(width) << enGrad.ang.y  << setw(width) << enGrad.ang.z
+	s << " Gradients: ";
+	s		<< setw(width) << enGrad.ang.x  << setw(width) << enGrad.ang.y  << setw(width) << enGrad.ang.z
 			<< setw(width) << enGrad.pos.x  << setw(width) << enGrad.pos.y  << setw(width) << enGrad.pos.z;
+	//s		<< " ; ";
 	s.unsetf(ios::scientific);
 
 	s.precision(precisionSetting);

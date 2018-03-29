@@ -110,10 +110,7 @@ void compareTwoVec3(Vec3<REAL> vec1, Vec3<REAL> vec2, REAL epsilon)
 	Vec3<REAL> normedRatio = normedRatioOfVector(vec1, vec2);
 	if( ifREALsmallerVector(normedRatio, epsilon) )
 	{
-		std::cout << vec1 << std::endl;
-		std::cout << vec2 << std::endl;
 		std::cout << getDifferenceOfVector(vec1, vec2) << std::endl;
-		std::cout << vec2 << std::endl;
 		}
 }
 
@@ -192,9 +189,21 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			//invert the receptor DOF such that it points to the receptor in the ligand system
 			DOF_6D_Modes<REAL> invertedRecDOF=invertDOF(dof);
 
+//			Vec3<REAL> rec_ang(0.0);
+//			Vec3<REAL> rec_pos(0.0);
+//	 		rotMatr = euler2rotmat(rec_ang.x, rec_ang.y, rec_ang.z);
+//	 		rotMatl = euler2rotmat(ang.x, ang.y, ang.z);
+//	 		rotMatrInv  = rotMatr.getInv();
+//	 		rotMatlInv  = rotMatl.getInv();
+//	 		rotMatd 	= rotMatl * rotMatrInv;
+//	 		Vec3<REAL> trans_d = dof._6D.pos - rec_pos;
+//	 		trans_d = rotMatd * trans_d;
+//	 		Vec3<REAL> pivot_d = pl - pr;
+//	 		pivot_d = rotMatd * pivot_d;
+//	 		pivot_d = pivot_d + pr;
+//	 		Vec3<REAL> trans = pivot_d + trans_d;
 
 
-			//translate the coordinates of the receptor
 			rotate_translate_deform(
 				rec->xPos(),
 				rec->yPos(),
@@ -593,9 +602,9 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-			for(size_t i = 0; i < 20; ++i) {
-				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << std::endl;//<< " " << buffers->h_potLig.getW()[i] << std::endl;
-			}
+			//for(size_t i = 0; i < 20; ++i) {
+			//	std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << std::endl;//<< " " << buffers->h_potLig.getW()[i] << std::endl;
+			//}
 
 //			NLPotForce(
 //				gridRec->NL.get(),
@@ -791,11 +800,13 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			//copy reduced forces
 			for( int mode = 0; mode < lig->numModes(); mode++) {
 				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
+				//enGrad.modesLig[mode]=0;
 			//	std::cout << redPotForce.modesLig[mode] << " ";
 			}
 			//std::cout << std::endl;
 			for( int mode = 0; mode < rec->numModes(); mode++) {
 				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
+				//enGrad.modesRec[mode]=0;
 			}
 
 			double modeEnergyLigand = getModeEngergy(lig->modeForce(),
@@ -808,7 +819,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					dof.modesRec
 					);
 
-			enGrad._6D.E = redPotForce.E + modeEnergyReceptor + modeEnergyLigand;
+			enGrad._6D.E = redPotForce.E;// + modeEnergyReceptor + modeEnergyLigand;
 			enGrad._6D.pos = redPotForce.pos ;//- redPotForceReceptor.pos;
 
 			enGrad._6D.ang = reduceTorque(
@@ -837,26 +848,26 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 					rec->numAtoms(),
 					Vec3<REAL>(0.0)
 						); // OK
-			std::cout << std::endl;
-			std::cout << "Ligand Deltas  " << std::endl;
+//			std::cout << std::endl;
+//			std::cout << "Ligand Deltas  " << std::endl;
+//
+//			std::cout << "ROTATIONAL     " << enGrad._6D.ang << std::endl;
+//			std::cout << "TRANSLATIONAL  " << redPotForce.pos << std::endl;
+//			std::cout << "MODES Lig         " ;
+//			for( int mode = 0; mode < lig->numModes(); mode++) {
+//				std::cout << redPotForce.modesLig[mode] << " ";
+//			}
+//			std::cout << std::endl;
+//			std::cout << std::endl;
+//			std::cout << "Receptor Deltas" << std::endl;
 
-			std::cout << "ROTATIONAL     " << enGrad._6D.ang << std::endl;
-			std::cout << "TRANSLATIONAL  " << redPotForce.pos << std::endl;
-			std::cout << "MODES          " ;
-			for( int mode = 0; mode < lig->numModes(); mode++) {
-				std::cout << redPotForce.modesLig[mode] << " ";
-			}
-			std::cout << std::endl;
-			std::cout << std::endl;
-			std::cout << "Receptor Deltas" << std::endl;
-
-			std::cout << "ROTATIONAL     " << angForce << std::endl;
-			std::cout << "TRANSLATIONAL  " << redPotForceReceptor.pos << std::endl;
-			std::cout << "MODES          " ;
-			for( int mode = 0; mode < rec->numModes(); mode++) {
-				std::cout << redPotForce.modesRec[mode] << " ";
-			}
-			std::cout << std::endl;
+		//	std::cout << "ROTATIONAL     " << angForce << std::endl;
+		//	std::cout << "TRANSLATIONAL  " << redPotForceReceptor.pos << std::endl;
+//			std::cout << "MODES Rec         " ;
+//			for( int mode = 0; mode < rec->numModes(); mode++) {
+//				std::cout << redPotForce.modesRec[mode] << " ";
+//			}
+//			std::cout << std::endl;
 //			double what = 1;
 		}
 
