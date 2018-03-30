@@ -126,11 +126,11 @@ c     store this function value if it is the smallest so far
 200   isfv=3
       gesa=fb
 c CHANGED
-      write(*,*),"Gradients"
+c      write(*,*),"Gradients"
 c      write(*,*),energies(1)
-      write(*,*),"rota        ", xbb(1), xbb(2),xbb(3)
-      write(*,*),"translation ", xbb(4), xbb(5), xbb(6)
-      write(*,*)," "
+c      write(*,*),"rota        ", xbb(1), xbb(2),xbb(3)
+c      write(*,*),"translation ", xbb(4), xbb(5), xbb(6)
+c      write(*,*)," "
       do i=1,jn
        x(i) = xbb(i)
        g(i)=gb(i)
