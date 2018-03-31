@@ -34,8 +34,9 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D_Modes<REAL> const& dof)
 				}
 	outStream	<< std::endl;
 	//outStream << ";";
-	outStream 	<< setw(w) << dof._6D.pos.x << setw(w) << dof._6D.pos.y << setw(w) << dof._6D.pos.z
-				<< setw(w) << dof._6D.ang.x << setw(w) << dof._6D.ang.y << setw(w) << dof._6D.ang.z;
+	//outStream 	<< setw(w) << dof._6D.pos.x << setw(w) << dof._6D.pos.y << setw(w) << dof._6D.pos.z
+	outStream	<< setw(w) << dof._6D.ang.x << setw(w) << dof._6D.ang.y << setw(w) << dof._6D.ang.z;
+	outStream	<< setw(w) << dof._6D.pos.x << setw(w) << dof._6D.pos.y << setw(w) << dof._6D.pos.z;
 				for(int mode=0;mode<Common_Modes::numModesLig;mode++){
 					outStream<< setw(w) << dof.modesLig[mode];
 				}

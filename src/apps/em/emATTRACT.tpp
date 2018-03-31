@@ -50,9 +50,9 @@ void emATTRACT<GenericTypes>::run() {
 	requestHandler.run();
 
 
-	auto results = requestHandler.getResultEnGrads();
-
-	for (result_t const res : results) {
+//auto results = requestHandler.getResultEnGrads();
+	auto results = requestHandler.getResultStates();
+	for (auto const res : results) {
 		std::cout << res << std::endl;
 	}
 

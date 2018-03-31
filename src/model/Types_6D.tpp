@@ -26,9 +26,10 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D<REAL> const& dof)
 	outStream.precision(3);
 
 	int w = 13;
-	outStream 	<< setw(w) << "DOF"
-				<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z
-				<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z;
+	//outStream 	<< setw(w) << "DOF"
+
+	outStream	<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z;
+	outStream	<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z;
 
 	outStream.precision(precisionSetting);
 	outStream.flags(flagSettings);
