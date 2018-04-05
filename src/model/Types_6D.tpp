@@ -10,7 +10,8 @@
 
 #include <ostream>
 #include <iomanip>
-
+#include <sstream>
+#include <iostream>
 #include "Types_6D.h"
 
 namespace as {
@@ -27,10 +28,11 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D<REAL> const& dof)
 
 	int w = 13;
 	//outStream 	<< setw(w) << "DOF"
-
+	outStream 	<< "#" << endl;
+	outStream	<< setw(w) << "0" << setw(w) << "0"<< setw(w) << "0"<< setw(w) << "0"<< setw(w) << "0"<< setw(w) << "0"<<endl;
 	outStream	<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z;
 	outStream	<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z;
-
+	outStream	<< endl;
 	outStream.precision(precisionSetting);
 	outStream.flags(flagSettings);
 
@@ -68,6 +70,29 @@ std::ostream& operator<<(std::ostream& s, Result_6D<REAL> const& enGrad) {
 
 	return s;
 }
+
+template<typename REAL>
+void print_results( std::stringstream& os,  DOF_6D<REAL> const & dof, Result_6D<REAL> const & res){
+	auto w = std::setw(20);
+	os  << w << res.E;
+	os  << w <<  " " << w;
+	os	<< w << dof.ang.x << w << dof.ang.y << w << dof.ang.z;
+	os	<< w << dof.pos.x << w << dof.pos.y << w << dof.pos.z;
+	os  << w <<  " " << w;
+	os << std::endl;
+}
+
+template<typename REAL>
+void print_results( std::stringstream& os,  Result_6D<REAL> const & res){
+	auto w = std::setw(20);
+	os  << w << res.E;
+	os  << w <<  " " << w;
+	os	<< w << res.ang.x << w << res.ang.y << w << res.ang.z;
+	os	<< w << res.pos.x << w << res.pos.y << w << res.pos.z;
+	os  << w <<  " " << w;
+	os << std::endl;
+}
+
 
 } // namespace as
 

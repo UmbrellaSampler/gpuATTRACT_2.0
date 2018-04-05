@@ -24,6 +24,18 @@ std::ostream& operator<< (std::ostream& s, Result_6D<float> const& enGrad);
 template
 std::ostream& operator<< (std::ostream& s, Result_6D<double> const& enGrad);
 
+template
+void print_results( std::stringstream& os,   DOF_6D<float> const & dof, Result_6D<float> const & res);
+
+template
+void print_results( std::stringstream& os,   DOF_6D<double> const & dof, Result_6D<double> const & res);
+
+template
+void print_results( std::stringstream& os, Result_6D<float> const & res);
+
+template
+void print_results( std::stringstream& os,  Result_6D<double> const & res);
+
 }  // namespace as
 
 

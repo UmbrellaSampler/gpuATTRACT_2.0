@@ -11,6 +11,7 @@
 #include <ostream>
 #include <iomanip>
 #include <sstream>
+#include <fstream>
 #include "Types_6D_Modes.h"
 
 namespace as {
@@ -88,6 +89,50 @@ std::ostream& operator<<(std::ostream& s, Result_6D_Modes<REAL> const& enGrad) {
 	s.flags(flagSettings);
 
 	return s;
+}
+
+template<typename REAL>
+void print_results( std::stringstream& os, DOF_6D_Modes<REAL> const & dof,  Result_6D_Modes<REAL> const& res){
+	auto w = std::setw(20);
+	os  << w << res._6D.E;
+	os  << w <<  " " << w;
+	os 	<< w << 0 << w << 0 << w << 0;
+	os  << w << 0 << w << 0 << w << 0;
+	for(int mode=0;mode<Common_Modes::numModesRec;mode++){
+		os<< w << dof.modesRec[mode];
+	}
+	os  << w <<  " " << w;
+
+	os	<< w << dof._6D.ang.x << w << dof._6D.ang.y << w << dof._6D.ang.z;
+	os	<< w << dof._6D.pos.x << w << dof._6D.pos.y << w << dof._6D.pos.z;
+	for(int mode=0;mode<Common_Modes::numModesLig;mode++){
+		os<< w << dof.modesLig[mode];
+	}
+	os  << w <<  " " << w;
+	os << std::endl;
+
+}
+
+template<typename REAL>
+void print_results( std::stringstream& os,  Result_6D_Modes<REAL> const& res){
+	auto w = std::setw(20);
+	os  << w << res._6D.E;
+	os  << w <<  " " << w;
+	os 	<< w << 0 << w << 0 << w << 0;
+	os  << w << 0 << w << 0 << w << 0;
+	for(int mode=0;mode<Common_Modes::numModesRec;mode++){
+		os<< w << res.modesRec[mode];
+	}
+	os  << w <<  " " << w;
+
+	os	<< w << res._6D.ang.x << w << res._6D.ang.y << w << res._6D.ang.z;
+	os	<< w << res._6D.pos.x << w << res._6D.pos.y << w << res._6D.pos.z;
+	for(int mode=0;mode<Common_Modes::numModesLig;mode++){
+		os<< w << res.modesLig[mode];
+	}
+	os  << w <<  " " << w;
+	os << std::endl;
+
 }
 
 

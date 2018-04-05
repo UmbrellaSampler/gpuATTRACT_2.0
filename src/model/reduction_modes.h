@@ -111,8 +111,11 @@ void correctModeForce(
 
 	for(int mode = 0; mode < numModes; mode++){
 		counterForce=factor*modeForceConstant[mode]*pow(dlig[mode],exp);
+
 		delta[mode]=delta[mode]+counterForce;
+		//std::cout << delta[mode] << " delig "<<dlig[mode]<< " ";
 	}
+	//std::cout <<std::endl;
 }
 
 template<typename REAL>
@@ -124,9 +127,11 @@ REAL getModeEngergy(
 {
 	constexpr int exp = 4;
 	REAL energy = 0;
+	//std::cout << std::endl;
 	for(int mode = 0; mode < numModes; mode++){
 		energy += modeForceConstant[mode]*pow(dlig[mode],exp);
 	}
+	//std::cout <<"energy: "<< energy << std::endl;
 	return energy;
 }
 

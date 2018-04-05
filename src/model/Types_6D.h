@@ -26,7 +26,14 @@ struct Result_6D;
 template<typename REAL>
 std::ostream& operator<< (std::ostream& s, Result_6D<REAL> const& args);
 
+template<typename REAL>
+void print_results( std::stringstream& os,   DOF_6D<REAL> const & dof,  Result_6D<REAL> const & res );
+
+template<typename REAL>
+void print_results( std::stringstream& os,  Result_6D<REAL> const & res );
+
 #endif
+
 
 template<typename REAL>
 struct DOF_6D {

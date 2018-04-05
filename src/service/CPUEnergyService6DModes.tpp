@@ -602,9 +602,9 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-			//for(size_t i = 0; i < 20; ++i) {
-			//	std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << std::endl;//<< " " << buffers->h_potLig.getW()[i] << std::endl;
-			//}
+			for(size_t i = 0; i < 20; ++i) {
+				//	std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << std::endl;//<< " " << buffers->h_potLig.getW()[i] << std::endl;
+			}
 
 //			NLPotForce(
 //				gridRec->NL.get(),
@@ -767,7 +767,8 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->numModes(),
 				redPotForce.modesLig
 				);
-
+			// std::cout << " \n\n";
+           // std::cout << " lig mode ";
 			correctModeForce(
 				lig-> modeForce(),
 				lig-> numModes(),
@@ -776,7 +777,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				);
 
 			////Reduce forces on receptor
-
+			//std::cout << " rec mode ";
 			reduceModeForce(
 				buffers->h_potRec.getX(),
 				buffers->h_potRec.getY(),
@@ -798,30 +799,38 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			//copy reduced forces
+			//std::cout << "print out mode force ligand"<< std::endl;
 			for( int mode = 0; mode < lig->numModes(); mode++) {
 				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
 				//enGrad.modesLig[mode]=0;
-			//	std::cout << redPotForce.modesLig[mode] << " ";
+				//	std::cout << redPotForce.modesLig[mode] << " ";
 			}
-			//std::cout << std::endl;
+			//std::cout << "print out mode force receptor"<< std::endl;
+
 			for( int mode = 0; mode < rec->numModes(); mode++) {
 				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
+				//	std::cout << redPotForce.modesRec[mode] << " ";
 				//enGrad.modesRec[mode]=0;
 			}
-
+			//std::cout <<"ligand mode energy ";
 			double modeEnergyLigand = getModeEngergy(lig->modeForce(),
 					lig->numModes(),
 					dof.modesLig
 					);
-
+			//std::cout <<"receptor mode energy ";
 			double modeEnergyReceptor = getModeEngergy(rec->modeForce(),
 					rec->numModes(),
 					dof.modesRec
 					);
 
-			enGrad._6D.E = redPotForce.E;// + modeEnergyReceptor + modeEnergyLigand;
+			enGrad._6D.E = redPotForce.E + modeEnergyReceptor + modeEnergyLigand;
+			//std::cout << "the total energy is: "<< redPotForce.E << " the energy of the lig: "<< modeEnergyLigand << " E rec: " << modeEnergyReceptor<< std::endl;
 			enGrad._6D.pos = redPotForce.pos ;//- redPotForceReceptor.pos;
 
+			//std::cout << " print out forconstanst";
+			for( int i = 0; i < 5; i++){
+			//	std::cout << "i: " << i << "lig : "<< lig->modeForce()[i] << "rec: " << rec->modeForce()[i]<< std::endl;
+			}
 			enGrad._6D.ang = reduceTorque(
 					lig->xPos(),
 					lig->yPos(),
@@ -835,7 +844,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			for( int i = 0; i< 10; i++){
-			//	std::cout << buffers->h_potRec.getX()[i] << " " << buffers->h_potRec.getY()[i] << " " << buffers->h_potRec.getZ()[i]<< std::endl;
+				//std::cout << buffers->h_potRec.getX()[i] << " " << buffers->h_potRec.getY()[i] << " " << buffers->h_potRec.getZ()[i]<< std::endl;
 
 			}
 			Vec3<REAL> angForce = reduceTorque(
