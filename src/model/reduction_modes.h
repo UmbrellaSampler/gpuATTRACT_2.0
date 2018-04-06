@@ -42,6 +42,7 @@ void reduceModeForce(
 	//TODO: think about passing protein to function with member "isreceptor"to determine rotation
 	//rotate forces into ligand frame
 	const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z).getInv();
+	//const RotMat<REAL> rotMatInv = euler2rotmat(ang.x, ang.y, ang.z);
 	//for( int i=0; i<numModes;i++){result[i]=0;}
 	std::fill(result, result + numModes, 0.0);
 	for (unsigned i = 0; i < numAtoms; ++i) {
@@ -113,7 +114,7 @@ void correctModeForce(
 		counterForce=factor*modeForceConstant[mode]*pow(dlig[mode],exp);
 
 		delta[mode]=delta[mode]+counterForce;
-		//std::cout << delta[mode] << " delig "<<dlig[mode]<< " ";
+//		std::cout << "forececonst" <<modeForceConstant[mode] <<"counterforce"<<counterForce<< " delig "<<dlig[mode]<< std::endl;
 	}
 	//std::cout <<std::endl;
 }

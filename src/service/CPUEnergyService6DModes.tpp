@@ -184,7 +184,8 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			test._6D.pos = test._6D.pos + pr - pl;
 
 
-			//std::cout << test << std::endl;
+			//std::cout << "dlig receptor "<< dof.modesRec[0] << std::endl;
+			//std::cout << "dlig ligand   "<< dof.modesLig[0] << std::endl;
 
 			//invert the receptor DOF such that it points to the receptor in the ligand system
 			DOF_6D_Modes<REAL> invertedRecDOF=invertDOF(dof);
@@ -755,8 +756,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			reduceModeForce(
-				//invertedRecDOF._6D.ang,
-				Vec3<REAL> (0.0),
+				invertedRecDOF._6D.ang,
 				buffers->h_potLig.getX(),
 				buffers->h_potLig.getY(),
 				buffers->h_potLig.getZ(),
@@ -769,12 +769,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				);
 			// std::cout << " \n\n";
            // std::cout << " lig mode ";
-			correctModeForce(
-				lig-> modeForce(),
-				lig-> numModes(),
-				dof.modesLig,
-				redPotForce.modesLig
-				);
+
 
 			////Reduce forces on receptor
 			//std::cout << " rec mode ";
@@ -790,11 +785,20 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				redPotForce.modesRec
 				);
 
+//			std::cout <<"mode receptor " <<  redPotForce.modesRec[0] << std::endl;
+//			std::cout <<"mode ligand   " <<redPotForce.modesLig[0] << std::endl;
+//
 			correctModeForce(
 				rec->modeForce(),
 				rec-> numModes(),
 				dof.modesRec,
 				redPotForce.modesRec
+				);
+			correctModeForce(
+				lig-> modeForce(),
+				lig-> numModes(),
+				dof.modesLig,
+				redPotForce.modesLig
 				);
 
 
@@ -802,16 +806,17 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			//std::cout << "print out mode force ligand"<< std::endl;
 			for( int mode = 0; mode < lig->numModes(); mode++) {
 				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
-				//enGrad.modesLig[mode]=0;
-				//	std::cout << redPotForce.modesLig[mode] << " ";
+				//enGrad.modesLig[mode]=75;
+
 			}
 			//std::cout << "print out mode force receptor"<< std::endl;
 
 			for( int mode = 0; mode < rec->numModes(); mode++) {
 				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
 				//	std::cout << redPotForce.modesRec[mode] << " ";
-				//enGrad.modesRec[mode]=0;
+				//enGrad.modesRec[mode]=109;
 			}
+
 			//std::cout <<"ligand mode energy ";
 			double modeEnergyLigand = getModeEngergy(lig->modeForce(),
 					lig->numModes(),

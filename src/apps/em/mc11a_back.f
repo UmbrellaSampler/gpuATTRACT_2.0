@@ -1,4 +1,4 @@
-      subroutine mc11a(a,n,z,sig,w,ir,mk,eps)
+      subroutine mc11a_back(a,n,z,sig,w,ir,mk,eps)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
       real*8 a(*),z(*),w(*),sig,eps,ti,v,tim,b,r,
@@ -111,7 +111,7 @@
       if(ir.lt.0)ir=-ir
       return
 c-----------------------------------multiply vector z by inverse of factors in a
-      entry mc11e(a,n,z,w,ir)
+      entry mc11e_back(a,n,z,w,ir)
       if(ir.lt.n)return
       w(1)=z(1)
       if(n.gt.1)goto400
