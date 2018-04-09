@@ -34,7 +34,6 @@ std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
 			app = create<Types_6D_Modes<double>>(args.app);
 			Common_Modes::numModesRec = args.numModes;
 			Common_Modes::numModesLig = args.numModes;
-
 		} else {
 			app = create<Types_6D<double>>(args.app);
 		}

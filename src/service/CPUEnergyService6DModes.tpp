@@ -177,7 +177,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 		for (unsigned i = 0; i < itemSize; ++i) {
 			const auto& dof = dofs[i];
 			auto& enGrad = results[i];
-
+            //std::cout<< dof<< std::endl;
 			Vec3<REAL> pr(32.823001861572266, -6.3949999809265137, 23.483999252319336);
 			Vec3<REAL> pl(51.143001556396484, 7.6799998283386230, 38.110000610351562);
 			DOF_6D_Modes<REAL> test = dof;
