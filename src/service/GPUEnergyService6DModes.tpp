@@ -219,10 +219,10 @@ public:
 //				std::cout << it->inputBuffer()[i] << std::endl;
 //			}
 
-			cudaVerify(cudaStreamWaitEvent(streams[0], events[2], 0));
-			cudaVerify(cudaMemcpyAsync(d_dof[pipeIdxDof[0]].get(0), it->inputBuffer(),
-					it->size()*sizeof(dof_t), cudaMemcpyHostToDevice, streams[0]));
-			cudaVerify(cudaEventRecord(events[0], streams[0]));
+//			cudaVerify(cudaStreamWaitEvent(streams[0], events[2], 0));
+//			cudaVerify(cudaMemcpyAsync(d_dof[pipeIdxDof[0]].get(0), it->inputBuffer(),
+//					it->size()*sizeof(dof_t), cudaMemcpyHostToDevice, streams[0]));
+//			cudaVerify(cudaEventRecord(events[0], streams[0]));
 
 		}
 	}
@@ -278,37 +278,37 @@ public:
 
 
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
-			cudaVerify(cudaStreamWaitEvent(streams[2], events[0], 0));
+//			cudaVerify(cudaStreamWaitEvent(streams[2], events[0], 0));
 
-			 d_DOFPos<REAL, 0, true>(
-				BLSZ_TRAFO,
-				gridSizeRec,
-				streams[2],
-				stageResc.rec,
-				d_dof[pipeIdxDof[1]].get(0),
-				it->size(),
-				d_defoRec.getX(),
-				d_defoRec.getY(),
-				d_defoRec.getZ(),
-				d_trafoRec.getX(),
-				d_trafoRec.getY(),
-				d_trafoRec.getZ()
-				);
-
-			 d_DOFPos<REAL, 1, true>(
-				BLSZ_TRAFO,
-				gridSizeLig,
-				streams[2],
-				stageResc.lig,
-				d_dof[pipeIdxDof[1]].get(0),
-				it->size(),
-				d_defoLig.getX(),
-				d_defoLig.getY(),
-				d_defoLig.getZ(),
-				d_trafoLig.getX(),
-				d_trafoLig.getY(),
-				d_trafoLig.getZ()
-				);
+//			 d_DOFPos<REAL, 0, true>(
+//				BLSZ_TRAFO,
+//				gridSizeRec,
+//				streams[2],
+//				stageResc.rec,
+//				d_dof[pipeIdxDof[1]].get(0),
+//				it->size(),
+//				d_defoRec.getX(),
+//				d_defoRec.getY(),
+//				d_defoRec.getZ(),
+//				d_trafoRec.getX(),
+//				d_trafoRec.getY(),
+//				d_trafoRec.getZ()
+//				);
+//
+//			 d_DOFPos<REAL, 1, true>(
+//				BLSZ_TRAFO,
+//				gridSizeLig,
+//				streams[2],
+//				stageResc.lig,
+//				d_dof[pipeIdxDof[1]].get(0),
+//				it->size(),
+//				d_defoLig.getX(),
+//				d_defoLig.getY(),
+//				d_defoLig.getZ(),
+//				d_trafoLig.getX(),
+//				d_trafoLig.getY(),
+//				d_trafoLig.getZ()
+//				);
 			// DEBUG
 //			cudaDeviceSynchronize();
 //			size_t bufferSize = d_trafoLig.bufferSize();
@@ -325,43 +325,43 @@ public:
 //			exit(EXIT_SUCCESS);
 
 			/* Device: Signal event when transformation has completed */
-			cudaVerify(cudaEventRecord(events[2], streams[2]));
+//			cudaVerify(cudaEventRecord(events[2], streams[2]));
 			/* Device: Wait for completion of reduction of the previous round */
-			cudaVerify(cudaStreamWaitEvent(streams[2], events[5+pipeIdx[1]], 0));
+//			cudaVerify(cudaStreamWaitEvent(streams[2], events[5+pipeIdx[1]], 0));
 
 			/* Perform cuda kernel calls */
 			gridSizeLig = ( numElLig + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
-			d_potForce (
-				BLSZ_INTRPL,
-				gridSizeLig,
-				streams[2],
-				stageResc.gridRec.inner,
-				stageResc.gridRec.outer,
-				*stageResc.lig,
-				it->size(),
-				d_trafoLig.getX(),
-				d_trafoLig.getY(),
-				d_trafoLig.getZ(),
-				d_potLig[pipeIdx[1]].getX(),
-				d_potLig[pipeIdx[1]].getY(),
-				d_potLig[pipeIdx[1]].getZ(),
-				d_potLig[pipeIdx[1]].getW()); // OK
-
-			d_potForce (
-				BLSZ_INTRPL,
-				gridSizeRec,
-				streams[2],
-				stageResc.gridLig.inner,
-				stageResc.gridLig.outer,
-				*stageResc.rec,
-				it->size(),
-				d_trafoRec.getX(),
-				d_trafoRec.getY(),
-				d_trafoRec.getZ(),
-				d_potRec[pipeIdx[1]].getX(),
-				d_potRec[pipeIdx[1]].getY(),
-				d_potRec[pipeIdx[1]].getZ(),
-				d_potRec[pipeIdx[1]].getW()); // OK
+//			d_potForce (
+//				BLSZ_INTRPL,
+//				gridSizeLig,
+//				streams[2],
+//				stageResc.gridRec.inner,
+//				stageResc.gridRec.outer,
+//				*stageResc.lig,
+//				it->size(),
+//				d_trafoLig.getX(),
+//				d_trafoLig.getY(),
+//				d_trafoLig.getZ(),
+//				d_potLig[pipeIdx[1]].getX(),
+//				d_potLig[pipeIdx[1]].getY(),
+//				d_potLig[pipeIdx[1]].getZ(),
+//				d_potLig[pipeIdx[1]].getW()); // OK
+//
+//			d_potForce (
+//				BLSZ_INTRPL,
+//				gridSizeRec,
+//				streams[2],
+//				stageResc.gridLig.inner,
+//				stageResc.gridLig.outer,
+//				*stageResc.rec,
+//				it->size(),
+//				d_trafoRec.getX(),
+//				d_trafoRec.getY(),
+//				d_trafoRec.getZ(),
+//				d_potRec[pipeIdx[1]].getX(),
+//				d_potRec[pipeIdx[1]].getY(),
+//				d_potRec[pipeIdx[1]].getZ(),
+//				d_potRec[pipeIdx[1]].getW()); // OK
 
 
 
@@ -384,61 +384,61 @@ public:
 //			IP.d_NLPotForce<false>(it->devLocGridId(), it->devLocRecId(), it->devLocLigId(),it->size(),
 //					&d_trafoLig, d_potLig[pipeIdx[1]],streams[2]);
 
-			d_NLPotForce(
-				BLSZ_INTRPL,
-				gridSizeLig,
-				streams[2],
-				stageResc.gridRec.NL,
-				*stageResc.rec,
-				*stageResc.lig,
-				*stageResc.table,
-				*stageResc.simParam,
-				it->size(),
-				d_defoRec.getX(),
-				d_defoRec.getY(),
-				d_defoRec.getZ(),
-				d_trafoLig.getX(),
-				d_trafoLig.getY(),
-				d_trafoLig.getZ(),
-				d_potLig[pipeIdx[1]].getX(),
-				d_potLig[pipeIdx[1]].getY(),
-				d_potLig[pipeIdx[1]].getZ(),
-				d_potLig[pipeIdx[1]].getW()); // OK
-
-			//get nl forces on receptor
-			d_NLPotForce(
-				BLSZ_INTRPL,
-				gridSizeRec,
-				streams[2],
-				stageResc.gridLig.NL,
-				*stageResc.lig,
-				*stageResc.rec,
-				*stageResc.table,
-				*stageResc.simParam,
-				it->size(),
-				d_defoLig.getX(),
-				d_defoLig.getY(),
-				d_defoLig.getZ(),
-				d_trafoRec.getX(),
-				d_trafoRec.getY(),
-				d_trafoRec.getZ(),
-				d_potRec[pipeIdx[1]].getX(),
-				d_potRec[pipeIdx[1]].getY(),
-				d_potRec[pipeIdx[1]].getZ(),
-				d_potRec[pipeIdx[1]].getW()
-				); // OK
-
-			d_rotateForces(
-				BLSZ_INTRPL,
-				gridSizeRec,
-				streams[2],
-				d_potRec[pipeIdx[1]].getX(),
-				d_potRec[pipeIdx[1]].getY(),
-				d_potRec[pipeIdx[1]].getZ(),
-				d_dof[pipeIdx[1]].get(0),
-				stageResc.rec->numAtoms,
-				it->size()
-				);
+//			d_NLPotForce(
+//				BLSZ_INTRPL,
+//				gridSizeLig,
+//				streams[2],
+//				stageResc.gridRec.NL,
+//				*stageResc.rec,
+//				*stageResc.lig,
+//				*stageResc.table,
+//				*stageResc.simParam,
+//				it->size(),
+//				d_defoRec.getX(),
+//				d_defoRec.getY(),
+//				d_defoRec.getZ(),
+//				d_trafoLig.getX(),
+//				d_trafoLig.getY(),
+//				d_trafoLig.getZ(),
+//				d_potLig[pipeIdx[1]].getX(),
+//				d_potLig[pipeIdx[1]].getY(),
+//				d_potLig[pipeIdx[1]].getZ(),
+//				d_potLig[pipeIdx[1]].getW()); // OK
+//
+//			//get nl forces on receptor
+//			d_NLPotForce(
+//				BLSZ_INTRPL,
+//				gridSizeRec,
+//				streams[2],
+//				stageResc.gridLig.NL,
+//				*stageResc.lig,
+//				*stageResc.rec,
+//				*stageResc.table,
+//				*stageResc.simParam,
+//				it->size(),
+//				d_defoLig.getX(),
+//				d_defoLig.getY(),
+//				d_defoLig.getZ(),
+//				d_trafoRec.getX(),
+//				d_trafoRec.getY(),
+//				d_trafoRec.getZ(),
+//				d_potRec[pipeIdx[1]].getX(),
+//				d_potRec[pipeIdx[1]].getY(),
+//				d_potRec[pipeIdx[1]].getZ(),
+//				d_potRec[pipeIdx[1]].getW()
+//				); // OK
+//
+//			d_rotateForces(
+//				BLSZ_INTRPL,
+//				gridSizeRec,
+//				streams[2],
+//				d_potRec[pipeIdx[1]].getX(),
+//				d_potRec[pipeIdx[1]].getY(),
+//				d_potRec[pipeIdx[1]].getZ(),
+//				d_dof[pipeIdx[1]].get(0),
+//				stageResc.rec->numAtoms,
+//				it->size()
+//				);
 			// Debug
 //			cudaDeviceSynchronize();
 //			size_t bufferSize = d_potLig[pipeIdx[1]].bufferSize();
@@ -465,7 +465,7 @@ public:
 //			exit(EXIT_SUCCESS);
 
 			/* Device: Signal event when force and energy calc. has completed */
-			cudaVerify(cudaEventRecord(events[3+pipeIdx[1]], streams[2]));
+//			cudaVerify(cudaEventRecord(events[3+pipeIdx[1]], streams[2]));
 
 			/* signal that this stage was executed within the current iteration */
 			predicates[pipeIdx[0]][1] = true;
@@ -480,30 +480,30 @@ public:
 			auto* const it = stageResc.item;
 
 			/* Device: Wait for completion of PotForce calc. to complete */
-			cudaVerify(cudaStreamWaitEvent(streams[3], events[3+pipeIdx[0]], 0));
+//			cudaVerify(cudaStreamWaitEvent(streams[3], events[3+pipeIdx[0]], 0));
 
 
-			deviceReduce<REAL, 0, true>(
-				blockSizeReduceRec,
-				it->size(),
-				stageResc.rec,
-				d_dof[pipeIdxDof[2]].get(0),
-				stageResc.rec->xPos, stageResc.rec->yPos, stageResc.rec->zPos,
-				d_potRec[pipeIdx[0]].getX(), d_potRec[pipeIdx[0]].getY(), d_potRec[pipeIdx[0]].getZ(),
-				d_potRec[pipeIdx[0]].getW(),
-				d_resRec[pipeIdx[0]].get(0),
-				streams[3]);
-
-			deviceReduce<REAL, 1, true>(
-				blockSizeReduceLig,
-				it->size(),
-				stageResc.lig,
-				d_dof[pipeIdxDof[2]].get(0),
-				stageResc.lig->xPos, stageResc.lig->yPos, stageResc.lig->zPos,
-				d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
-				d_potLig[pipeIdx[0]].getW(),
-				d_resLig[pipeIdx[0]].get(0),
-				streams[3]);
+//			deviceReduce<REAL, 0, true>(
+//				blockSizeReduceRec,
+//				it->size(),
+//				stageResc.rec,
+//				d_dof[pipeIdxDof[2]].get(0),
+//				stageResc.rec->xPos, stageResc.rec->yPos, stageResc.rec->zPos,
+//				d_potRec[pipeIdx[0]].getX(), d_potRec[pipeIdx[0]].getY(), d_potRec[pipeIdx[0]].getZ(),
+//				d_potRec[pipeIdx[0]].getW(),
+//				d_resRec[pipeIdx[0]].get(0),
+//				streams[3]);
+//
+//			deviceReduce<REAL, 1, true>(
+//				blockSizeReduceLig,
+//				it->size(),
+//				stageResc.lig,
+//				d_dof[pipeIdxDof[2]].get(0),
+//				stageResc.lig->xPos, stageResc.lig->yPos, stageResc.lig->zPos,
+//				d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
+//				d_potLig[pipeIdx[0]].getW(),
+//				d_resLig[pipeIdx[0]].get(0),
+//				streams[3]);
 
 //			cudaDeviceSynchronize();
 //			unsigned numDofs = it->size();
@@ -526,7 +526,7 @@ public:
 //			exit(EXIT_SUCCESS);
 
 			/* Device: Signal event when reduction has completed */
-			cudaVerify(cudaEventRecord(events[5+pipeIdx[0]], streams[3]));
+//			cudaVerify(cudaEventRecord(events[5+pipeIdx[0]], streams[3]));
 
 			/* signal that this stage was executed within the current iteration */
 			predicates[pipeIdx[0]][2] = true;
@@ -543,16 +543,16 @@ public:
 			auto* const it = stageResc.item;
 
 			/* Device: Wait for completion of reduction calc. to complete */
-			cudaVerify(cudaStreamWaitEvent(streams[1], events[5 + pipeIdx[1]], 0));
+//			cudaVerify(cudaStreamWaitEvent(streams[1], events[5 + pipeIdx[1]], 0));
 
 			/* copy results to host */
-			cudaVerify(cudaMemcpyAsync(h_resRec[pipeIdx[1]].get(0), d_resRec[pipeIdx[1]].get(0), dofSizeRec*it->size()*sizeof(REAL),
-					cudaMemcpyDeviceToHost, streams[1]));
-			cudaVerify(cudaMemcpyAsync(h_resLig[pipeIdx[1]].get(0), d_resLig[pipeIdx[1]].get(0), dofSizeLig*it->size()*sizeof(REAL),
-					cudaMemcpyDeviceToHost, streams[1]));
+//			cudaVerify(cudaMemcpyAsync(h_resRec[pipeIdx[1]].get(0), d_resRec[pipeIdx[1]].get(0), dofSizeRec*it->size()*sizeof(REAL),
+//					cudaMemcpyDeviceToHost, streams[1]));
+//			cudaVerify(cudaMemcpyAsync(h_resLig[pipeIdx[1]].get(0), d_resLig[pipeIdx[1]].get(0), dofSizeLig*it->size()*sizeof(REAL),
+//					cudaMemcpyDeviceToHost, streams[1]));
 
 			/* Device: Signal event when transfere has completed */
-			cudaVerify(cudaEventRecord(events[1], streams[1]));
+//			cudaVerify(cudaEventRecord(events[1], streams[1]));
 
 			/* signal that this stage was executed within the current iteration */
 			predicates[pipeIdx[0]][3] = true;
@@ -568,23 +568,23 @@ public:
 			auto* const it = stageResc.item;
 
 			/* Host: Wait for completion of data transfer to complete */
-			cudaVerify(cudaEventSynchronize(events[1]));
+//			cudaVerify(cudaEventSynchronize(events[1]));
 
 			nvtxRangePushA("Host");
-			h_finalReduce< REAL, 1, true>(
-				it->size(),
-				stageResc.lig,
-				it->inputBuffer(),
-				h_resLig[pipeIdx[0]].get(0),
-				it->resultBuffer());
-				nvtxRangePop();
-
-			h_finalReduce< REAL, 0, true>(
-				it->size(),
-				stageResc.rec,
-				it->inputBuffer(),
-				h_resRec[pipeIdx[0]].get(0),
-				it->resultBuffer());
+//			h_finalReduce< REAL, 1, true>(
+//				it->size(),
+//				stageResc.lig,
+//				it->inputBuffer(),
+//				h_resLig[pipeIdx[0]].get(0),
+//				it->resultBuffer());
+//				nvtxRangePop();
+//
+//			h_finalReduce< REAL, 0, true>(
+//				it->size(),
+//				stageResc.rec,
+//				it->inputBuffer(),
+//				h_resRec[pipeIdx[0]].get(0),
+//				it->resultBuffer());
 			nvtxRangePop();
 
 			/* Signal that result is in buffer */
@@ -683,6 +683,7 @@ auto GPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 		p->swapBuffers();
 
+		int test = 1;
 		return !(p->pipelineEmpty());
 
 	};
