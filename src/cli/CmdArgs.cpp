@@ -29,7 +29,8 @@ std::ostream& operator<<(std::ostream& s, CmdArgs const& args) {
 	s << "chunkSize       = "  << args.chunkSize           << endl;
 	s << "prec            = "  << args.precision		   << endl;
 	s << "dielec          = "  << args.dielec              << endl;
-	s << "numModes        = "  << args.numModes		   	   << endl;
+	s << "numModesRec     = "  << args.numModesRec	   	   << endl;
+	s << "numModesLig     = "  << args.numModesLig	   	   << endl;
 	s << "epsilon         = "  << args.epsilon;
 
 	return s;

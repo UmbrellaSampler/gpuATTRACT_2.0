@@ -66,20 +66,32 @@ void scATTRACT<GenericTypes>::run() {
 
 	std::fstream fs;
 	std::stringstream ss;
+	std::string const proteinPath = "/home/glenn/Documents/Masterthesis/testfolder/1AVX";
 
 	if (use_modes){
-		filename = "/home/glenn/Documents/Masterthesis/testfolder/2FD6/output/GATTRACT/CPU/MODES/SCORE_OUT_PY.dat";
+#ifdef CUDA
+		filename = proteinPath + "/output/GATTRACT/GPU/MODES/SCORE_OUT_PY.dat";
+#else
+		filename = proteinPath + "/output/GATTRACT/CPU/MODES/SCORE_OUT_PY.dat";
+#endif
+
 		ss << " " << "energy_total";
 		ss <<" " << "rec_rot_x"<< " " << "rec_rot_y"<< " " << "rec_rot_z"<< " " << "rec_trans_x"<< " " << "rec_trans_y"<< " " << "rec_trans_z" ;
-		ss << " " << "rec_mode_1"<< " ";
-		//ss << " " << "rec_mode_1"<< " " << "rec_mode_2"<< " " << "rec_mode_3"<< " " << "rec_mode_4"<< " " << "rec_mode_5"<< " ";
+
+		ss << " " << "rec_mode_1"<< " " << "rec_mode_2"<< " " << "rec_mode_3"<< " " << "rec_mode_4"<< " " << "rec_mode_5"<< " ";
 		ss << " " << "lig_rot_x"<< " " << "lig_rot_y"<< " " << "lig_rot_z"<< " " << "lig_trans_x"<< " " << "lig_trans_y"<< " " << "lig_trans_z";
-		//ss << " " << "lig_mode_1"<< " " << "lig_mode_2"<< " " << "lig_mode_3"<< " " << "lig_mode_4"<< " " << "lig_mode_5"<< " ";
-		ss << " " << "lig_mode_1"<< " ";
+		ss << " " << "lig_mode_1"<< " " << "lig_mode_2"<< " " << "lig_mode_3"<< " " << "lig_mode_4"<< " " << "lig_mode_5"<< " ";
+
 		ss << std::endl;
 	}
 	else{
-		filename = "/home/glenn/Documents/Masterthesis/testfolder/2FD6/output/GATTRACT/CPU/NOMODES/SCORE_OUT_PY.dat";
+
+#ifdef CUDA
+		filename = proteinPath + "/output/GATTRACT/GPU/NOMODES/SCORE_OUT_PY.dat";
+#else
+		filename = proteinPath + "/output/GATTRACT/CPU/NOMODES/SCORE_OUT_PY.dat";
+#endif
+
 		ss << " " << "energy_total";
 		ss << " " << "lig_rot_x"<< " " << "lig_rot_y"<< " " << "lig_rot_z"<< " " << "lig_trans_x"<< " " << "lig_trans_y"<< " " << "lig_trans_z";
 		ss << std::endl;

@@ -78,12 +78,16 @@ void emATTRACT<GenericTypes>::run() {
 		std::cout << res << std::endl;
 	}
 
-	std::string const proteinPath = "/home/glenn/Documents/Masterthesis/testfolder/2FD6";
+	std::string const proteinPath = "/home/glenn/Documents/Masterthesis/testfolder/1AVX";
 
 	std::fstream fs;
 	std::stringstream ss;
 	if (use_modes){
+#ifdef CUDA
+		filename = proteinPath + "/output/GATTRACT/GPU/MODES/EM_OUT_PY.dat";
+#else
 		filename = proteinPath + "/output/GATTRACT/CPU/MODES/EM_OUT_PY.dat";
+#endif
 		ss << " " << "energy_total";
 		ss <<" " << "rec_rot_x"<< " " << "rec_rot_y"<< " " << "rec_rot_z"<< " " << "rec_trans_x"<< " " << "rec_trans_y"<< " " << "rec_trans_z" ;
 		ss << " " << "rec_mode_1"<< " " << "rec_mode_2"<< " " << "rec_mode_3"<< " " << "rec_mode_4"<< " " << "rec_mode_5"<< " ";
@@ -94,7 +98,11 @@ void emATTRACT<GenericTypes>::run() {
 		ss << std::endl;
 	}
 	else{
+#ifdef CUDA
+		filename = proteinPath + "/output/GATTRACT/GPU/NOMODES/EM_OUT_PY.dat";
+#else
 		filename = proteinPath + "/output/GATTRACT/CPU/NOMODES/EM_OUT_PY.dat";
+#endif
 		ss << " " << "energy_total";
 		ss << " " << "lig_rot_x"<< " " << "lig_rot_y"<< " " << "lig_rot_z"<< " " << "lig_trans_x"<< " " << "lig_trans_y"<< " " << "lig_trans_z";
 		ss << std::endl;

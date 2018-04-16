@@ -45,6 +45,9 @@ struct SharedMemory<double>
     }
 };
 
+
+
+
 template <typename T, unsigned int blockSize, bool nIsPow2, int PROTEINTYPE, bool MODES>
 __global__ void
 blockReduceMode(unsigned numAtoms, unsigned numModes,  DOF_6D_Modes<T>* dofs,
@@ -82,7 +85,10 @@ blockReduceMode(unsigned numAtoms, unsigned numModes,  DOF_6D_Modes<T>* dofs,
 			unsigned int DOFidx = (base + i) / numAtoms;
 			auto dof = dofs[DOFidx];
 			if(PROTEINTYPE == 1){
+
 				ang = dof._6D.ang;
+				//if((base + i) % numAtoms == 0){
+				//printf("%f %f %f %f %d\n", d_fx[base + i],ang.x, ang.y, ang.z, DOFidx);}
 				rotMatInv = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z).getInv();
 			}
 			// we reduce multiple elements per thread.  The number is determined by the
@@ -90,10 +96,10 @@ blockReduceMode(unsigned numAtoms, unsigned numModes,  DOF_6D_Modes<T>* dofs,
 			// in a larger gridSize and therefore fewer elements per thread
 		}
 
-			T fx, fy, fz, x, y, z;
-			fx = d_fx[base + i];
-			fy = d_fy[base + i];
-			fz = d_fz[base + i];
+			T fx, fy, fz, x, y, z,frot[3];
+			frot[0] = fx = d_fx[base + i];
+			frot[1] = fy = d_fy[base + i];
+			frot[2] = fz = d_fz[base + i];
 			x = xPos[i];
 			y = yPos[i];
 			z = zPos[i];
@@ -111,26 +117,27 @@ blockReduceMode(unsigned numAtoms, unsigned numModes,  DOF_6D_Modes<T>* dofs,
 			sum_torque[7] += y * fz;
 			sum_torque[8] += z * fz;
 			if(MODES){
-				forceAtom.x = fx;
-				forceAtom.y = fy;
-				forceAtom.z = fz;
 				if(PROTEINTYPE == 1){
 					//reduce mode Force for the and
-					forceAtom = rotMatInv * forceAtom;
+					frot[0] = rotMatInv[0] * fx + rotMatInv[1] * fy + rotMatInv[2] * fz;
+					frot[1] = rotMatInv[3] * fx + rotMatInv[4] * fy + rotMatInv[5] * fz;
+					frot[2] = rotMatInv[6] * fx + rotMatInv[7] * fy + rotMatInv[8] * fz;
+
 				}
 				for(int mode=0; mode<numModes; mode++){
-					sum_mode[mode] -=  forceAtom.x*xModes[i * numModes+mode]
-									  +forceAtom.y*yModes[i * numModes+mode]
-									  +forceAtom.z*zModes[i * numModes+mode];
+					sum_mode[mode] -=  frot[0]*xModes[i * numModes+mode]
+									  +frot[1]*yModes[i * numModes+mode]
+									  +frot[2]*zModes[i * numModes+mode];
+
 				}
 			}
 
 
         // ensure we don't read out of bounds -- this is optimized away for powerOf2 sized arrays
         if (nIsPow2 || i + blockSize < numAtoms) {
-				fx = d_fx[base + i + blockSize];
-				fy = d_fy[base + i + blockSize];
-				fz = d_fz[base + i + blockSize];
+				frot[0] = fx = d_fx[base + i + blockSize];
+				frot[1] = fy = d_fy[base + i + blockSize];
+				frot[2] = fz = d_fz[base + i + blockSize];
 				x = xPos[i + blockSize];
 				y = yPos[i + blockSize];
 				z = zPos[i + blockSize];
@@ -148,17 +155,16 @@ blockReduceMode(unsigned numAtoms, unsigned numModes,  DOF_6D_Modes<T>* dofs,
 				sum_torque[7] += y * fz;
 				sum_torque[8] += z * fz;
 				if(MODES){
-					forceAtom.x = fx;
-					forceAtom.y = fy;
-					forceAtom.z = fz;
 					if(PROTEINTYPE == 1){
-						forceAtom = rotMatInv * forceAtom;
+						frot[0] = rotMatInv[0] * fx + rotMatInv[1] * fy + rotMatInv[2] * fz;
+						frot[1] = rotMatInv[3] * fx + rotMatInv[4] * fy + rotMatInv[5] * fz;
+						frot[2] = rotMatInv[6] * fx + rotMatInv[7] * fy + rotMatInv[8] * fz;
 					}
 
 					for(int mode=0; mode < numModes; mode++){
-						sum_mode[mode] -=  forceAtom.x*xModes[(i + blockSize) * numModes+mode]
-										  +forceAtom.y*yModes[(i + blockSize) * numModes+mode]
-										  +forceAtom.z*zModes[(i + blockSize) * numModes+mode];
+						sum_mode[mode] -=  frot[0]*xModes[(i + blockSize) * numModes+mode]
+										  +frot[1]*yModes[(i + blockSize) * numModes+mode]
+										  +frot[2]*zModes[(i + blockSize) * numModes+mode];
 					}
 				}
         	}

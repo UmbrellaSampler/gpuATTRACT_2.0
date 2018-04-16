@@ -54,8 +54,9 @@ void TwoBodyParser::addOptions() noexcept {
 	_optsDesc.add(concurrency);
 	po::options_description sim("simulation");
 	sim.add_options()
-      ("numModes", po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes")
-			("dielec", po::value<string>()->default_value(SIM_DEFAULT_DIELEC),
+      ("numModesRec", po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes for the Receptor")
+      ("numModesLig", po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes for the Ligand")
+	  ("dielec", po::value<string>()->default_value(SIM_DEFAULT_DIELEC),
 					descriptionWithOptions("dielectric behavior", SIM_ALLOWED_DIELEC).c_str())
 			("epsilon", po::value<double>()->default_value(SIM_DEFAULT_EPSILON), "dielectric constant");
 	_optsDesc.add(sim);
@@ -112,8 +113,10 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->dielec = vm["dielec"].as<string>();
 	if(vm.count("epsilon"))
 		_args->epsilon = vm["epsilon"].as<double>();
-	if(vm.count("numModes"))
-		_args->numModes = vm["numModes"].as<int>();
+	if(vm.count("numModesRec"))
+		_args->numModesRec = vm["numModesRec"].as<int>();
+	if(vm.count("numModesLig"))
+		_args->numModesLig = vm["numModesLig"].as<int>();
 
 }
 

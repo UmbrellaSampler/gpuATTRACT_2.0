@@ -46,8 +46,8 @@ __global__ void d_NLPotForce(
 	const unsigned i = blockDim.x * blockIdx.x + threadIdx.x;
 	const unsigned LigNumEl = lig.numAtoms;
 	if (i < LigNumEl*numDOFs) {
-
 		const unsigned LigAttrIdx = i % LigNumEl;
+		const unsigned recBase = rec.numAtoms * (int) (i / LigNumEl);
 
 		const unsigned atomTypeLig = lig.type[LigAttrIdx];
 
@@ -77,12 +77,13 @@ __global__ void d_NLPotForce(
 					const unsigned nIdx = grid.neighborList[nDesc.y + j];
 
 
-
-					REAL dx = posLigX - RecPosX[nIdx];
-					REAL dy = posLigY - RecPosX[nIdx];
-					REAL dz = posLigZ - RecPosX[nIdx];
+					const unsigned test= recBase;
+					REAL dx = posLigX - RecPosX[nIdx + recBase];
+					REAL dy = posLigY - RecPosY[nIdx + recBase];
+					REAL dz = posLigZ - RecPosZ[nIdx + recBase];
 					const REAL dr2 = dx * dx + dy * dy + dz * dz;
 					const REAL dPlateau2 = grid.dPlateau2;
+					//printf("%d %d %f    %f %f %f   %f %f %f    %f %f %f \n",i,nIdx, dr2,dx, dy, dz,posLigX,posLigY,posLigZ, RecPosX[nIdx], RecPosY[nIdx], RecPosZ[nIdx]  );
 					if ((dr2) > dPlateau2) {
 						continue;
 					}
@@ -167,11 +168,15 @@ __global__ void d_NLPotForce(
 						eAcc -= eEl;
 
 					}
+
+
+//printf("%d %d  %f %f %f\n",i, nIdx,   fAcc.x, fAcc.y, fAcc.z);
 				}
 
 
 				/* store results back to global memory */
 				if (nDesc.x > 0) {
+
 					outLig_fx[i] += fAcc.x;
 					outLig_fy[i] += fAcc.y;
 					outLig_fz[i] += fAcc.z;

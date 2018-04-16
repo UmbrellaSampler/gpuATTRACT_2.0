@@ -89,11 +89,11 @@ c      delta(4) =0
 c      delta(5) =0
 c      delta(6) =0
 c      delta(7) =0
-      delta(12) =0
-      delta(13) =0
-      delta(14) =0
-      delta(15) =0
-      delta(16) =0
+c      delta(12) =0
+c      delta(13) =0
+c      delta(14) =0
+c      delta(15) =0
+c      delta(16) =0
 
 110   fa=gesa
       isfv=1
@@ -193,11 +193,11 @@ c      write(*,*),delta(3)
 c      write(*,*),delta(4)
 c      write(*,*),delta(7)
 c     store this function value if it is the smallest so far
-      delta(12) =0
-      delta(13) =0
-      delta(14) =0
-      delta(15) =0
-      delta(16) =0
+c      delta(12) =0
+c      delta(13) =0
+c      delta(14) =0
+c      delta(15) =0
+c      delta(16) =0
 c changed added next do loop
       do i=1,jn
         gb(i)=-delta(i)

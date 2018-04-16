@@ -86,8 +86,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 			ligand->pivotize(h.pivots[1]);
 		}
 
-		receptor->setNumModes(args.numModes);
-		ligand->setNumModes(args.numModes);
+		receptor->setNumModes( Common_Modes::numModesRec );
+		ligand->setNumModes( Common_Modes::numModesLig );
 
 
 		readHMMode<real_t>(receptor, args.recModesName);

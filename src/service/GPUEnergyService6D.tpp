@@ -306,19 +306,23 @@ public:
 				d_potLig[pipeIdx[1]].getZ(),
 				d_potLig[pipeIdx[1]].getW()); // OK
 
-//			// Debug
+			// Debug
 //			cudaDeviceSynchronize();
 //			size_t bufferSize = d_potLig[pipeIdx[1]].bufferSize();
 //			WorkerBuffer<REAL> h_potLig(4,bufferSize);
 //			size_t cpySize = h_potLig.bufferSize()*sizeof(REAL);
+//			REAL sumx = 0;
 //			cudaMemcpy(h_potLig.getX(),d_potLig[pipeIdx[1]].getX(), cpySize, cudaMemcpyDeviceToHost);
 //			cudaMemcpy(h_potLig.getY(),d_potLig[pipeIdx[1]].getY(), cpySize, cudaMemcpyDeviceToHost);
 //			cudaMemcpy(h_potLig.getZ(),d_potLig[pipeIdx[1]].getZ(), cpySize, cudaMemcpyDeviceToHost);
 //			cudaMemcpy(h_potLig.getW(),d_potLig[pipeIdx[1]].getW(), cpySize, cudaMemcpyDeviceToHost);
+//			std::cout << d_potLig[pipeIdx[1]].bufferSize();
 //			for(size_t i = 0; i < bufferSize; ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
 //				std::cout << h_potLig.getX()[i] << " " << h_potLig.getY()[i] << " " << h_potLig.getZ()[i] << " " << h_potLig.getW()[i] << std::endl;
+//				sumx += h_potLig.getX()[i];
 //			}
+//			std::cout << sumx << std::endl;
 //			exit(EXIT_SUCCESS);
 
 			/* Device: Signal event when force and energy calc. has completed */
@@ -359,8 +363,8 @@ public:
 //			size_t cpySize = h_potLig.bufferSize()*sizeof(REAL);
 //			cudaMemcpy(h_potLig.get(0),d_res[pipeIdx[0]].get(0), cpySize, cudaMemcpyDeviceToHost);
 //
-//			for(size_t i = 0; i < numDofs; ++i) {
-////			for(size_t i = 0; i < 20; ++i) {
+////			for(size_t i = 0; i < numDofs; ++i) {
+//			for(size_t i = 0; i < 20; ++i) {
 //				REAL x = h_potLig.get(0)[i*13 + 0];
 //				REAL y = h_potLig.get(0)[i*13 + 1];
 //				REAL z = h_potLig.get(0)[i*13 + 2];

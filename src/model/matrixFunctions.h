@@ -47,18 +47,40 @@ RotMat<REAL>  euler2rotmat(REAL const& phi, REAL const& ssi, REAL const& rot) {
 	//finally, rotate using phi
 	//		this is a rotation around the (new) Z axis
 	//			rotating X into Y and Y into -X
+	REAL cSSI,
+		 cPHI,
+		 sSSI,
+		 sPHI,
+		 cROT,
+		 sROT;
 
-	REAL cSSI = cos(ssi);
-	REAL cPHI = cos(phi);
-	REAL sSSI = sin(ssi);
-	REAL sPHI = sin(phi);
+	if( std::is_same<REAL, float>::value ){
+		cSSI = cos(ssi);
+		cPHI = cos(phi);
+		sSSI = sin(ssi);
+		sPHI = sin(phi);
+		cROT = cos(rot);
+		sROT = sin(rot);
+	}
+	else{
+		cSSI = cosf(ssi);
+		cPHI = cosf(phi);
+		sSSI = sinf(ssi);
+		sPHI = sinf(phi);
+		cROT = cosf(rot);
+		sROT = sinf(rot);
+	}
+//	REAL cSSI = cos(ssi);
+//	REAL cPHI = cos(phi);
+//	REAL sSSI = sin(ssi);
+//	REAL sPHI = sin(phi);
 
 	REAL cSSI_cPHI = cSSI * cPHI;
 	REAL cSSI_sPHI = cSSI * sPHI;
 	REAL sSSI_cPHI = sSSI * cPHI;
 	REAL sSSI_sPHI = sSSI * sPHI;
-	REAL cROT = cos(rot);
-	REAL sROT = sin(rot);
+//	REAL cROT = cos(rot);
+//	REAL sROT = sin(rot);
 
 	RotMat<REAL> rotmat;
 	rotmat.mat[0] = cROT * cSSI_cPHI + sROT * sPHI;

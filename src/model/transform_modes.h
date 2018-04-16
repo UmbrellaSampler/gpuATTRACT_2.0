@@ -240,7 +240,7 @@ void rotate_forces(
 
 #ifdef CUDA
 
-template<typename REAL, int PROTEINTYPE, bool MODES>
+template<typename REAL, bool PROTEINTYPE, bool MODES>
 void d_DOFPos(
 		unsigned blockSize,
 		unsigned gridSize,
@@ -269,6 +269,39 @@ void d_rotateForces(
 		unsigned numDOFs
 );
 
+
+
+template<typename REAL,  bool MODES>
+void d_DOFPos_rec(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<REAL>* protein,
+		DOF_6D_Modes<REAL>* dofs,
+		unsigned numDOFs,
+		REAL* xDefo,
+		REAL* yDefo,
+		REAL* zDefo,
+		REAL* xTrafo,
+		REAL* yTrafo,
+		REAL* zTrafo
+		);
+
+template<typename REAL,  bool MODES>
+void d_DOFPos_lig(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<REAL>* protein,
+		DOF_6D_Modes<REAL>* dofs,
+		unsigned numDOFs,
+		REAL* xDefo,
+		REAL* yDefo,
+		REAL* zDefo,
+		REAL* xTrafo,
+		REAL* yTrafo,
+		REAL* zTrafo
+		);
 #endif
 
 

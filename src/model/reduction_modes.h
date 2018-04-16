@@ -204,23 +204,27 @@ void h_finalReduce(
 			enGrad._6D.ang.x = result.x;
 			enGrad._6D.ang.y = result.y;
 			enGrad._6D.ang.z = result.z;
-		}else{
-					enGrad._6D.pos.x -= deviceOut[i*dofSize + 0];
-					enGrad._6D.pos.y -= deviceOut[i*dofSize + 1];
-					enGrad._6D.pos.z -= deviceOut[i*dofSize + 2];
-				}
+			//std::cout << enGrad<< std::endl;
+		}
 
 		if(MODES){
 			if(PROTEINTYPE == 1){
+
 				for(int mode=0; mode < protein->numModes; mode++){
 					enGrad.modesLig[mode]=deviceOut[i*dofSize + 13 + mode];
+					//std::cout << enGrad.modesLig[mode]<< " " << std::endl;
+
 				}
 				correctModeForce(
 					protein->modeForce,
 					protein->numModes,
-					dof.modesRec,
+					dof.modesLig,
 					enGrad.modesLig
 					);
+					for (int i = 0; i < 5 ; i++){
+						//std::cout << enGrad.modesLig[i]<< " " << std::endl;
+					}
+
 				enGrad._6D.E += getModeEngergy(protein->modeForce,
 					protein->numModes,
 					dof.modesLig
@@ -230,11 +234,10 @@ void h_finalReduce(
 				for(int mode=0; mode < protein->numModes; mode++){
 					enGrad.modesRec[mode]=deviceOut[i*dofSize + 13 + mode];
 				}
-
 				correctModeForce(
 					protein->modeForce,
 					protein->numModes,
-					dof.modesLig,
+					dof.modesRec,
 					enGrad.modesRec
 					);
 

@@ -158,8 +158,8 @@ public:
 	}
 
 	static Vector toSecond(DOF_6D_Modes<REAL> const& dof) {
-		Vector vec(6 + Common_Modes::numModesRec + Common_Modes::numModesLig);
-		//Vector vec(26);
+		//Vector vec(6 + Common_Modes::numModesRec + Common_Modes::numModesLig);
+		Vector vec(26);
 		vec(0) = dof._6D.ang.x;
 		vec(1) = dof._6D.ang.y;
 		vec(2) = dof._6D.ang.z;
@@ -217,7 +217,7 @@ public:
 	static ObjGrad toSecond (Result_6D_Modes<REAL> const& enGrad) {
 		ObjGrad objGrad;
 		objGrad.obj = enGrad._6D.E;
-		objGrad.grad = Vector(6 + Common_Modes::numModesRec + Common_Modes::numModesLig);
+		objGrad.grad = Vector(26);
 		// for ATTRACT multiply gradients by -1.0
 		objGrad.grad(0) = enGrad._6D.ang.x;
 		objGrad.grad(1) = enGrad._6D.ang.y;

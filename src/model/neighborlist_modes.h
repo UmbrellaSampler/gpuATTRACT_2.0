@@ -84,7 +84,6 @@ void NLPotForce(
 
 
 				const REAL dr2 = dx * dx + dy * dy + dz * dz;
-
 				if (grid->outOfPlateau(dr2)) {
 					continue;
 				}
@@ -188,12 +187,12 @@ void NLPotForce(
 
 
 				}
-
+			//	printf("%d %d %f %f %f %f\n", i,dr2, nIdx, fRec.x, fRec.y, fRec.z);
 				outRec_fx[nIdx] += fRec.x;
 				outRec_fy[nIdx] += fRec.y;
 				outRec_fz[nIdx] += fRec.z;
 			} // for j
-
+			//printf("%d   %f %f %f\n", i, fAcc.x,fAcc.y,fAcc.z);
 			outLig_fx[i] += fAcc.x;
 			outLig_fy[i] += fAcc.y;
 			outLig_fz[i] += fAcc.z;
@@ -260,6 +259,8 @@ void NLPotForce(
 
 
 				const REAL dr2 = dx * dx + dy * dy + dz * dz;
+
+				//printf("%d %d %f    %f %f %f   %f %f %f    %f %f %f \n",i,nIdx, dr2,dx, dy, dz,posLigX,posLigY,posLigZ, RecPosX[nIdx], RecPosY[nIdx], RecPosZ[nIdx]  );
 
 				if (grid->outOfPlateau(dr2)) {
 					continue;
@@ -340,6 +341,7 @@ void NLPotForce(
 					fAcc.z -= fEl.z;
 					eAcc -= eEl;
 				}
+//printf("%d %d  %f %f %f\n", i, nIdx,fAcc.x,fAcc.y,fAcc.z);
 			} // for j
 
 			outLig_fx[i] += fAcc.x;

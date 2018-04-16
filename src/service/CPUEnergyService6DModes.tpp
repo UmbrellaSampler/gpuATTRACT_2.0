@@ -529,11 +529,18 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //				buffers->h_trafoLig.getZ()
 //			); // OK
 
-//			// Debug
+			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
 //				std::cout << buffers->h_trafoLig.getX()[i] << " " << buffers->h_trafoLig.getY()[i] << " " << buffers->h_trafoLig.getZ()[i] << std::endl;
+//
 //			}
+//			std::cout << "cut" << std::endl;
+//			for(size_t i = 0; i < rec->numAtoms(); ++i) {
+//			//			for(size_t i = 0; i < 20; ++i) {
+//							std::cout << buffers->h_defoRec.getX()[i] << " " << buffers->h_defoRec.getY()[i] << " " << buffers->h_defoRec.getZ()[i] << std::endl;
+//
+//						}
 //			exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor via the ligand grid in the ligand system
@@ -567,45 +574,12 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potLig.getW()
 			); // OK
 
-			rotate_forces(invertedRecDOF._6D.ang,
-				rec-> numAtoms(),
-				buffers->h_potRec.getX(),
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ()
-			);
-//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-//			for(size_t i = 0; i < 20; ++i) {
-//				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
-//			}
-//			exit(EXIT_SUCCESS);
+
+
+
 
 			// calculate the forces acting on the receptor and the ligand in the receptor system via the neighborlist
-			NLPotForce(
-				gridRec->NL.get(),
-				rec,
-				lig,
-				simParams,
-				table,
-				buffers->h_defoRec.getX(),
-				buffers->h_defoRec.getY(),
-				buffers->h_defoRec.getZ(),
-				buffers->h_trafoLig.getX(),
-				buffers->h_trafoLig.getY(),
-				buffers->h_trafoLig.getZ(),
-				buffers->h_potLig.getX(), // output
-				buffers->h_potLig.getY(),
-				buffers->h_potLig.getZ(),
-				buffers->h_potLig.getW(),
-				buffers->h_potRec.getX(), // output
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ()
-			); // OK
 
-
-			//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-			for(size_t i = 0; i < 20; ++i) {
-				//	std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << std::endl;//<< " " << buffers->h_potLig.getW()[i] << std::endl;
-			}
 
 //			NLPotForce(
 //				gridRec->NL.get(),
@@ -622,51 +596,118 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //				buffers->h_potLig.getX(), // output
 //				buffers->h_potLig.getY(),
 //				buffers->h_potLig.getZ(),
-//				buffers->h_potLig.getW()
-//				);
-//
-//			NLPotForce(
-//				gridLig->NL.get(),
-//				lig,
-//				rec,
-//				simParams,
-//				table,
-//				buffers->h_defoLig.getX(),
-//				buffers->h_defoLig.getY(),
-//				buffers->h_defoLig.getZ(),
-//				buffers->h_trafoRec.getX(),
-//				buffers->h_trafoRec.getY(),
-//				buffers->h_trafoRec.getZ(),
+//				buffers->h_potLig.getW(),
 //				buffers->h_potRec.getX(), // output
 //				buffers->h_potRec.getY(),
-//				buffers->h_potRec.getZ(),
-//				buffers->h_potRec.getW()
-//				);
-
-
-
-
-//			NLPotForce(
-//				gridLig->NL.get(),
-//				lig,
-//				rec,
-//				simParams,
-//				table,
-//				buffers->h_defoLig.getX(),
-//				buffers->h_defoLig.getY(),
-//				buffers->h_defoLig.getZ(),
-//				buffers->h_trafoRec.getX(),
-//				buffers->h_trafoRec.getY(),
-//				buffers->h_trafoRec.getZ(),
-//				buffers->h_potRec.getX(), // output
-//				buffers->h_potRec.getY(),
-//				buffers->h_potRec.getZ(),
-//				buffers->h_potRec.getW(),
-//				buffers->h_potLig.getX(), // output
-//				buffers->h_potLig.getY(),
-//				buffers->h_potLig.getZ()
+//				buffers->h_potRec.getZ()
 //			); // OK
 
+
+//float esum = 0;
+
+
+						//exit(EXIT_SUCCESS);
+			NLPotForce(
+				gridRec->NL.get(),
+				rec,
+				lig,
+				simParams,
+				table,
+				buffers->h_defoRec.getX(),
+				buffers->h_defoRec.getY(),
+				buffers->h_defoRec.getZ(),
+				buffers->h_trafoLig.getX(),
+				buffers->h_trafoLig.getY(),
+				buffers->h_trafoLig.getZ(),
+				buffers->h_potLig.getX(), // output
+				buffers->h_potLig.getY(),
+				buffers->h_potLig.getZ(),
+				buffers->h_potLig.getW()
+				);
+
+			NLPotForce(
+				gridLig->NL.get(),
+				lig,
+				rec,
+				simParams,
+				table,
+				buffers->h_defoLig.getX(),
+				buffers->h_defoLig.getY(),
+				buffers->h_defoLig.getZ(),
+				buffers->h_trafoRec.getX(),
+				buffers->h_trafoRec.getY(),
+				buffers->h_trafoRec.getZ(),
+				buffers->h_potRec.getX(), // output
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				buffers->h_potRec.getW()
+				);
+
+
+
+
+
+			rotate_forces(invertedRecDOF._6D.ang,
+					rec-> numAtoms(),
+					buffers->h_potRec.getX(),
+					buffers->h_potRec.getY(),
+					buffers->h_potRec.getZ()
+
+				);
+
+
+
+//			NLPotForce(
+//							gridLig->NL.get(),
+//							lig,
+//							rec,
+//							simParams,
+//							table,
+//							buffers->h_defoLig.getX(),
+//							buffers->h_defoLig.getY(),
+//							buffers->h_defoLig.getZ(),
+//							buffers->h_trafoRec.getX(),
+//							buffers->h_trafoRec.getY(),
+//							buffers->h_trafoRec.getZ(),
+//							buffers->h_potRec.getX(), // output
+//							buffers->h_potRec.getY(),
+//							buffers->h_potRec.getZ(),
+//							buffers->h_potRec.getW(),
+//							buffers->h_potLig.getX(), // output
+//							buffers->h_potLig.getY(),
+//							buffers->h_potLig.getZ()
+//						); // OK
+
+
+
+//			NLPotForce(
+//				gridRec->NL.get(),
+//				rec,
+//				lig,
+//				simParams,
+//				table,
+//				buffers->h_defoRec.getX(),
+//				buffers->h_defoRec.getY(),
+//				buffers->h_defoRec.getZ(),
+//				buffers->h_trafoLig.getX(),
+//				buffers->h_trafoLig.getY(),
+//				buffers->h_trafoLig.getZ(),
+//				buffers->h_potLig.getX(), // output
+//				buffers->h_potLig.getY(),
+//				buffers->h_potLig.getZ(),
+//				buffers->h_potLig.getW(),
+//				buffers->h_potRec.getX(), // output
+//				buffers->h_potRec.getY(),
+//				buffers->h_potRec.getZ()
+//			); // OK
+
+
+//			for(size_t i = 0; i < rec->numAtoms(); ++i) {
+//								//for(size_t i = 0; i < 20; ++i) {
+//										std::cout << buffers->h_potRec.getX()[i] << " " << buffers->h_potRec.getY()[i] << " " << buffers->h_potRec.getZ()[i]<<" " << buffers->h_potRec.getW()[i] << std::endl;//<< " " << buffers->h_potRec.getW()[i] << std::endl;
+//
+//
+//					}
 ////			// Debug
 
 //			std::vector<std::vector<REAL>> ligandForcesOrig = readArray<REAL>( "/home/glenn/Documents/Masterthesis/testfolder/Uwestestfile/attract_2018_02_23/orig_attract_data/forcesLigand_0000.dat" );
@@ -786,8 +827,10 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				);
 
 //			std::cout <<"mode receptor " <<  redPotForce.modesRec[0] << std::endl;
-//			std::cout <<"mode ligand   " <<redPotForce.modesLig[0] << std::endl;
+
 //
+
+
 			correctModeForce(
 				rec->modeForce(),
 				rec-> numModes(),
@@ -802,19 +845,17 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				);
 
 
-			//copy reduced forces
-			//std::cout << "print out mode force ligand"<< std::endl;
 			for( int mode = 0; mode < lig->numModes(); mode++) {
 				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
+
 				//enGrad.modesLig[mode]=75;
 
 			}
-			//std::cout << "print out mode force receptor"<< std::endl;
+
 
 			for( int mode = 0; mode < rec->numModes(); mode++) {
 				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
-				//	std::cout << redPotForce.modesRec[mode] << " ";
-				//enGrad.modesRec[mode]=109;
+
 			}
 
 			//std::cout <<"ligand mode energy ";
@@ -874,9 +915,9 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			std::cout << std::endl;
 //			std::cout << std::endl;
 //			std::cout << "Receptor Deltas" << std::endl;
-
-		//	std::cout << "ROTATIONAL     " << angForce << std::endl;
-		//	std::cout << "TRANSLATIONAL  " << redPotForceReceptor.pos << std::endl;
+//
+//			std::cout << "ROTATIONAL     " << angForce << std::endl;
+//			std::cout << "TRANSLATIONAL  " << redPotForceReceptor.pos << std::endl;
 //			std::cout << "MODES Rec         " ;
 //			for( int mode = 0; mode < rec->numModes(); mode++) {
 //				std::cout << redPotForce.modesRec[mode] << " ";
