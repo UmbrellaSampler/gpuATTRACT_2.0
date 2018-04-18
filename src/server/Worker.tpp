@@ -13,6 +13,7 @@ namespace as {
 template<typename InputType, typename CommonType, typename ResultType>
 void Worker<InputType, CommonType, ResultType>::run() {
 	bool callAgain = false;
+	 cudaProfilerStart();
 
 	while(true) {
 		workItem_t* item;
@@ -31,6 +32,7 @@ void Worker<InputType, CommonType, ResultType>::run() {
 		assert(_serviceFnc); // check if fnc object has target
 		callAgain = _serviceFnc(item);
 	}
+	 cudaProfilerStop();
 }
 
 } // namespace as

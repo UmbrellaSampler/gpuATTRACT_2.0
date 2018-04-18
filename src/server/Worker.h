@@ -9,7 +9,7 @@
 #define SRC_WORKER_H_
 
 #include "ThreadSafeQueue.h"
-
+#include "cuda_profiler_api.h"
 namespace as {
 
 template<typename InputType, typename CommonType, typename ResultType>
