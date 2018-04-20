@@ -217,7 +217,7 @@ public:
 	static ObjGrad toSecond (Result_6D_Modes<REAL> const& enGrad) {
 		ObjGrad objGrad;
 		objGrad.obj = enGrad._6D.E;
-		objGrad.grad = Vector(26);
+		objGrad.grad = Vector( DOF_MAX_NUMBER );
 		// for ATTRACT multiply gradients by -1.0
 		objGrad.grad(0) = enGrad._6D.ang.x;
 		objGrad.grad(1) = enGrad._6D.ang.y;

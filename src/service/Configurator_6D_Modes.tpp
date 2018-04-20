@@ -24,7 +24,7 @@
 #include "DOFTransform.h"
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
-#include <iostream>
+
 namespace as {
 
 template<typename SERVICE>
@@ -61,8 +61,6 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 		throw std::logic_error("DOF-file contains definitions for more than two molecules. Multi-body docking is not supported.");
 	}
 
-	// TODO: transform DOF_6D to input_t
-	//std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = std::vector<std::vector<DOF_6D_Modes<real_t>>>();
 	std::vector<std::vector<DOF>> DOF_molecules_dof = readDOF(args.dofName);
 	std::vector<std::vector<DOF_6D_Modes<real_t>>> DOF_molecules = DOFConverter_Modes<real_t>(DOF_molecules_dof);
 	if(DOF_molecules.size() != 2) {
@@ -104,9 +102,6 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 		std::copy(DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig + ligand->numModes(), this->_dofs[i].modesLig);
 	}
 
-//std::cout << "ligand pivot" << ligand->pivot() << std::cout;
-//std::cout << "receptor pivot" << receptor->pivot() << std::cout;
-
 	/* apply grid displacement */
 	gridRec->translate(-make_real3(receptor->pivot().x,receptor->pivot().y,receptor->pivot().z));
 
@@ -147,7 +142,6 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 		serviceType = ServiceType::CPUEnergyService6DModes;
 	}
 
-	// TODO: ServiceType::GPUEnergyService6DModes is not yet available
 #ifdef CUDA
 	else {
 		serviceType = ServiceType::GPUEnergyService6DModes;

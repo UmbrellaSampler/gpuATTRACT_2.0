@@ -62,38 +62,8 @@ c     set the hessian to a diagonal matrix
 c     set some variables for the first iteration
       dff=xnull
 
-c      write(*,*) "Call energy ", itr
-c      write(*,*),xaa(1)
-c      write(*,*),xaa(2)
-c      write(*,*),xaa(3)
-c      write(*,*),xaa(4)
-c      write(*,*),xaa(5)
-c      write(*,*),xaa(6)
-c      write(*,*),xaa(7)
-c      write(*,*),xaa(8)
 c changed delta instead of g
       call energy_for_fortran_to_call(smug, xaa, gesa, delta)
-c       write(*,*), "deltas"
-c      write(*,*),delta(1)
-c      write(*,*),delta(2)
-c      write(*,*),delta(3)
-c      write(*,*),delta(4)
-c      write(*,*),delta(5)
-c      write(*,*),delta(6)
-c      write(*,*),delta(7)
-c      write(*,*),delta(8)
-c      delta(1) =0
-c     delta(2) =0
-c     delta(3) =0
-c      delta(4) =0
-c      delta(5) =0
-c      delta(6) =0
-c      delta(7) =0
-c      delta(12) =0
-c      delta(13) =0
-c      delta(14) =0
-c      delta(15) =0
-c      delta(16) =0
 
 110   fa=gesa
       isfv=1
@@ -151,15 +121,6 @@ c changed added do loop
         enddo
 
 c     make an Euler rotation + tranlation of ligand center
-c      write(*,*), "step ",c
-c      write(*,*),d(1)
-c      write(*,*),d(2)
-c      write(*,*),d(3)
-c      write(*,*),d(4)
-c      write(*,*),d(5)
-c      write(*,*),d(6)
-c      write(*,*),d(7)
-c      write(*,*),d(8)
       do i=1,6
        xbb(i)=xaa(i)+c*d(i)
       enddo
@@ -167,37 +128,11 @@ c      write(*,*),d(8)
        xbb(i)=xaa(i)-c*d(i)
       enddo
       iteration = iteration + 1
-c      write(*,*) "Call energy ", iteration
-c      write(*,*),xbb(1)
-c      write(*,*),xbb(2)
-c      write(*,*),xbb(3)
-c      write(*,*),xbb(4)
-c      write(*,*),xbb(5)
-c      write(*,*),xbb(6)
-c      write(*,*),xbb(7)
-c      write(*,*),xbb(8)
+
 c changed gb to delta
       call energy_for_fortran_to_call(smug, xbb, fb, delta)
-c     delta(1) =0
-c     delta(2) =0
-c     delta(3) =0
-c      delta(4) =0
-c      delta(5) =0
-c      delta(6) =0
-c      delta(7) =0
-c      delta(8) =0
-c      write(*,*), "deltas"
-c      write(*,*),delta(1)
-c      write(*,*),delta(2)
-c      write(*,*),delta(3)
-c      write(*,*),delta(4)
-c      write(*,*),delta(7)
+
 c     store this function value if it is the smallest so far
-c      delta(12) =0
-c      delta(13) =0
-c      delta(14) =0
-c      delta(15) =0
-c      delta(16) =0
 c changed added next do loop
       do i=1,jn
         gb(i)=-delta(i)

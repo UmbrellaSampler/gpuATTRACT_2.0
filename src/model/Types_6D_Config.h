@@ -9,6 +9,6 @@
 #define SRC_MODEL_TYPES_6D_CONFIG_H_
 
 constexpr unsigned MODES_MAX_NUMBER=10;
-
+constexpr unsigned DOF_MAX_NUMBER = 26;
 
 #endif /* TYPES_6D_CONFIG_H_ */
