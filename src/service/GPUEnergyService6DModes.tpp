@@ -108,7 +108,7 @@ class GPUEnergyService6DModes<REAL>::Private {
 
 public:
 
-	Private() : stagesMngt(numStages), pipeIdx{0,1}, pipeIdxDof{0,1,2},numItemsInPipe(0) {
+	Private() : stagesMngt(numStages), pipeIdx{0,1}, pipeIdxDof{0,1,2,3},numItemsInPipe(0) {
 		for (unsigned i = 0; i<numStages; ++i) {
 			predicates[0][i] = false;
 			predicates[1][i] = false;
@@ -163,7 +163,8 @@ public:
 
 	void swapBuffers() {
 		std::swap(pipeIdx[0], pipeIdx[1]);
-		int 	  tmp = pipeIdxDof[2];
+		int 	  tmp = pipeIdxDof[3];
+		pipeIdxDof[3] = pipeIdxDof[2];
 		pipeIdxDof[2] = pipeIdxDof[1];
 		pipeIdxDof[1] = pipeIdxDof[0];
 		pipeIdxDof[0] = tmp;
@@ -252,8 +253,6 @@ public:
 
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
 			cudaVerify(cudaStreamWaitEvent(streams[2], events[0], 0));
-			stageResc.rec->numModes = 5;
-			stageResc.lig->numModes = 5;
 
 			d_DOFPos_rec<REAL,  true>(
 				BLSZ_TRAFO,
@@ -285,20 +284,20 @@ public:
 				d_trafoLig.getZ()
 				);
 
-////			 DEBUG
-//			cudaDeviceSynchronize();
-//			size_t bufferSize = d_defoLig.bufferSize();
-//			WorkerBuffer<REAL> h_defoLig(3,bufferSize);
-//			size_t cpySize = h_defoLig.bufferSize()*sizeof(REAL);
-//
-//			std::cout << "bufferSize: " << bufferSize << " cpySize: " << cpySize << std::endl;
-//			cudaMemcpy(h_defoLig.getX(),d_defoLig.getX(), cpySize, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_defoLig.getY(),d_defoLig.getY(), cpySize, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_defoLig.getZ(),d_defoLig.getZ(), cpySize, cudaMemcpyDeviceToHost);
-//			for(size_t i = 0; i < bufferSize; ++i) {
-//				std::cout << h_defoLig.getX()[i] << " " << h_defoLig.getY()[i] << " " << h_defoLig.getZ()[i] << std::endl;
-//			}
-			//exit(EXIT_SUCCESS);
+//			 DEBUG
+			cudaDeviceSynchronize();
+			size_t bufferSize = d_trafoLig.bufferSize();
+			WorkerBuffer<REAL> h_trafoLig(3,bufferSize);
+			size_t cpySize = h_trafoLig.bufferSize()*sizeof(REAL);
+
+			std::cout << "bufferSize: " << bufferSize << " cpySize: " << cpySize << std::endl;
+			cudaMemcpy(h_trafoLig.getX(),d_trafoLig.getX(), cpySize, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_trafoLig.getY(),d_trafoLig.getY(), cpySize, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_trafoLig.getZ(),d_trafoLig.getZ(), cpySize, cudaMemcpyDeviceToHost);
+			for(size_t i = 0; i < bufferSize; ++i) {
+				std::cout << h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
+			}
+//			exit(EXIT_SUCCESS);
 
 			/* Device: Signal event when transformation has completed */
 			cudaVerify(cudaEventRecord(events[2], streams[2]));
@@ -427,7 +426,7 @@ public:
 
 
 			/* Device: Signal event when force and energy calc. has completed */
-			cudaVerify(cudaEventRecord(events[3+pipeIdx[1]], streams[2]));
+			cudaVerify(cudaEventRecord( events[3+pipeIdx[1]], streams[2]) );
 
 			/* signal that this stage was executed within the current iteration */
 			predicates[pipeIdx[0]][1] = true;
@@ -530,9 +529,9 @@ public:
 			cudaVerify(cudaStreamWaitEvent(streams[1], events[5 + pipeIdx[1]], 0));
 
 			/* copy results to host */
-			cudaVerify(cudaMemcpyAsync(h_resRec[pipeIdx[1]].get(0), d_resRec[pipeIdx[1]].get(0), dofSizeRec*it->size()*sizeof(REAL),
+			cudaVerify(cudaMemcpyAsync( h_resRec[pipeIdx[1]].get(0), d_resRec[pipeIdx[1]].get(0), dofSizeRec*it->size()*sizeof(REAL),
 					cudaMemcpyDeviceToHost, streams[1]));
-			cudaVerify(cudaMemcpyAsync(h_resLig[pipeIdx[1]].get(0), d_resLig[pipeIdx[1]].get(0), dofSizeLig*it->size()*sizeof(REAL),
+			cudaVerify(cudaMemcpyAsync( h_resLig[pipeIdx[1]].get(0), d_resLig[pipeIdx[1]].get(0), dofSizeLig*it->size()*sizeof(REAL),
 					cudaMemcpyDeviceToHost, streams[1]));
 
 			/* Device: Signal event when transfere has completed */
@@ -601,7 +600,7 @@ public:
 		}
 	}
 
-	WorkerBuffer<dof_t, DeviceAllocator<dof_t>> d_dof[3];
+	WorkerBuffer<dof_t, DeviceAllocator<dof_t>> d_dof[4];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoRec;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoLig;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoRec;
@@ -625,7 +624,7 @@ public:
 	bool predicates[2][numStages];
 	RingArray<StageResource> stagesMngt;
 	unsigned pipeIdx[2];
-	unsigned pipeIdxDof[3];
+	unsigned pipeIdxDof[4];
 
 	int numItemsInPipe; /** number of items in the pipeline */
 

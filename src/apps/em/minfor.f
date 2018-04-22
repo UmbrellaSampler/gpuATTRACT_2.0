@@ -18,22 +18,21 @@ c     Parameters
 
 c     Local variables
       real*8  gesa
-      integer i,k,ir,isfv,itr,nfun,np,jn, iteration
+      integer i,k,ir,isfv,itr,nfun,np,jn
       real*8 c,acc,dff,dgb,fa,fmin,gl1,gl2,gmin,dga,xnull,w
-      real*8 fb, delta, xcc
+      real*8 fb, delta
       
       real*8 h,g,ga,gb,xaa,xbb,d,step,stepbd,steplb,stmin
-      dimension h(26*26), delta(26), xcc(26)
+      dimension h(26*26), delta(26)
       dimension g(26),ga(26),gb(26),w(26)
       dimension xaa(26), xbb(26), d(26)
-c changed add xcc and delta
+
       integer, parameter:: ERROR_UNIT = 0
 
       xnull=0.0d0
       dga=xnull
-      numModesRec=5
-      numModesLig=5
-      jn = 6 + numModesRec + numModesLig
+
+      jn = 6 + 5 + 5
 
       do i=1,jn
        ga(i)=xnull
@@ -62,19 +61,17 @@ c     set the hessian to a diagonal matrix
 c     set some variables for the first iteration
       dff=xnull
 
-c changed delta instead of g
+
       call energy_for_fortran_to_call(smug, xaa, gesa, delta)
 
 110   fa=gesa
       isfv=1
 c store forces, Euler angle, position and ligand and receptor coordinates
       do i=1,jn
-c changed added next line
         g(i) = -delta(i)
        ga(i)=g(i)
       enddo
       
-c changed added the declaration of xaa
 
 
       
@@ -98,7 +95,7 @@ c     and the initial directional derivative
       dga=dga+ga(i)*d(i)
       enddo
 c     test if the search direction is downhill
-c      write(*,*),"dga ", dga
+
       if (dga.ge.xnull) go to 240
 c     set the initial step-length of the line search
       stmin=xnull
@@ -115,7 +112,6 @@ c     test whether func has been called ivmax times
       nfun=nfun+1
 c     calculate another function value and gradient
 
-c changed added do loop
         do i=1, jn
             g(i)=-delta(i)
         enddo
@@ -124,16 +120,15 @@ c     make an Euler rotation + tranlation of ligand center
       do i=1,6
        xbb(i)=xaa(i)+c*d(i)
       enddo
-      do i=7,12
+      do i=7,jn
        xbb(i)=xaa(i)-c*d(i)
       enddo
-      iteration = iteration + 1
 
-c changed gb to delta
+
+
       call energy_for_fortran_to_call(smug, xbb, fb, delta)
 
 c     store this function value if it is the smallest so far
-c changed added next do loop
       do i=1,jn
         gb(i)=-delta(i)
 c      write(*,*),i,delta(i)

@@ -177,11 +177,11 @@ __global__ void d_DOFPos_lig(
 		Vec3<REAL> 		translation(dof._6D.pos.x, dof._6D.pos.y, dof._6D.pos.z);
 
 
-			for(int mode=0; mode < numModes; mode++){
-				posAtom.x += dof.modesLig[mode] * xModes[atomIdx*numModes+mode];
-				posAtom.y += dof.modesLig[mode] * yModes[atomIdx*numModes+mode];
-				posAtom.z += dof.modesLig[mode] * zModes[atomIdx*numModes+mode];
-			}
+		for(int mode=0; mode < numModes; mode++){
+			posAtom.x += dof.modesLig[mode] * xModes[atomIdx*numModes+mode];
+			posAtom.y += dof.modesLig[mode] * yModes[atomIdx*numModes+mode];
+			posAtom.z += dof.modesLig[mode] * zModes[atomIdx*numModes+mode];
+		}
 		xDefo[idx] = posAtom.x;
 		yDefo[idx] = posAtom.y;
 		zDefo[idx] = posAtom.z;
