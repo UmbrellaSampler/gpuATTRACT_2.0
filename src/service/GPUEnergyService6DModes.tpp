@@ -193,6 +193,9 @@ public:
 			auto const& stageResc = stagesMngt.get(stageId);
 			auto* const it = stageResc.item;
 
+			for (int i = 0; i <3; i++ ){
+				std::cout << it->inputBuffer()[i]<< std::endl;
+			}
 
 			cudaVerify(cudaStreamWaitEvent(streams[0], events[2], 0));
 			cudaVerify(cudaMemcpyAsync(d_dof[pipeIdxDof[0]].get(0), it->inputBuffer(),
