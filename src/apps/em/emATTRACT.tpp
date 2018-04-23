@@ -73,10 +73,17 @@ void emATTRACT<GenericTypes>::run() {
 	auto dof_results = requestHandler.getResultEnGrads();
 	auto results = requestHandler.getResultStates();
 
-
-	for (auto const res : dof_results) {
-		std::cout << res << std::endl;
+	std::cout << "#pivot auto "<< std::endl;
+	std::cout << "#centered receptor: true "<< std::endl;
+	std::cout << "#centered ligand: true "<< std::endl;
+	for (int i = 0; i < results.size(); i++){
+		std::cout << "#"<< i+1<< std::endl;
+		std::cout << results[i] << std::endl;
 	}
+//	for (auto const res : dof_results) {
+//		std::cout << res << std::endl;
+//
+//	}
 
 	std::string const proteinPath = "/home/glenn/Documents/Masterthesis/testfolder/1AVX";
 

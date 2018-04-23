@@ -176,7 +176,9 @@ __global__ void d_DOFPos_lig(
 		RotMat<REAL> 	rotMat = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
 		Vec3<REAL> 		translation(dof._6D.pos.x, dof._6D.pos.y, dof._6D.pos.z);
 
-
+//		if ( idx % numAtoms ){
+//			//printf("%d %f %f %f %f %f %f\n", DOFidx , dof._6D.pos.x, dof._6D.pos.y, dof._6D.pos.z,dof.modesLig[0],dof.modesLig[1],dof.modesLig[2]);
+//		}
 		for(int mode=0; mode < numModes; mode++){
 			posAtom.x += dof.modesLig[mode] * xModes[atomIdx*numModes+mode];
 			posAtom.y += dof.modesLig[mode] * yModes[atomIdx*numModes+mode];
