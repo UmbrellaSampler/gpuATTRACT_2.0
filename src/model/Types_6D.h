@@ -43,12 +43,17 @@ struct DOF_6D {
 	vec3_t ang;
 };
 
+
 struct Common {
 	id_t gridId;
 	id_t ligId;
 	id_t recId;
 	id_t tableId;
 	id_t paramsId;
+	Vec3<double> pivotRec;
+	Vec3<double> pivotLig;
+	bool centeredLig;
+	bool centeredRec;
 };
 
 template<typename REAL>
@@ -58,6 +63,7 @@ struct Result_6D {
 	real_t E;
 	vec3_t pos;
 	vec3_t ang;
+	real_t getEnergy(){ return E;}
 };
 
 template<typename REAL>

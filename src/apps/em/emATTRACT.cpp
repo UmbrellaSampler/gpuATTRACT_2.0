@@ -25,6 +25,8 @@ class emATTRACT<Types_6D_Modes<float>>;
 template
 class emATTRACT<Types_6D_Modes<double>>;
 
+
+
 }  // namespace as
 
 

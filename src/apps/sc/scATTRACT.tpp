@@ -48,8 +48,11 @@ void scATTRACT<GenericTypes>::run() {
 
 
 	for (result_t const res : results) {
+
 		std::cout << res << std::endl;
 	}
+
+
 
 	bool use_modes = false ;
 
@@ -57,12 +60,6 @@ void scATTRACT<GenericTypes>::run() {
 		 use_modes = true;
 	}
 	std::string filename;
-
-
-
-	for (auto const res : results) {
-		std::cout << res << std::endl;
-	}
 
 	std::fstream fs;
 	std::stringstream ss;

@@ -32,7 +32,7 @@ c     Local variables
       xnull=0.0d0
       dga=xnull
 
-      jn = 6 + 5 + 5
+      jn = 6 + numModesRec + numModesLig
 
       do i=1,jn
        ga(i)=xnull
@@ -63,6 +63,9 @@ c     set some variables for the first iteration
 
 
       call energy_for_fortran_to_call(smug, xaa, gesa, delta)
+
+
+
 
 110   fa=gesa
       isfv=1
@@ -128,8 +131,10 @@ c     make an Euler rotation + tranlation of ligand center
 
       call energy_for_fortran_to_call(smug, xbb, fb, delta)
 
+
 c     store this function value if it is the smallest so far
       do i=1,jn
+
         gb(i)=-delta(i)
 c      write(*,*),i,delta(i)
       enddo

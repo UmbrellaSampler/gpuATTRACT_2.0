@@ -22,13 +22,9 @@
 #include <string>
 #include <sstream>
 #include <ostream>
-
+#include "retransformDofs.h"
 
 namespace as {
-
-
-
-
 
 
 
@@ -73,17 +69,29 @@ void emATTRACT<GenericTypes>::run() {
 	auto dof_results = requestHandler.getResultEnGrads();
 	auto results = requestHandler.getResultStates();
 
-	std::cout << "#pivot auto "<< std::endl;
-	std::cout << "#centered receptor: true "<< std::endl;
-	std::cout << "#centered ligand: true "<< std::endl;
+
+	transformDOF(	common.centeredRec, common.centeredLig,
+					false, false,
+					common.pivotRec,common.pivotLig,
+					results);
+
+
+
+	std::cout << "#pivot 1 "<< " "<< common.pivotRec.x << " "<<common.pivotRec.y << " "<<common.pivotRec.z << std::endl;
+	std::cout << "#pivot 2 "<< " "<<common.pivotLig.x << " "<<common.pivotLig.y << " "<<common.pivotLig.z << std::endl;
+	std::cout << "#centered receptor: false "<< std::endl;
+	std::cout << "#centered ligand: false "<< std::endl;
 	for (int i = 0; i < results.size(); i++){
 		std::cout << "#"<< i+1<< std::endl;
+		std::cout <<"## Energy: " << dof_results[i].getEnergy() << std::endl;
 		std::cout << results[i] << std::endl;
 	}
 //	for (auto const res : dof_results) {
 //		std::cout << res << std::endl;
 //
 //	}
+
+
 
 	std::string const proteinPath = "/home/glenn/Documents/Masterthesis/testfolder/1AVX";
 

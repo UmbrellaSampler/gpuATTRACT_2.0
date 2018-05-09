@@ -49,6 +49,7 @@ struct DOF_6D_Modes {
 
 };
 
+
 struct Common_Modes {
 	id_t gridIdRec;
 	id_t gridIdLig;
@@ -56,6 +57,10 @@ struct Common_Modes {
 	id_t recId;
 	id_t tableId;
 	id_t paramsId;
+	Vec3<double> pivotRec;
+	Vec3<double> pivotLig;
+	bool centeredLig;
+	bool centeredRec;
 	static unsigned int numModesRec;
 	static unsigned int numModesLig;
 };
@@ -66,6 +71,8 @@ struct Result_6D_Modes {
 	Result_6D<real_t> _6D;
 	real_t modesRec[MODES_MAX_NUMBER];
 	real_t modesLig[MODES_MAX_NUMBER];
+
+	real_t getEnergy(){ return _6D.E;}
 };
 
 template<typename REAL>
