@@ -11,7 +11,7 @@
 #include "nativeTypesWrapper.h"
 #include "Vec3.h"
 #include "GenericTypes.h"
-
+#include <string>
 namespace as {
 #ifndef __CUDACC__ // ostream is not available in nvcc
 template<typename REAL>
@@ -54,6 +54,7 @@ struct Common {
 	Vec3<double> pivotLig;
 	bool centeredLig;
 	bool centeredRec;
+	std::string filename_output;
 };
 
 template<typename REAL>

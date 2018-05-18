@@ -29,6 +29,7 @@ public:
 	std::string alphabetLigName;
 	std::string recModesName;
 	std::string ligModesName;
+	std::string outputName;
  
 	/* Concurrency */
 	int numModesRec;

@@ -13,6 +13,7 @@
 #include "Vec3.h"
 #include "GenericTypes.h"
 #include "Types_6D.h"
+#include <string>
 
 namespace as {
 #ifndef __CUDACC__ // ostream is not available in nvcc
@@ -63,6 +64,7 @@ struct Common_Modes {
 	bool centeredRec;
 	static unsigned int numModesRec;
 	static unsigned int numModesLig;
+	std::string filename_output;
 };
 
 template<typename REAL>

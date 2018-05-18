@@ -11,6 +11,7 @@
 #include "SolverFactoryImpl.h"
 #include "SolverBase.h"
 #include "BFGSSolver.h"
+#include "boost/progress.hpp"
 
 
 //TODO: remove iostream
@@ -19,6 +20,7 @@ using std::cout;
 using std::endl;
 
 namespace as {
+
 
 template<typename GenericTypes>
 RequestHandler<GenericTypes>::RequestHandler(std::shared_ptr<extServer> server,
@@ -129,8 +131,16 @@ void RequestHandler<GenericTypes>::run() {
 	}
 
 
+
 	unsigned count = 1;
 	while(_finishedObjects.size () < _numObjects && count < 100000) {
+		float percentage = (float) _finishedObjects.size () /  (float)_numObjects * 100;
+
+		std::cout << "\r [" << std::ceil(percentage) << '%' << "] "
+		              << std::flush;
+
+
+
 		/* load balancing */
 
 		/* Adjust chunk sizes to balance the workload of each chunk.

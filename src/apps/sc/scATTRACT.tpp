@@ -47,10 +47,14 @@ void scATTRACT<GenericTypes>::run() {
 	server->wait(sh_request, results.data());
 
 
+	std::fstream file_result;
+	file_result.open (common.filename_output , std::fstream::in | std::fstream::out | std::fstream::trunc );
+
 	for (result_t const res : results) {
 
-		std::cout << res << std::endl;
+		file_result << res << std::endl;
 	}
+	file_result.close();
 
 
 

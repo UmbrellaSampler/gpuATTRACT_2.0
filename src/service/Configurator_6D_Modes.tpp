@@ -24,7 +24,7 @@
 #include "DOFTransform.h"
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
-
+#include <iostream>
 namespace as {
 
 template<typename SERVICE>
@@ -101,7 +101,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 		std::copy(DOF_molecules[0][i].modesRec, DOF_molecules[0][i].modesRec + receptor->numModes(), this->_dofs[i].modesRec);
 		std::copy(DOF_molecules[1][i].modesLig, DOF_molecules[1][i].modesLig + ligand->numModes(), this->_dofs[i].modesLig);
 	}
-
+	this->_ids.filename_output = args.outputName;
 	this->_ids.pivotRec.x =  receptor->pivot().x;
 	this->_ids.pivotRec.y =  receptor->pivot().y;
 	this->_ids.pivotRec.z =  receptor->pivot().z;

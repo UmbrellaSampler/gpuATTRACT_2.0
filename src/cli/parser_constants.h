@@ -31,7 +31,7 @@ constexpr auto FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR = "receptorgrid.alphabet";
 constexpr auto FILE_DEFAULT_GRID_ALPAHBET_LIGAND = "ligandgrid.alphabet";
 constexpr auto DEFAULT_MODE_RECEPTOR_FILE = "modesReceptor.dat";
 constexpr auto DEFAULT_MODE_LIGAND_FILE = "modesLigand.dat";
-
+constexpr auto DEFAULT_OUTPUT_FILE = "output.dat";
 /* Generic */
 constexpr auto GENERIC_DEFAULT_PRECISION = "single";
 constexpr auto GENERIC_ALLOWED_PRECISION = {"single", "double"};

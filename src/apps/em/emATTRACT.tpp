@@ -75,17 +75,20 @@ void emATTRACT<GenericTypes>::run() {
 					common.pivotRec,common.pivotLig,
 					results);
 
+	std::fstream file_result;
+	file_result.open (common.filename_output , std::fstream::in | std::fstream::out | std::fstream::trunc );
 
-
-	std::cout << "#pivot 1 "<< " "<< common.pivotRec.x << " "<<common.pivotRec.y << " "<<common.pivotRec.z << std::endl;
-	std::cout << "#pivot 2 "<< " "<<common.pivotLig.x << " "<<common.pivotLig.y << " "<<common.pivotLig.z << std::endl;
-	std::cout << "#centered receptor: false "<< std::endl;
-	std::cout << "#centered ligand: false "<< std::endl;
+	file_result << "#pivot 1 "<< " "<< common.pivotRec.x << " "<<common.pivotRec.y << " "<<common.pivotRec.z << std::endl;
+	file_result << "#pivot 2 "<< " "<<common.pivotLig.x << " "<<common.pivotLig.y << " "<<common.pivotLig.z << std::endl;
+	file_result << "#centered receptor: false "<< std::endl;
+	file_result << "#centered ligand: false "<< std::endl;
 	for (int i = 0; i < results.size(); i++){
-		std::cout << "#"<< i+1<< std::endl;
-		std::cout <<"## Energy: " << dof_results[i].getEnergy() << std::endl;
-		std::cout << results[i] << std::endl;
+		file_result << "#"<< i+1<< std::endl;
+		file_result <<"## Energy: " << dof_results[i].getEnergy() << std::endl;
+		file_result << results[i] << std::endl;
 	}
+
+	file_result.close();
 //	for (auto const res : dof_results) {
 //		std::cout << res << std::endl;
 //

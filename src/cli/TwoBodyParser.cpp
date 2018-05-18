@@ -37,7 +37,8 @@ void TwoBodyParser::addOptions() noexcept {
 			("alphabetrec"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
 			("alphabetlig"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
 			("modesl"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
-			("modesr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor");
+			("modesr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor")
+			("output"	          , po::value<string>()->default_value(DEFAULT_OUTPUT_FILE)	, "output file");
 	_optsDesc.add(input);
 
 	po::options_description concurrency("concurrency");
@@ -117,6 +118,8 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->numModesRec = vm["numModesRec"].as<int>();
 	if(vm.count("numModesLig"))
 		_args->numModesLig = vm["numModesLig"].as<int>();
+	if(vm.count("output"))
+		_args->outputName= vm["output"].as<string>();
 
 }
 
