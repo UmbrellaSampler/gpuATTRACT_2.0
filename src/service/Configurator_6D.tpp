@@ -29,7 +29,7 @@ namespace as {
 
 template<typename SERVICE>
 void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
-
+	this->_ids.filename_output = args.outputName;
 	/* load dataItems */
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
 	auto ligand = createProteinFromPDB<real_t>(args.ligName);
@@ -97,7 +97,16 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 		this->_dofs[i].pos = DOF_molecules[1][i].pos;
 		this->_dofs[i].ang = DOF_molecules[1][i].ang;
 	}
+	this->_ids.pivotRec.x =  receptor->pivot().x;
+		this->_ids.pivotRec.y =  receptor->pivot().y;
+		this->_ids.pivotRec.z =  receptor->pivot().z;
 
+		this->_ids.pivotLig.x =  ligand->pivot().x;
+		this->_ids.pivotLig.y =  ligand->pivot().y;
+		this->_ids.pivotLig.z =  ligand->pivot().z;
+
+		this->_ids.centeredRec =  h.centered_receptor;
+		this->_ids.centeredLig =  h.centered_ligands;
 
 
 	/* apply grid displacement */
