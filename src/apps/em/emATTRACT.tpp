@@ -23,6 +23,7 @@
 #include <sstream>
 #include <ostream>
 #include "retransformDofs.h"
+#include "time.h"
 
 namespace as {
 
@@ -54,9 +55,11 @@ void emATTRACT<GenericTypes>::run() {
 			.withDofs(dofs)
 			.withSolverName("VA13")
 			.build();
-
+	clock_t start = clock();
 	requestHandler.run();
-
+	clock_t end = clock();
+	double elapsed_time = (end - start)/(double)CLOCKS_PER_SEC;
+	printf("%elapsed time: lf",elapsed_time);
 
 	bool use_modes = false ;
 
