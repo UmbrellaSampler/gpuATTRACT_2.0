@@ -14,6 +14,8 @@
 #include "DeviceProtein.h"
 
 
+
+
  namespace as{
 
 
@@ -171,12 +173,15 @@ void rotate_forces(
 #ifdef CUDA
 
 template<typename REAL, typename DOF_T, int PROTEIN_T >
-__global__ void d_DOFPos(
+ void d_DOFPos(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
 		d_Protein<REAL> const*  protein,
 		DOF_T* dofs,
 		unsigned const numDOFs,
-		Buffer<REAL> buffer_defo,
-		Buffer<REAL> buffer_trafo
+		REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,
+		 REAL* buffer_trafoX, REAL* buffer_trafoY, REAL* buffer_trafoZ
 		);
 
 template<typename REAL>

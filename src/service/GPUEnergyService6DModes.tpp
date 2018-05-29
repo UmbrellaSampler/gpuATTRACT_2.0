@@ -257,27 +257,27 @@ public:
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
 			cudaVerify(cudaStreamWaitEvent(streams[2], events[0], 0));
 
-
-			d_DOFPos< REAL, Types_6D_Modes<REAL>, 0>(
+/*
+			d_DOFPos< REAL, Types_6D_Modes<REAL>, 0 >(
 				BLSZ_INTRPL,
 				gridSizeRec,
 				streams[2],
 				stageResc.rec,
 				d_dof[pipeIdxDof[1]].get(0),
 				it->size(),
-				d_defoRec,
-				d_trafoRec
+				d_defoRec.getX(),d_defoRec.getY(),d_defoRec.getZ(),
+				d_trafoRec,d_trafoRec.getY(),d_trafoRec.getZ()
 				);
-			d_DOFPos< REAL, Types_6D_Modes<REAL>, 1>(
+			d_DOFPos< REAL, Types_6D_Modes<REAL>, 1 >(
 				BLSZ_INTRPL,
 				gridSizeLig,
 				streams[2],
 				stageResc.lig,
 				d_dof[pipeIdxDof[1]].get(0),
 				it->size(),
-				d_defoLig,
-				d_trafoLig
-				);
+				d_defoLig.getX(),d_defoLig.getY(),d_defoLig.getZ(),
+				d_trafoLig,d_trafoLig.getY(),d_trafoLig.getZ()
+				);*/
 
 
 //			 DEBUG
@@ -343,10 +343,8 @@ public:
 			/* Perform cuda kernel calls */
 			gridSizeRec = ( numElRec + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 			gridSizeLig = ( numElLig + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
-			bool use_cutoff =  it->common()->use_cutoff;
-			float radius_cutoff =  it->common()->radius_cutoff;
 
-			if(!use_cutoff){
+
 				d_potForce (
 					BLSZ_INTRPL,
 					gridSizeLig,
@@ -378,7 +376,6 @@ public:
 					d_potRec[pipeIdx[1]].getY(),
 					d_potRec[pipeIdx[1]].getZ(),
 					d_potRec[pipeIdx[1]].getW()); // OK
-			}
 
 
 			//std::cout << sumx <<  " " << sumy << " " << sumz;
@@ -396,7 +393,7 @@ public:
 				*stageResc.rec,
 				*stageResc.lig,
 				*stageResc.table,
-				radius_cutoff,
+
 				*stageResc.simParam,
 				it->size(),
 				d_defoRec.getX(),
@@ -421,7 +418,7 @@ public:
 				*stageResc.lig,
 				*stageResc.rec,
 				*stageResc.table,
-				radius_cutoff,
+
 				*stageResc.simParam,
 				it->size(),
 				d_defoLig.getX(),
@@ -504,7 +501,7 @@ public:
 //			std::cout << esum ;
 //			exit(EXIT_SUCCESS);
 
-			deviceReduce<REAL, 0, true>(
+			/*deviceReduce<REAL, 0, true>(
 				blockSizeReduceRec,
 				it->size(),
 				stageResc.rec,
@@ -524,7 +521,7 @@ public:
 				d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
 				d_potLig[pipeIdx[0]].getW(),
 				d_resLig[pipeIdx[0]].get(0),
-				streams[3]);
+				streams[3]);*/
 
 
 
