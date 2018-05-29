@@ -46,8 +46,9 @@ __global__ void d_NLPotForce(
 	const unsigned i = blockDim.x * blockIdx.x + threadIdx.x;
 	const unsigned LigNumEl = lig.numAtoms;
 	if (i < LigNumEl*numDOFs) {
-
 		const unsigned LigAttrIdx = i % LigNumEl;
+		unsigned recBase = 0;
+
 
 		const unsigned atomTypeLig = lig.type[LigAttrIdx];
 
@@ -76,11 +77,24 @@ __global__ void d_NLPotForce(
 				for (unsigned j = 0; j < nDesc.x; ++j) {
 					const unsigned nIdx = grid.neighborList[nDesc.y + j];
 
+					REAL xRec, yRec, zRec;
+					if( lig.numModes > 0 ){
+						recBase = rec.numAtoms * (int) (i / LigNumEl);
+						xRec = RecPosX[nIdx + recBase];
+						yRec = RecPosY[nIdx + recBase];
+						zRec = RecPosZ[nIdx + recBase];
+					}
+					else{
+						xRec = rec.xPos[nIdx];
+						yRec = rec.yPos[nIdx];
+						zRec = rec.zPos[nIdx];
+					}
 
 
-					REAL dx = posLigX - RecPosX[nIdx];
-					REAL dy = posLigY - RecPosX[nIdx];
-					REAL dz = posLigZ - RecPosX[nIdx];
+					REAL dx = posLigX - xRec;
+					REAL dy = posLigY - yRec;
+					REAL dz = posLigZ - zRec;
+
 					const REAL dr2 = dx * dx + dy * dy + dz * dz;
 					const REAL dPlateau2 = grid.dPlateau2;
 					if ((dr2) > dPlateau2) {
@@ -172,6 +186,7 @@ __global__ void d_NLPotForce(
 
 				/* store results back to global memory */
 				if (nDesc.x > 0) {
+
 					outLig_fx[i] += fAcc.x;
 					outLig_fy[i] += fAcc.y;
 					outLig_fz[i] += fAcc.z;
@@ -181,6 +196,7 @@ __global__ void d_NLPotForce(
 		} // if (atomtype != 0)
 	}
 }
+
 
 
 
