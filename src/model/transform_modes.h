@@ -11,6 +11,7 @@
 
 #include "transform.h"
 #include "Types_6D_Modes.h"
+#include "DeviceProtein.h"
 
 
  namespace as{
@@ -169,41 +170,14 @@ void rotate_forces(
 
 #ifdef CUDA
 
-template<typename REAL>
-void d_DOFPos(
-	unsigned blockSize,
-	unsigned gridSize,
-	const cudaStream_t &stream,
-	REAL const* xRec,
-	REAL const* yRec,
-	REAL const* zRec,
-	REAL const* xLig,
-	REAL const* yLig,
-	REAL const* zLig,
-	REAL const* xModesRec,
-	REAL const* yModesRec,
-	REAL const* zModesRec,
-	REAL const* xModesLig,
-	REAL const* yModesLig,
-	REAL const* zModesLig,
-	DOF_6D_Modes<REAL>* dofs,
-	unsigned numAtomsRec,
-	unsigned numAtomsLig,
-	unsigned numModesRec,
-	unsigned numModesLig,
-	unsigned numDOFsLig,
-	REAL* xRecDefo,
-	REAL* yRecDefo,
-	REAL* zRecDefo,
-	REAL* xRecTrafo,
-	REAL* yRecTrafo,
-	REAL* zRecTrafo,
-	REAL* xLigDefo,
-	REAL* yLigDefo,
-	REAL* zLigDefo,
-	REAL* xLigTrafo,
-	REAL* yLigTrafo,
-	REAL* zLigTrafo);
+template<typename REAL, typename DOF_T, int PROTEIN_T >
+__global__ void d_DOFPos(
+		d_Protein<REAL> const*  protein,
+		DOF_T* dofs,
+		unsigned const numDOFs,
+		Buffer<REAL> buffer_defo,
+		Buffer<REAL> buffer_trafo
+		);
 
 template<typename REAL>
 void d_rotateForces(

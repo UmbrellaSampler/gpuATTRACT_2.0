@@ -11,6 +11,19 @@
 #include <vector>
 #include <cassert>
 
+#ifndef __CUDACC__
+
+#ifndef __host__
+#define __host__
+#endif
+
+#ifndef __device__
+#define __device__
+#endif
+
+#endif
+
+
 namespace as {
 
 template<typename REAL, typename ALLOC = std::allocator<REAL>>
@@ -45,27 +58,29 @@ public:
 		}
 	}
 
+	__host__ __device__
 	REAL* get(unsigned const& i) const noexcept {
 		assert(i < _buffers.size());
 		return _buffers[i];
 	}
 
+	__host__ __device__
 	REAL* getX() const noexcept {
 		return get(0);
 	}
-
+	__host__ __device__
 	REAL* getY() const noexcept {
 		return get(1);
 	}
-
+	__host__ __device__
 	REAL* getZ() const noexcept {
 		return get(2);
 	}
-
+	__host__ __device__
 	REAL* getW() const noexcept {
 		return get(3);
 	}
-
+	__host__ __device__
 	REAL* getV() const noexcept {
 		return get(4);
 	}

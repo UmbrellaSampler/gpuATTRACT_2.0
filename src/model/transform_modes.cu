@@ -4,150 +4,99 @@
 #include "RotMat.h"
 #include "matrixFunctions.h"
 #include "macros.h"
+#include "Allocator.h"
+
 namespace as {
 
-
-
-
 template<typename REAL>
-inline __device__ Vec3<REAL> invertDOF	(Vec3<REAL> posAtom,const RotMat<REAL> rotMat, Vec3<REAL> pos){
-	const RotMat<REAL> rotMatInv = rotMat.getInv();
-	Vec3<REAL> posInv = rotMatInv * pos.inv();
-return posInv;
-}
+using Buffer = WorkerBuffer<REAL, DeviceAllocator<REAL>>;
 
 
-template<typename REAL>
-inline __device__ void d_deform(Vec3<REAL>& posAtom,int atomIdx, REAL* dMode, REAL* xModes,REAL* yModes,REAL* zModes, int numModes){
+template <typename REAL, typename DOF_T>
+std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type
+__device__ deform( DOF_T const& dof, Vec3<REAL> & posAtom, d_Protein<REAL> const*  protein, unsigned const idxAtom, unsigned const idxModes ) {
+	unsigned const numModes = protein->numModes;
 	for(int mode=0; mode < numModes; mode++){
-		posAtom.x += dMode[mode] * xModes[atomIdx*numModes+mode];
-		posAtom.y += dMode[mode] * yModes[atomIdx*numModes+mode];
-		posAtom.z += dMode[mode] * zModes[atomIdx*numModes+mode];
+		posAtom.x += dof.modes[idxModes][mode] * xModes[idxAtom*numModes+mode];
+		posAtom.y += dof.modes[idxModes][mode] * yModes[idxAtom*numModes+mode];
+		posAtom.z += dof.modes[idxModes][mode] * zModes[idxAtom*numModes+mode];
 	}
 }
 
-template<typename REAL>
-inline __device__ void d_translate_rotate	(Vec3<REAL>& posAtom, int atomIdx, Vec3<REAL> const& pos,const RotMat<REAL> rotMat){
-	posAtom = rotMat*posAtom;
-	posAtom += pos;
+template <typename REAL, typename DOF_T>
+std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type
+__device__ deform( DOF_T const& dof, Vec3<REAL> & posAtom, d_Protein<REAL> const&  protein ) {
+
 }
 
+template <typename REAL, typename DOF_T, int PROTEIN_T>
+std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type
+__device__ translate_rotate( DOF_T const& dof, Vec3<REAL> & posAtom ) {
+	const RotMat<REAL> rotMat = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
+	posAtom = rotMat*posAtom;
+	posAtom += dof._6D.pos;
+}
 
-template<typename REAL>
+template <typename REAL, typename DOF_T, int PROTEIN_T>
+std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type
+__device__ translate_rotate( DOF_T const& dof, Vec3<REAL> & posAtom ) {
+	const RotMat<REAL> rotMat = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
+	posAtom = rotMat*posAtom;
+	posAtom += dof.pos;
+}
+
+template<typename REAL, typename DOF_T, int PROTEIN_T >
 __global__ void d_DOFPos(
-		REAL const* xRec,
-		REAL const* yRec,
-		REAL const* zRec,
-		REAL const* xLig,
-		REAL const* yLig,
-		REAL const* zLig,
-		REAL const* xModesRec,
-		REAL const* yModesRec,
-		REAL const* zModesRec,
-		REAL const* xModesLig,
-		REAL const* yModesLig,
-		REAL const* zModesLig,
-		DOF_6D_Modes<REAL>* dofs,
-		unsigned numAtomsRec,
-		unsigned numAtomsLig,
-		unsigned numModesRec,
-		unsigned numModesLig,
-		unsigned numDOFs,
-		REAL* xRecDefo,
-		REAL* yRecDefo,
-		REAL* zRecDefo,
-		REAL* xRecTrafo,
-		REAL* yRecTrafo,
-		REAL* zRecTrafo,
-		REAL* xLigDefo,
-		REAL* yLigDefo,
-		REAL* zLigDefo,
-		REAL* xLigTrafo,
-		REAL* yLigTrafo,
-		REAL* zLigTrafo
+		d_Protein<REAL> const*  protein,
+		DOF_T* dofs,
+		unsigned const numDOFs,
+		Buffer<REAL> buffer_defo,
+		Buffer<REAL> buffer_trafo
 		)
 {
 	/* calculate element index that is to be prcessed */
 	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
-	const unsigned int maxNumAtoms = max(numAtomsRec, numAtomsLig);
+	const unsigned int num_atoms = protein->numAtoms;
 
-
-	if (idx < maxNumAtoms*numDOFs) {
+	if (idx < num_atoms*numDOFs) {
 		/* load DOF from global memory */
-		unsigned DOFidx = idx / maxNumAtoms;
+		unsigned DOFidx = idx / num_atoms;
 		auto dof = dofs[DOFidx];
-		unsigned atomIdx = idx % maxNumAtoms;
+		unsigned atomIdx = idx % num_atoms;
 
-		const RotMat<REAL> rotMat = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
+		Vec3<REAL> posAtom(protein.xPos[atomIdx], protein.xPos[atomIdx], protein.xPos[atomIdx]);
 
-		if (atomIdx < numAtomsRec ){
-			int bufIdx = numAtomsRec * DOFidx + atomIdx;
-			Vec3<REAL> posAtomRec(xRec[atomIdx], yRec[atomIdx], zRec[atomIdx]);
+		deform< REAL, DOF_T>( dof, posAtom, protein, idxAtom, idxModes );
 
-			for(int mode=0; mode < numModesRec; mode++){
-				posAtomRec.x += dof.modesRec[mode] * xModesRec[atomIdx*numModesRec+mode];
-				posAtomRec.y += dof.modesRec[mode] * yModesRec[atomIdx*numModesRec+mode];
-				posAtomRec.z += dof.modesRec[mode] * zModesRec[atomIdx*numModesRec+mode];
-			}
+		buffer_defo.getX()[bufIdx] = posAtom.x;
+		buffer_defo.getY()[bufIdx] = posAtom.y;
+		buffer_defo.getZ()[bufIdx] = posAtom.z;
 
-			xRecDefo[bufIdx] = posAtomRec.x;
-			yRecDefo[bufIdx] = posAtomRec.y;
-			zRecDefo[bufIdx] = posAtomRec.z;
+		translate_rotate< REAL, DOF_T, PROTEIN_T>( dof, posAtom );
 
-			const RotMat<REAL> rotMatInv = rotMat.getInv();
-			Vec3<REAL> posInv = rotMatInv * dof._6D.pos.inv();
-			posAtomRec = rotMatInv*posAtomRec;
-			posAtomRec += posInv;
+		buffer_trafo.getX()[bufIdx] = posAtom.x;
+		buffer_trafo.getY()[bufIdx] = posAtom.y;
+		buffer_trafo.getZ()[bufIdx] = posAtom.z;
 
-
-			xRecTrafo[bufIdx] = posAtomRec.x;
-			yRecTrafo[bufIdx] = posAtomRec.y;
-			zRecTrafo[bufIdx] = posAtomRec.z;
-		}
-
-		if (atomIdx < numAtomsLig && idx < numAtomsRec*numDOFs){
-			int bufIdx = numAtomsLig * DOFidx + atomIdx;
-
-			Vec3<REAL> posAtomLig(xLig[atomIdx], yLig[atomIdx], zLig[atomIdx]);
-
-
-			for(int mode=0; mode < numModesLig; mode++){
-				posAtomLig.x += dof.modesLig[mode] * xModesLig[atomIdx*numModesLig+mode];
-				posAtomLig.y += dof.modesLig[mode] * yModesLig[atomIdx*numModesLig+mode];
-				posAtomLig.z += dof.modesLig[mode] * zModesLig[atomIdx*numModesLig+mode];
-			}
-
-			xLigDefo[bufIdx] = posAtomLig.x;
-			yLigDefo[bufIdx] = posAtomLig.y;
-			zLigDefo[bufIdx] = posAtomLig.z;
-
-			posAtomLig = rotMat*posAtomLig;
-			posAtomLig += dof._6D.pos;
-
-			xLigTrafo[bufIdx] = posAtomLig.x;
-			yLigTrafo[bufIdx] = posAtomLig.y;
-			zLigTrafo[bufIdx] = posAtomLig.z;
-		}
 	}
 }
 
 
+
 template<typename REAL>
 __global__ void d_rotateForces(
-		REAL* xForce,
-		REAL* yForce,
-		REAL* zForce,
+		d_Protein<REAL> const&  protein,
 		DOF_6D_Modes<REAL>* dofs,
-		unsigned numAtoms,
-		unsigned numDOFs
+		unsigned const numDofs
 )
 {
 	/* calculate element index that is to be prcessed */
 	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+	unsigned const numAtoms = protein.numAtoms;
 
-	if (idx < numAtoms*numDOFs) {
+	if (idx < protein.numAtoms * numDOFs) {
 		/* load DOF from global memory */
-		unsigned DOFidx = idx / numAtoms;
+		unsigned DOFidx = idx / protein.numAtoms;
 		auto dof = dofs[DOFidx];
 		unsigned atomIdx = idx % numAtoms;
 
@@ -190,149 +139,133 @@ void d_rotateForces(
 
 
 
-template<typename REAL>
-void d_DOFPos(
-		unsigned blockSize,
+template<typename REAL, typename DOF_T, int PROTEIN_T >
+ void d_DOFPos(
+		 unsigned blockSize,
 		unsigned gridSize,
 		const cudaStream_t &stream,
-		REAL const* xRec,
-		REAL const* yRec,
-		REAL const* zRec,
-		REAL const* xLig,
-		REAL const* yLig,
-		REAL const* zLig,
-		REAL const* xModesRec,
-		REAL const* yModesRec,
-		REAL const* zModesRec,
-		REAL const* xModesLig,
-		REAL const* yModesLig,
-		REAL const* zModesLig,
-		DOF_6D_Modes<REAL>* dofs,
-		unsigned numAtomsRec,
-		unsigned numAtomsLig,
-		unsigned numModesRec,
-		unsigned numModesLig,
-		unsigned numDOFs,
-		REAL* xRecDefo,
-		REAL* yRecDefo,
-		REAL* zRecDefo,
-		REAL* xRecTrafo,
-		REAL* yRecTrafo,
-		REAL* zRecTrafo,
-		REAL* xLigDefo,
-		REAL* yLigDefo,
-		REAL* zLigDefo,
-		REAL* xLigTrafo,
-		REAL* yLigTrafo,
-		REAL* zLigTrafo)
+		d_Protein<REAL> const*  protein,
+		DOF_T<REAL>* dofs,
+		unsigned const numDOFs,
+		Buffer<REAL> buffer_defo,
+		Buffer<REAL> buffer_trafo
+		)
 {
 	cudaVerifyKernel((
-			d_DOFPos<<<gridSize, blockSize, 0, stream>>> (
-			xRec,
-			yRec,
-			zRec,
-			xLig,
-			yLig,
-			zLig,
-			xModesRec,
-			yModesRec,
-			zModesRec,
-			xModesLig,
-			yModesLig,
-			zModesLig,
-			dofs,
-			numAtomsRec,
-			numAtomsLig,
-			numModesRec,
-			numModesLig,
-			numDOFs,
-			xRecDefo,
-			yRecDefo,
-			zRecDefo,
-			xRecTrafo,
-			yRecTrafo,
-			zRecTrafo,
-			xLigDefo,
-			yLigDefo,
-			zLigDefo,
-			xLigTrafo,
-			yLigTrafo,
-			zLigTrafo
-			))
+		d_DOFPos<<<gridSize, blockSize, 0, stream>>> (
+		blockSize,
+		gridSize,
+		stream,
+		protein,
+		dofs,
+		numDOFs,
+		buffer_defo,
+		buffer_trafo
+		))
 		);
 }
 
-template
-void d_DOFPos<float>(
-		unsigned blockSize,
-		unsigned gridSize,
-		const cudaStream_t &stream,
-		float const* xRec,
-		float const* yRec,
-		float const* zRec,
-		float const* xLig,
-		float const* yLig,
-		float const* zLig,
-		float const* xModesRec,
-		float const* yModesRec,
-		float const* zModesRec,
-		float const* xModesLig,
-		float const* yModesLig,
-		float const* zModesLig,
-		DOF_6D_Modes<float>* dofs,
-		unsigned numAtomsRec,
-		unsigned numAtomsLig,
-		unsigned numModesRec,
-		unsigned numModesLig,
-		unsigned numDOFs,
-		float* xRecDefo,
-		float* yRecDefo,
-		float* zRecDefo,
-		float* xRecTrafo,
-		float* yRecTrafo,
-		float* zRecTrafo,
-		float* xLigDefo,
-		float* yLigDefo,
-		float* zLigDefo,
-		float* xLigTrafo,
-		float* yLigTrafo,
-		float* zLigTrafo);
+
 
 template
-void d_DOFPos<double>(
-		unsigned blockSize,
+ void d_DOFPos<float, DOF_6D_Modes<float>, 0>(
+		 unsigned blockSize,
 		unsigned gridSize,
 		const cudaStream_t &stream,
-		double const* xRec,
-		double const* yRec,
-		double const* zRec,
-		double const* xLig,
-		double const* yLig,
-		double const* zLig,
-		double const* xModesRec,
-		double const* yModesRec,
-		double const* zModesRec,
-		double const* xModesLig,
-		double const* yModesLig,
-		double const* zModesLig,
+		d_Protein<float> const*  protein,
+		DOF_6D_Modes<float>* dofs,
+		unsigned const numDOFs,
+		Buffer<float> buffer_defo,
+		Buffer<float> buffer_trafo
+		);
+
+template
+ void d_DOFPos<double, DOF_6D_Modes<double>, 0>(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<double> const*  protein,
 		DOF_6D_Modes<double>* dofs,
-		unsigned numAtomsRec,
-		unsigned numAtomsLig,
-		unsigned numModesRec,
-		unsigned numModesLig,
-		unsigned numDOFs,
-		double* xRecDefo,
-		double* yRecDefo,
-		double* zRecDefo,
-		double* xRecTrafo,
-		double* yRecTrafo,
-		double* zRecTrafo,
-		double* xLigDefo,
-		double* yLigDefo,
-		double* zLigDefo,
-		double* xLigTrafo,
-		double* yLigTrafo,
-		double* zLigTrafo);
+		unsigned const numDOFs,
+		Buffer<double> buffer_defo,
+		Buffer<double> buffer_trafo
+		);
+
+template
+ void d_DOFPos<float, DOF_6D_Modes<float>, 1>(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<float> const*  protein,
+		DOF_6D_Modes<float>* dofs,
+		unsigned const numDOFs,
+		Buffer<float> buffer_defo,
+		Buffer<float> buffer_trafo
+		);
+
+template
+ void d_DOFPos<double, DOF_6D_Modes<double>, 1>(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<double> const*  protein,
+		DOF_6D_Modes<double>* dofs,
+		unsigned const numDOFs,
+		Buffer<double> buffer_defo,
+		Buffer<double> buffer_trafo
+		);
+
+template
+ void d_DOFPos<float, DOF_6D<float>, 0>(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<float> const*  protein,
+		DOF_6D<float>* dofs,
+		unsigned const numDOFs,
+		Buffer<float> buffer_defo,
+		Buffer<float> buffer_trafo
+		);
+
+template
+ void d_DOFPos<double, DOF_6D<double>, 0>(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<double> const*  protein,
+		DOF_6D<double>* dofs,
+		unsigned const numDOFs,
+		Buffer<double> buffer_defo,
+		Buffer<double> buffer_trafo
+		);
+
+template
+ void d_DOFPos<float, DOF_6D<float>, 1>(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<float> const*  protein,
+		DOF_6D<float>* dofs,
+		unsigned const numDOFs,
+		Buffer<float> buffer_defo,
+		Buffer<float> buffer_trafo
+		);
+
+template
+ void d_DOFPos<double, DOF_6D<double>, 1>(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<double> const*  protein,
+		DOF_6D<double>* dofs,
+		unsigned const numDOFs,
+		Buffer<double> buffer_defo,
+		Buffer<double> buffer_trafo
+		);
+
+
+
+
 
 
 
