@@ -9,7 +9,10 @@ namespace as {
 
 
 template <typename REAL, typename DOF_T>
-__device__ void deform( DOF_T const& dof, Vec3<REAL> & posAtom, d_Protein<REAL> const*  protein, unsigned const idxAtom, unsigned const idxModes, unsigned const bufIdx, REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0 ) {
+__device__ void deform( DOF_T const& dof, Vec3<REAL> & posAtom, d_Protein<REAL> const*  protein, unsigned const idxAtom, unsigned const idxModes, unsigned const bufIdx,
+		REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,
+		typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0 )
+{
 	unsigned const numModes = protein->numModes;
 	for(int mode=0; mode < numModes; mode++){
 		posAtom.x += dof.modesRec[mode] * protein->xModes[idxAtom*numModes+mode];
@@ -23,7 +26,10 @@ __device__ void deform( DOF_T const& dof, Vec3<REAL> & posAtom, d_Protein<REAL> 
 }
 
 template <typename REAL, typename DOF_T>
-__device__ void deform( DOF_T const& dof, Vec3<REAL> & posAtom, d_Protein<REAL> const*  protein, unsigned const idxAtom, unsigned const idxModes, unsigned const bufIdx,  REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0 ) {
+__device__ void deform( DOF_T const& dof, Vec3<REAL> & posAtom, d_Protein<REAL> const*  protein, unsigned const idxAtom, unsigned const idxModes, unsigned const bufIdx,
+		REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,
+		typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0 )
+{
 
 }
 

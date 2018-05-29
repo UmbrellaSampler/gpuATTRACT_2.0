@@ -45,12 +45,13 @@ public:
 	/**
 	 * Allocate new Buffers with size. Old buffers are automatically deallocated;
 	 */
-	void allocateBufferRec(size_t size) {
+	void allocateBufferLig(size_t size) {
+		h_defoLig = std::move(WorkerBuffer<REAL>(3,size));
 		h_trafoLig = std::move(WorkerBuffer<REAL>(3,size));
 		h_potLig = std::move(WorkerBuffer<REAL>(4,size));
 	}
 
-	void allocateBufferLig(size_t size) {
+	void allocateBufferRec(size_t size) {
 		h_trafoRec = std::move(WorkerBuffer<REAL>(3,size));
 		h_defoRec = std::move(WorkerBuffer<REAL>(3,size));
 		h_potRec = std::move(WorkerBuffer<REAL>(4,size));
@@ -63,9 +64,9 @@ public:
 	size_t bufferSizeLig() {
 		return h_trafoLig.bufferSize();
 	}
-
-	WorkerBuffer<REAL> h_trafoRec;
 	WorkerBuffer<REAL> h_defoRec;
+	WorkerBuffer<REAL> h_trafoRec;
+	WorkerBuffer<REAL> h_defoLig;
 	WorkerBuffer<REAL> h_trafoLig;
 
 	WorkerBuffer<REAL> h_potRec;
@@ -126,43 +127,34 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			DOF_6D_Modes<REAL> invertedRecDOF=invertDOF(dof);
 
 			//translate the coordinates of the receptor
-			rotate_translate_deform(
-				rec->xPos(),
-				rec->yPos(),
-				rec->zPos(),
-				invertedRecDOF._6D.pos,
-				invertedRecDOF._6D.ang,
-				rec->numAtoms(),
-				rec->numModes(),
-				invertedRecDOF.modesRec,
-				rec->xModes(),
-				rec->yModes(),
-				rec->zModes(),
+
+
+			h_DOFPos(
+				rec,
+				dof,
+				0,
 				buffers->h_defoRec.getX(),
 				buffers->h_defoRec.getY(),
 				buffers->h_defoRec.getZ(),
 				buffers->h_trafoRec.getX(),//output
 				buffers->h_trafoRec.getY(),
 				buffers->h_trafoRec.getZ()
-			); // OK
+				);
 
-			//translate the coordinates of the Ligand
-			rotate_translate(
-				lig->xPos(),
-				lig->yPos(),
-				lig->zPos(),
-				dof._6D.pos,
-				dof._6D.ang,
-				lig->numAtoms(),
-				lig->numModes(),
-				dof.modesLig,
-				lig->xModes(),
-				lig->yModes(),
-				lig->zModes(),
+			h_DOFPos(
+				lig,
+				dof,
+				1,
+				buffers->h_defoLig.getX(),
+				buffers->h_defoLig.getY(),
+				buffers->h_defoLig.getZ(),
 				buffers->h_trafoLig.getX(),//output
 				buffers->h_trafoLig.getY(),
 				buffers->h_trafoLig.getZ()
-			); // OK
+				);
+
+
+
 
 			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
@@ -263,7 +255,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			std::cout << x << " " << y << " " << z << " " << E << std::endl;
 
 
-			reduceModeForce(
+			reduceModeForce<REAL,1>(
 				dof._6D.ang,
 				buffers->h_potLig.getX(),
 				buffers->h_potLig.getY(),
@@ -279,12 +271,15 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			correctModeForce(
 				lig-> modeForce(),
 				lig-> numModes(),
+				dof.modesLig,
 				redPotForce.modesLig
 				);
 
+
 			////Reduce forces on receptor
 
-			reduceModeForce(
+			reduceModeForce<REAL,0>(
+				dof._6D.ang,
 				buffers->h_potRec.getX(),
 				buffers->h_potRec.getY(),
 				buffers->h_potRec.getZ(),
@@ -299,6 +294,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			correctModeForce(
 				rec->modeForce(),
 				rec-> numModes(),
+				dof.modesRec,
 				redPotForce.modesRec
 				);
 

@@ -12,8 +12,8 @@
 #include "transform.h"
 #include "Types_6D_Modes.h"
 #include "DeviceProtein.h"
-
-
+#include "Protein.h"
+#include <type_traits>
 
 
  namespace as{
@@ -30,11 +30,12 @@ template<typename REAL>
 const DOF_6D_Modes<REAL> invertDOF( DOF_6D_Modes<REAL> ligandDOF)
 {
 	DOF_6D_Modes<REAL> invertedDOF;
+
 	Vec3<REAL> ang(0.0);
-	invertedDOF._6D.ang=ligandDOF._6D.ang.inv();
-	invertedDOF._6D.pos=ligandDOF._6D.pos.inv();
+	invertedDOF._6D.ang=ligandDOF._6D.ang;
+	invertedDOF._6D.pos=ligandDOF._6D.pos.inv() ;
 	const RotMat<REAL> rotMat=euler2rotmat(ligandDOF._6D.ang.x, ligandDOF._6D.ang.y, ligandDOF._6D.ang.z).getInv();
-	invertedDOF._6D.pos=rotMat*invertedDOF._6D.pos;
+	invertedDOF._6D.pos=rotMat*invertedDOF._6D.pos  ;
 	std::copy( ligandDOF.modesRec, ligandDOF.modesRec+MODES_MAX_NUMBER,
 				invertedDOF.modesRec);
 	std::copy(ligandDOF.modesLig, ligandDOF.modesLig+MODES_MAX_NUMBER,
@@ -42,6 +43,7 @@ const DOF_6D_Modes<REAL> invertDOF( DOF_6D_Modes<REAL> ligandDOF)
 
 return invertedDOF;
 }
+
 
 
 
@@ -53,90 +55,98 @@ return invertedDOF;
  * NLForces between the receptor and the ligand
  *
  */
-template<typename REAL>
-void rotate_translate_deform(
-		REAL const* x,
-		REAL const* y,
-		REAL const* z,
-		Vec3<REAL> const& displacement,
-		Vec3<REAL> const& ang,
-		unsigned const& numAtoms,
-		unsigned const& numModes,
-		REAL const* dlig,
-		REAL const* xModes,
-		REAL const* yModes,
-		REAL const* zModes,
-		REAL* xDeformed,
-		REAL* yDeformed,
-		REAL* zDeformed,
-		REAL* xTr,
-		REAL* yTr,
-		REAL* zTr)
+
+template<typename REAL, typename DOF_T>
+__inline__ void h_deform( DOF_T const& dof, Protein<REAL> const* protein, unsigned idx_protein, unsigned idx_atom, Vec3<REAL> & posAtom,REAL* buffer_defoX,
+		REAL* buffer_defoY,
+		REAL* buffer_defoZ,
+		typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0)
 {
-	const RotMat<REAL> rotMat = euler2rotmat(ang.x, ang.y, ang.z);
-	 Vec3<REAL> center(0.0f) ;
-	for (unsigned i = 0; i < numAtoms; ++i) {
-		Vec3<REAL> posAtom(x[i], y[i], z[i]);
-		for(int mode=0;mode<numModes;mode++){
-			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
-			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
-			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];
-		}
-		xDeformed[i]=posAtom.x;
-		yDeformed[i]=posAtom.y;
-		zDeformed[i]=posAtom.z;
-
-		posAtom = rotMat*posAtom;
-		posAtom += displacement;
-
-		xTr[i] = posAtom.x;
-		yTr[i] = posAtom.y;
-		zTr[i] = posAtom.z;
+	unsigned numModes = protein->numModes();
+	REAL const * dlig;
+	if ( idx_protein == 0){
+		dlig = dof.modesRec;
 	}
+	else{
+		dlig = dof.modesLig;
+	}
+	for(int mode=0;mode<numModes;mode++){
+		posAtom.x += dlig[mode] * protein->xModes()[idx_atom*numModes+mode];
+		posAtom.y += dlig[mode] * protein->yModes()[idx_atom*numModes+mode];
+		posAtom.z += dlig[mode] * protein->zModes()[idx_atom*numModes+mode];
+	}
+
+	buffer_defoX[idx_atom] = posAtom.x;
+	buffer_defoY[idx_atom] = posAtom.y;
+	buffer_defoZ[idx_atom] = posAtom.z;
+
 }
 
-/**
- * Overloaded Version of the above function.
- * USECASE: for the ligand its not needed to use deformed but not translated coordinates
- */
-template<typename REAL>
-void rotate_translate_deform(
-		REAL const* x,
-		REAL const* y,
-		REAL const* z,
-		Vec3<REAL> const& displacement,
-		Vec3<REAL> const& ang,
-		unsigned const& numAtoms,
-		unsigned const& numModes,
-		REAL const* dlig,
-		REAL const* xModes,
-		REAL const* yModes,
-		REAL const* zModes,
-		REAL* xTr,
-		REAL* yTr,
-		REAL* zTr)
-{
-	const RotMat<REAL> rotMat = euler2rotmat(ang.x, ang.y, ang.z);
-	for (unsigned i = 0; i < numAtoms; ++i) {
-		Vec3<REAL> posAtom(x[i], y[i], z[i]);
-		for(int mode=0;mode<numModes;mode++){
-			posAtom.x+=dlig[mode]*xModes[i*numModes+mode];
-			posAtom.y+=dlig[mode]*yModes[i*numModes+mode];
-			posAtom.z+=dlig[mode]*zModes[i*numModes+mode];
-		}
-		posAtom = rotMat*posAtom;
-		posAtom += displacement;
+template<typename REAL, typename DOF_T>
+__inline__ void h_deform( DOF_T const &dof, Protein<REAL> const* protein, unsigned idx_protein, unsigned idx_atom, Vec3<REAL> & posAtom,REAL* buffer_defoX,
+		REAL* buffer_defoY,
+		REAL* buffer_defoZ,
+		typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0)
+{}
 
-		xTr[i] = posAtom.x;
-		yTr[i] = posAtom.y;
-		zTr[i] = posAtom.z;
+template<typename REAL, typename DOF_T>
+__inline__ void h_rotate_translate( DOF_T const&dof,  Vec3<REAL> & posAtom, unsigned const type_protein,
+		typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0)
+{
+	RotMat<REAL> rotMat = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
+	if( type_protein == 0){
+		rotMat =  rotMat.getInv();
 	}
+
+	posAtom = rotMat*posAtom;
+	posAtom += dof._6D.pos;
+	}
+
+template<typename REAL, typename DOF_T>
+__inline__ void h_rotate_translate( DOF_T &dof,  Vec3<REAL> & posAtom, unsigned const type_protein,
+		typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0)
+{
+	RotMat<REAL> rotMat = euler2rotmat(dof.ang.x, dof.ang.y, dof.ang.z);
+	if( type_protein == 0){
+		rotMat =  rotMat.getInv();
+	}
+
+	posAtom = rotMat*posAtom;
+	posAtom += dof.pos;
+	}
+
+
+
+template< typename REAL, typename DOF_T>
+void h_DOFPos(
+		Protein<REAL> const* protein,
+		DOF_T const& dof,
+		unsigned const type_protein,
+		REAL* buffer_defoX,
+		REAL* buffer_defoY,
+		REAL* buffer_defoZ,
+		REAL* buffer_trafoX,
+		REAL* buffer_trafoY,
+		REAL* buffer_trafoZ
+		){
+	REAL const* x = protein->xPos();
+	REAL const* y = protein->xPos();
+	REAL const* z = protein->xPos();
+	for ( unsigned idx_atom = 0; idx_atom < protein->numAtoms(); ++idx_atom ){
+		Vec3<REAL> posAtom(x[idx_atom], y[idx_atom], z[idx_atom]);
+		h_deform( dof, protein, type_protein,  idx_atom, posAtom, buffer_defoX,
+				buffer_defoY,
+				buffer_defoZ);
+		h_rotate_translate( dof,  posAtom, type_protein);
+
+		buffer_trafoX[idx_atom] = posAtom.x;
+		buffer_trafoY[idx_atom] = posAtom.y;
+		buffer_trafoZ[idx_atom] = posAtom.z;
+
+	}
+
 }
 
-/*
- *
- * only applies mode deformation to an array of coordinates. Not used anymore.
- */
 
 
 /*
@@ -167,8 +177,6 @@ void rotate_forces(
 
 	}
 }
-
-
 
 #ifdef CUDA
 
