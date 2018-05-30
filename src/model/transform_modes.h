@@ -94,12 +94,15 @@ __inline__ void h_rotate_translate( DOF_T const&dof,  Vec3<REAL> & posAtom, unsi
 		typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0)
 {
 	RotMat<REAL> rotMat = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
-	if( type_protein == 0){
-		rotMat =  rotMat.getInv();
+	Vec3<REAL> translation = dof._6D.pos;
+	if ( type_protein == 0)
+	{
+		rotMat = rotMat.getInv();
+		translation = rotMat * translation.inv();
 	}
 
 	posAtom = rotMat*posAtom;
-	posAtom += dof._6D.pos;
+	posAtom += translation;
 	}
 
 template<typename REAL, typename DOF_T>

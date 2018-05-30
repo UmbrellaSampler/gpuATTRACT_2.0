@@ -501,7 +501,7 @@ public:
 //			std::cout << esum ;
 //			exit(EXIT_SUCCESS);
 
-			/*deviceReduce<REAL, 0, true>(
+			deviceReduce<REAL, 0, true>(
 				blockSizeReduceRec,
 				it->size(),
 				stageResc.rec,
@@ -521,7 +521,7 @@ public:
 				d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
 				d_potLig[pipeIdx[0]].getW(),
 				d_resLig[pipeIdx[0]].get(0),
-				streams[3]);*/
+				streams[3]);
 
 
 
@@ -613,7 +613,7 @@ public:
 
 			nvtxRangePushA("Host");
 
-		/*	h_finalReduce< REAL, 1, true>(
+			h_finalReduce< REAL, 1, true>(
 				it->size(),
 				stageResc.lig,
 				it->inputBuffer(),
@@ -626,7 +626,7 @@ public:
 				stageResc.rec,
 				it->inputBuffer(),
 				h_resRec[pipeIdx[0]].get(0),
-				it->resultBuffer());*/
+				it->resultBuffer());
 			nvtxRangePop();
 
 			/* Signal that result is in buffer */

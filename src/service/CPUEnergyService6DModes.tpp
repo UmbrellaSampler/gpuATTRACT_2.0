@@ -155,7 +155,6 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 
-
 			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
