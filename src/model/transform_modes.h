@@ -133,8 +133,8 @@ void h_DOFPos(
 		REAL* buffer_trafoZ
 		){
 	REAL const* x = protein->xPos();
-	REAL const* y = protein->xPos();
-	REAL const* z = protein->xPos();
+	REAL const* y = protein->yPos();
+	REAL const* z = protein->zPos();
 	for ( unsigned idx_atom = 0; idx_atom < protein->numAtoms(); ++idx_atom ){
 		Vec3<REAL> posAtom(x[idx_atom], y[idx_atom], z[idx_atom]);
 		h_deform( dof, protein, type_protein,  idx_atom, posAtom, buffer_defoX,

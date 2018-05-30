@@ -156,11 +156,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			// Debug
-			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-//			for(size_t i = 0; i < 20; ++i) {
-				std::cout << buffers->h_trafoLig.getX()[i] << " " << buffers->h_trafoLig.getY()[i] << " " << buffers->h_trafoLig.getZ()[i] << std::endl;
-			}
-			exit(EXIT_SUCCESS);
+//			for(size_t i = 0; i < rec->numAtoms(); ++i) {
+////			for(size_t i = 0; i < 20; ++i) {
+//				std::cout << buffers->h_trafoRec.getX()[i] << " " << buffers->h_trafoRec.getY()[i] << " " << buffers->h_trafoRec.getZ()[i] << std::endl;
+//			}
+			//exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor via the ligand grid in the ligand system
 			potForce(
@@ -177,12 +177,6 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			);
 
 			//rotate forces back into the receptor frame
-			rotate_forces(invertedRecDOF._6D.ang.inv(),
-				rec-> numAtoms(),
-				buffers->h_potRec.getX(),
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ()
-			);
 
 			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
 			potForce(
@@ -206,6 +200,32 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor and the ligand in the receptor system via the neighborlist
+//			NLPotForce(
+//				gridRec->NL.get(),
+//				rec,
+//				lig,
+//				simParams,
+//				table,
+//				buffers->h_defoRec.getX(),
+//				buffers->h_defoRec.getY(),
+//				buffers->h_defoRec.getZ(),
+//				buffers->h_trafoLig.getX(),
+//				buffers->h_trafoLig.getY(),
+//				buffers->h_trafoLig.getZ(),
+//				buffers->h_potLig.getX(), // output
+//				buffers->h_potLig.getY(),
+//				buffers->h_potLig.getZ(),
+//				buffers->h_potLig.getW(),
+//				buffers->h_potRec.getX(), // output
+//				buffers->h_potRec.getY(),
+//				buffers->h_potRec.getZ()
+//			); // OK
+
+
+
+
+
+
 			NLPotForce(
 				gridRec->NL.get(),
 				rec,
@@ -221,30 +241,61 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potLig.getX(), // output
 				buffers->h_potLig.getY(),
 				buffers->h_potLig.getZ(),
-				buffers->h_potLig.getW(),
+				buffers->h_potLig.getW()
+				);
+
+			NLPotForce(
+				gridLig->NL.get(),
+				lig,
+				rec,
+				simParams,
+				table,
+				buffers->h_defoLig.getX(),
+				buffers->h_defoLig.getY(),
+				buffers->h_defoLig.getZ(),
+				buffers->h_trafoRec.getX(),
+				buffers->h_trafoRec.getY(),
+				buffers->h_trafoRec.getZ(),
 				buffers->h_potRec.getX(), // output
 				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				buffers->h_potRec.getW()
+				);
+
+
+
+
+
+			rotate_forces(dof._6D.ang,
+				rec-> numAtoms(),
+				buffers->h_potRec.getX(),
+				buffers->h_potRec.getY(),
 				buffers->h_potRec.getZ()
-			); // OK
-
-////			// Debug
-//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-////			for(size_t i = 0; i < 20; ++i) {
-//				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
-//			}
-////			exit(EXIT_SUCCESS);
+				);
 
 
-
-
-			////Reduce forces on Ligand
+//			////			// Debug
+//						for(size_t i = 0; i < rec->numAtoms(); ++i) {
+//			//			for(size_t i = 0; i < 20; ++i) {
+//							std::cout << buffers->h_potRec.getX()[i] << " " << buffers->h_potRec.getY()[i] << " " << buffers->h_potRec.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
+//						}
+//						exit(EXIT_SUCCESS);
 			PotForce_Modes<REAL> redPotForce = reducePotForce<REAL,PotForce_Modes<REAL>>(
 				buffers->h_potLig.getX(),
 				buffers->h_potLig.getY(),
 				buffers->h_potLig.getZ(),
 				buffers->h_potLig.getW(),
 				lig->numAtoms()
-			); // OK
+				); // OK
+
+
+			PotForce_Modes<REAL> redPotForceReceptor = reducePotForce<REAL,PotForce_Modes<REAL>>(
+				buffers->h_potRec.getX(),
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				buffers->h_potRec.getW(),
+				rec->numAtoms()
+				); // OK
 
 //			// Debug
 //			REAL x = redPotForce.pos.x;
@@ -254,7 +305,9 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			std::cout << x << " " << y << " " << z << " " << E << std::endl;
 
 
-			reduceModeForce<REAL,1>(
+
+
+			reduceModeForce(
 				dof._6D.ang,
 				buffers->h_potLig.getX(),
 				buffers->h_potLig.getY(),
@@ -264,20 +317,12 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->zModes(),
 				lig->numAtoms(),
 				lig->numModes(),
-				redPotForce.modesLig
-				);
-
-			correctModeForce(
-				lig-> modeForce(),
-				lig-> numModes(),
-				dof.modesLig,
-				redPotForce.modesLig
+				1,
+				enGrad.modesLig
 				);
 
 
-			////Reduce forces on receptor
-
-			reduceModeForce<REAL,0>(
+			reduceModeForce(
 				dof._6D.ang,
 				buffers->h_potRec.getX(),
 				buffers->h_potRec.getY(),
@@ -287,25 +332,35 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				rec->zModes(),
 				rec->numAtoms(),
 				rec->numModes(),
-				redPotForce.modesRec
+				0,
+				enGrad.modesRec
 				);
 
 			correctModeForce(
 				rec->modeForce(),
 				rec-> numModes(),
 				dof.modesRec,
-				redPotForce.modesRec
+				enGrad.modesRec
+				);
+			correctModeForce(
+				lig-> modeForce(),
+				lig-> numModes(),
+				dof.modesLig,
+				enGrad.modesLig
 				);
 
 
-			//copy reduced forces
-			for( int mode = 0; mode < lig->numModes(); mode++) {
-				enGrad.modesLig[mode]=redPotForce.modesLig[mode];
-			}
-			for( int mode = 0; mode < rec->numModes(); mode++) {
-				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
-			}
-			enGrad._6D.E = redPotForce.E;
+			double modeEnergyLigand = getModeEngergy(lig->modeForce(),
+					lig->numModes(),
+					dof.modesLig
+					);
+
+			double modeEnergyReceptor = getModeEngergy(rec->modeForce(),
+					rec->numModes(),
+					dof.modesRec
+					);
+
+			enGrad._6D.E = redPotForce.E + modeEnergyReceptor + modeEnergyLigand;
 			enGrad._6D.pos = redPotForce.pos;
 
 			enGrad._6D.ang = reduceTorque(

@@ -32,7 +32,7 @@ public:
  * 2. after the forces have been reduced they have to corrected by correctModeforce
  *
  */
-template<typename REAL, int PROTEIN_T>
+template<typename REAL>
 void reduceModeForce(
 		Vec3<REAL> const& ang,
 		const REAL* forceX,
@@ -43,17 +43,18 @@ void reduceModeForce(
 		const REAL* modeZ,
 		unsigned const& numAtoms,
 		unsigned const& numModes,
+		unsigned const& type_protein,
 		REAL* result
 		)
 {
 	RotMat<REAL> rotMat;
-	if( PROTEIN_T == 1 ){
+	if( type_protein == 1 ){
 		rotMat = euler2rotmat(ang.x, ang.y, ang.z).getInv();
 	}
-
+	std::fill(result, result + numModes, 0);
 	for (unsigned i = 0; i < numAtoms; ++i) {
 		Vec3<REAL> forceAtom(forceX[i], forceY[i], forceZ[i]);
-		if( PROTEIN_T == 1 ){
+		if( type_protein == 1 ){
 			forceAtom = rotMat * forceAtom;
 		}
 		for(int mode=0;mode<numModes;mode++){

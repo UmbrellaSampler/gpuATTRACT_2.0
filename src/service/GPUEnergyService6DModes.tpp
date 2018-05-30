@@ -256,17 +256,7 @@ public:
 
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
 			cudaVerify(cudaStreamWaitEvent(streams[2], events[0], 0));
-/*
-			d_DOFPos(
-					 unsigned blockSize,
-					unsigned gridSize,
-					const cudaStream_t &stream,
-					d_Protein<REAL> const*  protein,
-					DOF_T const * dofs,
-					unsigned const numDOFs,
-					REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,
-					 REAL* buffer_trafoX, REAL* buffer_trafoY, REAL* buffer_trafoZ
-					)*/
+
 			d_DOFPos(
 				BLSZ_INTRPL,
 				gridSizeRec,
@@ -293,7 +283,7 @@ public:
 
 
 //			 DEBUG
-//			cudaDeviceSynchronize();
+			cudaDeviceSynchronize();
 			//cudaDeviceSynchronize();
 //									size_t bufferSize = d_dof[pipeIdxDof[1]].bufferSize();
 //									WorkerBuffer<dof_t> h_dof(4,bufferSize);
@@ -334,18 +324,19 @@ public:
 //				std::cout << h_TrafoLig.getX()[i] << " " << h_TrafoLig.getY()[i] << " " << h_TrafoLig.getZ()[i] << std::endl;
 //			}
 //			std::cout <<" "<<std::endl;
-//			size_t bufferSizeDefoRec = d_defoRec.bufferSize();
-//			WorkerBuffer<REAL> h_defoRec(3,bufferSizeDefoRec);
-//			size_t cpySizeDefoRec = h_defoRec.bufferSize()*sizeof(REAL);
+			size_t bufferSizeTrafoRec = d_trafoRec.bufferSize();
+
+			WorkerBuffer<REAL> h_trafoRec(3,bufferSizeTrafoRec);
+			size_t cpySizetrafoRec = h_trafoRec.bufferSize()*sizeof(REAL);
 //
 //			std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
-//			cudaMemcpy(h_defoRec.getX(),d_defoRec.getX(), cpySizeDefoRec, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_defoRec.getY(),d_defoRec.getY(), cpySizeDefoRec, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_defoRec.getZ(),d_defoRec.getZ(), cpySizeDefoRec, cudaMemcpyDeviceToHost);
-//			for(size_t i = 0; i < bufferSizeDefoRec; ++i) {
-//				std::cout << h_defoRec.getX()[i] << " " << h_defoRec.getY()[i] << " " << h_defoRec.getZ()[i] << std::endl;
-//			}
-//			exit(EXIT_SUCCESS);
+			cudaMemcpy(h_trafoRec.getX(),d_trafoRec.getX(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_trafoRec.getY(),d_trafoRec.getY(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_trafoRec.getZ(),d_trafoRec.getZ(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
+			for(size_t i = 0; i < bufferSizeTrafoRec; ++i) {
+				std::cout <<h_trafoRec.getX()[i] << " " << h_trafoRec.getY()[i] << " " << h_trafoRec.getZ()[i] << std::endl;
+			}
+			exit(EXIT_SUCCESS);
 
 			/* Device: Signal event when transformation has completed */
 			cudaVerify(cudaEventRecord(events[2], streams[2]));
