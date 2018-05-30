@@ -46,11 +46,44 @@ struct SharedMemory<double>
 };
 
 
+template <typename REAL, typename DOF_T, int PROTEIN_T>
+__device__ inline void rotateForce( DOF_T const & dof, REAL* forceAtom_in, REAL* forceAtom_out,
+		typename std::enable_if< PROTEIN_T == 1, void>::type* dummy = 0)
+		//typename std::enable_if< std::is_same<DOF_T,DOF_6D_Modes<REAL>>, void>::type* dummy1 = 0)
+		{
+	RotMat<REAL> const rotMatInv = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z).getInv();
+	forceAtom_out[0] = rotMatInv[0] * forceAtom_in[0] + rotMatInv[1] * forceAtom_in[1] + rotMatInv[2] * forceAtom_in[2];
+	forceAtom_out[1] = rotMatInv[3] * forceAtom_in[0] + rotMatInv[4] * forceAtom_in[1] + rotMatInv[5] * forceAtom_in[2];
+	forceAtom_out[2] = rotMatInv[6] * forceAtom_in[0] + rotMatInv[7] * forceAtom_in[1] + rotMatInv[8] * forceAtom_in[2];
+}
+
+template <typename REAL, typename DOF_T, int PROTEIN_T>
+__device__ inline void rotateForce( DOF_T const & dof,  REAL* forceAtom_in, REAL* forceAtom_out,
+		typename std::enable_if<  ! (PROTEIN_T == 1), void>::type* dummy = 0 ){
+	forceAtom_out[0] = forceAtom_in[0];
+    forceAtom_out[1] = forceAtom_in[1];
+    forceAtom_out[2] = forceAtom_in[2];
+}
+
+template <typename REAL, typename DOF_T, unsigned blockSize>
+__device__ inline void reduceModes( DOF_T const & dof,  REAL const* forceAtom, REAL const * xModes, REAL const * yModes, REAL const * zModes, unsigned const numModes, unsigned const idx_atom, REAL sum_mode[5],
+		typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0 ){
+	unsigned const idx_mode = (idx_atom + blockSize)* numModes;
+	for ( unsigned mode = 0; mode < numModes; mode++){
+		sum_mode[mode] -=   forceAtom[0]*xModes[idx_mode + mode]
+						  + forceAtom[1]*yModes[idx_mode + mode]
+						  + forceAtom[2]*zModes[idx_mode + mode];
+	}
+}
+
+template <typename REAL, typename DOF_T, unsigned blockSize>
+__device__ inline void reduceModes( DOF_T const & dof,  REAL const* forceAtom, REAL const * xModes, REAL const * yModes, REAL const * zModes, unsigned const numModes, unsigned const idx_atom, REAL sum_mode[5],
+		typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0 ){}
 
 
-template <typename T, unsigned int blockSize, bool nIsPow2, int PROTEINTYPE, bool MODES>
+template <typename T,typename DOF_T, unsigned int blockSize, bool nIsPow2, int PROTEINTYPE >
 __global__ void
-blockReduceMode(unsigned numAtoms, unsigned numModes,  DOF_6D_Modes<T>* dofs,
+blockReduceMode(unsigned const numAtoms, unsigned const numModes,  DOF_T* dofs,
 			T* xPos, T* yPos, T* zPos,
 			T *xModes,T *yModes,T *zModes,
 			T *d_fx, T *d_fy, T *d_fz,
@@ -64,108 +97,76 @@ blockReduceMode(unsigned numAtoms, unsigned numModes,  DOF_6D_Modes<T>* dofs,
     // reading from global memory, writing to shared memory
     unsigned int tid = threadIdx.x;
     unsigned int i = threadIdx.x; // half the number of blocks
-    //unsigned int maxAtom = max(numAtomsLig, numAtomsRec);
     unsigned int base = blockIdx.x * numAtoms;
-
+    constexpr bool MODES = std::is_same<DOF_T,DOF_6D_Modes<T>>::value;
 
     T sum_fx = 0;
     T sum_fy = 0;
     T sum_fz = 0;
     T sum_E = 0;
     T sum_torque[9] = {0};
-    T sum_mode[10] = {0};
-    Vec3<T>  ang(0.0f);
-    RotMat<T> rotMatInv;
-    Vec3<T> forceAtom(0.0f);
+    T sum_mode[5] = {0};
+
 
     while (i < numAtoms)
     {
+    	unsigned int DOFidx = (base + i) / numAtoms;
+    	auto const  dof = dofs[DOFidx];
 
-    	if(MODES){
-			unsigned int DOFidx = (base + i) / numAtoms;
-			auto dof = dofs[DOFidx];
-			if(PROTEINTYPE == 1){
-				rotMatInv = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z).getInv();
-			}
-			// we reduce multiple elements per thread.  The number is determined by the
-			// number of active thread blocks (via gridDim).  More blocks will result
-			// in a larger gridSize and therefore fewer elements per thread
-		}
 
-			T fx, fy, fz, x, y, z,frot[3];
-			frot[0] = fx = d_fx[base + i];
-			frot[1] = fy = d_fy[base + i];
-			frot[2] = fz = d_fz[base + i];
-			x = xPos[i];
-			y = yPos[i];
-			z = zPos[i];
-			sum_fx += fx;
-			sum_fy += fy;
-			sum_fz += fz;
-			sum_E += d_E[base + i];
-			sum_torque[0] += x * fx;
-			sum_torque[1] += y * fx;
-			sum_torque[2] += z * fx;
-			sum_torque[3] += x * fy;
-			sum_torque[4] += y * fy;
-			sum_torque[5] += z * fy;
-			sum_torque[6] += x * fz;
-			sum_torque[7] += y * fz;
-			sum_torque[8] += z * fz;
-			if(MODES){
-				if(PROTEINTYPE == 1){
-					//reduce mode Force for the and
-					frot[0] = rotMatInv[0] * fx + rotMatInv[1] * fy + rotMatInv[2] * fz;
-					frot[1] = rotMatInv[3] * fx + rotMatInv[4] * fy + rotMatInv[5] * fz;
-					frot[2] = rotMatInv[6] * fx + rotMatInv[7] * fy + rotMatInv[8] * fz;
+		T f[3], x, y, z,f_mode[3];
 
-				}
-				for(int mode=0; mode<numModes; mode++){
-					sum_mode[mode] -=  frot[0]*xModes[i * numModes+mode]
-									  +frot[1]*yModes[i * numModes+mode]
-									  +frot[2]*zModes[i * numModes+mode];
+		f[0] = d_fx[base + i];
+		f[1] = d_fy[base + i];
+		f[2] = d_fz[base + i];
+		//
+		x = xPos[base + i];
+		y = yPos[base + i];
+		z = zPos[base + i];
+		sum_fx += f[0];
+		sum_fy += f[1];
+		sum_fz += f[2];
+		sum_E += d_E[base + i];
+		sum_torque[0] += x * f[0];
+		sum_torque[1] += y * f[0];
+		sum_torque[2] += z * f[0];
+		sum_torque[3] += x * f[1];
+		sum_torque[4] += y * f[1];
+		sum_torque[5] += z * f[1];
+		sum_torque[6] += x * f[2];
+		sum_torque[7] += y * f[2];
+		sum_torque[8] += z * f[2];
 
-				}
-			}
-
+		rotateForce<T,DOF_T,PROTEINTYPE>(  dof, f, f_mode);
+		reduceModes<T,DOF_T, 0>(  dof,  f_mode,  xModes, yModes,  zModes,  numModes, i,  sum_mode);
 
         // ensure we don't read out of bounds -- this is optimized away for powerOf2 sized arrays
         if (nIsPow2 || i + blockSize < numAtoms) {
-				frot[0] = fx = d_fx[base + i + blockSize];
-				frot[1] = fy = d_fy[base + i + blockSize];
-				frot[2] = fz = d_fz[base + i + blockSize];
-				x = xPos[i + blockSize];
-				y = yPos[i + blockSize];
-				z = zPos[i + blockSize];
-				sum_fx += fx;
-				sum_fy += fy;
-				sum_fz += fz;
-				sum_E += d_E[base + i + blockSize];
-				sum_torque[0] += x * fx;
-				sum_torque[1] += y * fx;
-				sum_torque[2] += z * fx;
-				sum_torque[3] += x * fy;
-				sum_torque[4] += y * fy;
-				sum_torque[5] += z * fy;
-				sum_torque[6] += x * fz;
-				sum_torque[7] += y * fz;
-				sum_torque[8] += z * fz;
-				if(MODES){
-					if(PROTEINTYPE == 1){
-						frot[0] = rotMatInv[0] * fx + rotMatInv[1] * fy + rotMatInv[2] * fz;
-						frot[1] = rotMatInv[3] * fx + rotMatInv[4] * fy + rotMatInv[5] * fz;
-						frot[2] = rotMatInv[6] * fx + rotMatInv[7] * fy + rotMatInv[8] * fz;
-					}
-
-					for(int mode=0; mode < numModes; mode++){
-						sum_mode[mode] -=  frot[0]*xModes[(i + blockSize) * numModes+mode]
-										  +frot[1]*yModes[(i + blockSize) * numModes+mode]
-										  +frot[2]*zModes[(i + blockSize) * numModes+mode];
-					}
-				}
-        	}
+			f[0] = d_fx[base + i + blockSize];
+			f[1] = d_fy[base + i + blockSize];
+			f[2] = d_fz[base + i + blockSize];
+			x = xPos[i + blockSize];
+			y = yPos[i + blockSize];
+			z = zPos[i + blockSize];
+			sum_fx += f[0];
+			sum_fy += f[1];
+			sum_fz += f[2];
+			sum_E += d_E[base + i + blockSize];
+			sum_torque[0] += x * f[0];
+			sum_torque[1] += y * f[0];
+			sum_torque[2] += z * f[0];
+			sum_torque[3] += x * f[1];
+			sum_torque[4] += y * f[1];
+			sum_torque[5] += z * f[1];
+			sum_torque[6] += x * f[2];
+			sum_torque[7] += y * f[2];
+			sum_torque[8] += z * f[2];
 
 
+			rotateForce<T,DOF_T,PROTEINTYPE>(  dof, f, f_mode);
+			reduceModes<T,DOF_T, blockSize>(  dof,  f_mode,  xModes, yModes,  zModes,  numModes, i,  sum_mode);
+
+		}
 
         i += blockSize*2;
     }
@@ -544,13 +545,13 @@ blockReduceMode(unsigned numAtoms, unsigned numModes,  DOF_6D_Modes<T>* dofs,
 
 
 
-template <class T, int PROTEINTYPE, bool MODES>
+template <typename T, typename DOF_T, int PROTEINTYPE>
 void d_reduce(
 		const unsigned& threads,
 		const unsigned& blocks,
 		const unsigned& numAtoms,
 		const unsigned& numModes,
-		 DOF_6D_Modes<T>* dofs,
+		 DOF_T* dofs,
 		T* xPos, T* yPos, T* zPos,
 		T *xModes,T *yModes,T *zModes,
 		T *d_fx, T *d_fy, T *d_fz,
@@ -564,7 +565,7 @@ void d_reduce(
 	int smemSize;
 	// when there is only one warp per block, we need to allocate two warps
 	// worth of shared memory so that we don't index shared memory out of bounds
-	if(MODES){
+	if(std::is_same<DOF_T,DOF_6D_Modes<T>>::value){
 		smemSize = (threads <= 32) ? 2 * (13 + numModes) * threads * sizeof(T) : (13 + numModes) * threads * sizeof(T);
 	}
 	else{
@@ -580,47 +581,47 @@ void d_reduce(
 			switch (threads)
 			{
 				case 1024:
-					blockReduceMode<T, 1024,true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T, 1024,true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 512:
-					blockReduceMode<T, 512, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T, 512, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 256:
-					blockReduceMode<T, 256, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T, 256, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 128:
-					blockReduceMode<T, 128, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T, 128, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 64:
-					blockReduceMode<T,  64, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,  64, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 32:
-					blockReduceMode<T,  32, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,  32, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 16:
-					blockReduceMode<T,  16, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,  16, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case  8:
-					blockReduceMode<T,   8, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,   8, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case  4:
-					blockReduceMode<T,   4, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,   4, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case  2:
-					blockReduceMode<T,   2, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,   2, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case  1:
-					blockReduceMode<T,   1, true, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,   1, true, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 			}
 		}
@@ -629,47 +630,47 @@ void d_reduce(
 			switch (threads)
 			{
 				case 1024:
-					blockReduceMode<T, 1024,false, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T, 1024,false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 512:
-					blockReduceMode<T, 512, false, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T, 512, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 256:
-					blockReduceMode<T, 256, false, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T, 256, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 128:
-					blockReduceMode<T, 128, false, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T, 128, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 64:
-					blockReduceMode<T,  64, false, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,  64, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 32:
-					blockReduceMode<T,  32, false, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,  32, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case 16:
-					blockReduceMode<T,  16, false, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,  16, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case  8:
-					blockReduceMode<T,   8, false, PROTEINTYPE, MODES><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,   8, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes, d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case  4:
-					blockReduceMode<T,   4, false, PROTEINTYPE, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes,d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,   4, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes,d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case  2:
-					blockReduceMode<T,   2, false, PROTEINTYPE, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes,d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,   2, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes,d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 
 				case  1:
-					blockReduceMode<T,   1, false, PROTEINTYPE, true><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes,d_fx, d_fy, d_fz, d_E, g_odata);
+					blockReduceMode<T, DOF_T,   1, false, PROTEINTYPE><<< dimGrid, dimBlock, smemSize, stream >>>(numAtoms, numModes, dofs, xPos, yPos, zPos, xModes, yModes, zModes,d_fx, d_fy, d_fz, d_E, g_odata);
 					break;
 			}
 		}
@@ -677,12 +678,12 @@ void d_reduce(
 }
 
 
-template<typename REAL,int PROTEINTYPE, bool MODES>
+template<typename REAL, typename DOF_T, int PROTEINTYPE>
 void deviceReduce(
 		const unsigned& blockSize,
 		const unsigned& numDOFs,
 		d_Protein<REAL>* protein,
-		DOF_6D_Modes<REAL>* dofs,
+		DOF_T* dofs,
 		REAL* xPos, REAL* yPos, REAL* zPos,
 		REAL *d_fx, REAL *d_fy, REAL *d_fz,
 		REAL *d_E,
@@ -694,7 +695,7 @@ void deviceReduce(
 	const unsigned threads = (size < blockSize*2) ? nextPow2((size + 1)/ 2) : blockSize;
 	/* each structure is reduced by one thread block */
 	const unsigned blocks = numDOFs;
-	d_reduce<REAL, PROTEINTYPE, MODES>(
+	d_reduce<REAL, DOF_T, PROTEINTYPE>(
 		threads,
 		blocks,
 		size,
@@ -709,7 +710,7 @@ void deviceReduce(
 }
 
 template
-void deviceReduce< float, 0, false>(
+void deviceReduce< float, DOF_6D_Modes<float>, 0>(
 		const unsigned& blockSize,
 		const unsigned& numDOFs,
 		d_Protein<float>* protein,
@@ -721,7 +722,7 @@ void deviceReduce< float, 0, false>(
 		const cudaStream_t& stream);
 
 template
-void deviceReduce< double, 0, false>(
+void deviceReduce< double, DOF_6D_Modes<double>, 0>(
 		const unsigned& blockSize,
 		const unsigned& numDOFs,
 		d_Protein<double>* protein,
@@ -732,9 +733,8 @@ void deviceReduce< double, 0, false>(
 		double *d_out,
 		const cudaStream_t& stream);
 
-
 template
-void deviceReduce< float, 1, false>(
+void deviceReduce< float, DOF_6D_Modes<float>, 1>(
 		const unsigned& blockSize,
 		const unsigned& numDOFs,
 		d_Protein<float>* protein,
@@ -746,31 +746,7 @@ void deviceReduce< float, 1, false>(
 		const cudaStream_t& stream);
 
 template
-void deviceReduce< double, 1, false>(
-		const unsigned& blockSize,
-		const unsigned& numDOFs,
-		d_Protein<double>* protein,
-		DOF_6D_Modes<double>* dofs,
-		double* xPos, double* yPos, double* zPos,
-		double *d_fx, double *d_fy, double *d_fz,
-		double *d_E,
-		double *d_out,
-		const cudaStream_t& stream);
-
-template
-void deviceReduce< float, 0, true>(
-		const unsigned& blockSize,
-		const unsigned& numDOFs,
-		d_Protein<float>* protein,
-		DOF_6D_Modes<float>* dofs,
-		float* xPos, float* yPos, float* zPos,
-		float *d_fx, float *d_fy, float *d_fz,
-		float *d_E,
-		float *d_out,
-		const cudaStream_t& stream);
-
-template
-void deviceReduce< double, 0, true>(
+void deviceReduce< double, DOF_6D_Modes<double>, 1>(
 		const unsigned& blockSize,
 		const unsigned& numDOFs,
 		d_Protein<double>* protein,
@@ -782,29 +758,6 @@ void deviceReduce< double, 0, true>(
 		const cudaStream_t& stream);
 
 
-template
-void deviceReduce< float, 1, true>(
-		const unsigned& blockSize,
-		const unsigned& numDOFs,
-		d_Protein<float>* protein,
-		DOF_6D_Modes<float>* dofs,
-		float* xPos, float* yPos, float* zPos,
-		float *d_fx, float *d_fy, float *d_fz,
-		float *d_E,
-		float *d_out,
-		const cudaStream_t& stream);
-
-template
-void deviceReduce< double, 1, true>(
-		const unsigned& blockSize,
-		const unsigned& numDOFs,
-		d_Protein<double>* protein,
-		DOF_6D_Modes<double>* dofs,
-		double* xPos, double* yPos, double* zPos,
-		double *d_fx, double *d_fy, double *d_fz,
-		double *d_E,
-		double *d_out,
-		const cudaStream_t& stream);
 
 }  // namespace as
 

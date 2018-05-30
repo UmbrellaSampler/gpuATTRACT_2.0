@@ -353,7 +353,7 @@ void NLPotForce(
 }
 #ifdef CUDA
 
-template<typename REAL>
+template<typename REAL, typename DOFT_T>
 void d_NLPotForce(
 		unsigned blockSize,
 		unsigned gridSize,

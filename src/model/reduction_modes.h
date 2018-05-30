@@ -112,12 +112,12 @@ REAL getModeEngergy(
 }
 
 #ifdef CUDA
-template<typename REAL,int PROTEINTYPE, bool MODES>
+template<typename REAL,typename DOF_T,int PROTEINTYPE>
 void deviceReduce(
 		const unsigned& blockSize,
 		const unsigned& numDOFs,
 		d_Protein<REAL>* protein,
-		DOF_6D_Modes<REAL>* dofs,
+		DOF_T* dofs,
 		REAL* xPos, REAL* yPos, REAL* zPos,
 		REAL *d_fx, REAL *d_fy, REAL *d_fz,
 		REAL *d_E,

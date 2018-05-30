@@ -129,6 +129,8 @@ public:
 		const size_t atomBufferSizeRec = numDOFs*numAtomsRec;
 		const size_t atomBufferSizeLig = numDOFs*numAtomsLig;
 		for (int i = 0; i < 2; ++i) {
+			d_defoRec[i] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSizeRec));
+			d_defoLig[i] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSizeLig));
 			d_potRec[i] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(4,atomBufferSizeRec));
 			d_potLig[i] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(4,atomBufferSizeLig));
 			d_resRec[i] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(1, dofSizeRec*numDOFs));
@@ -139,8 +141,7 @@ public:
 		for (int i = 0 ; i < 4; ++i){
 			d_dof[i]    = std::move(WorkerBuffer<dof_t,DeviceAllocator<dof_t>>(1,numDOFs));
 		}
-		d_defoRec = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSizeRec));
-		d_defoLig = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSizeLig));
+
 		d_trafoRec = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSizeRec));
 		d_trafoLig = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSizeLig));
 	}
@@ -264,7 +265,7 @@ public:
 				*stageResc.rec,
 				d_dof[pipeIdxDof[1]].get(0),
 				it->size(), 0,
-				d_defoRec.getX(), d_defoRec.getY(), d_defoRec.getZ(),
+				d_defoRec[pipeIdx[1]].getX(), d_defoRec[pipeIdx[1]].getY(), d_defoRec[pipeIdx[1]].getZ(),
 				d_trafoRec.getX(), d_trafoRec.getY(), d_trafoRec.getZ()
 				);
 
@@ -275,7 +276,7 @@ public:
 				*stageResc.lig,
 				d_dof[pipeIdxDof[1]].get(0),
 				it->size(), 1,
-				d_defoLig.getX(), d_defoLig.getY(), d_defoLig.getZ(),
+				d_defoLig[pipeIdx[1]].getX(), d_defoLig[pipeIdx[1]].getY(), d_defoLig[pipeIdx[1]].getZ(),
 				d_trafoLig.getX(), d_trafoLig.getY(), d_trafoLig.getZ()
 				);
 
@@ -379,7 +380,7 @@ public:
 				d_potRec[pipeIdx[1]].getW()); // OK
 
 
-			d_NLPotForce(
+			d_NLPotForce<REAL, dof_t>(
 				BLSZ_INTRPL,
 				gridSizeLig,
 				streams[2],
@@ -390,9 +391,9 @@ public:
 
 				*stageResc.simParam,
 				it->size(),
-				d_defoRec.getX(),
-				d_defoRec.getY(),
-				d_defoRec.getZ(),
+				d_defoRec[pipeIdx[1]].getX(),
+				d_defoRec[pipeIdx[1]].getY(),
+				d_defoRec[pipeIdx[1]].getZ(),
 				d_trafoLig.getX(),
 				d_trafoLig.getY(),
 				d_trafoLig.getZ(),
@@ -404,7 +405,7 @@ public:
 
 //
 //			//get nl forces on receptor
-			d_NLPotForce(
+			d_NLPotForce<REAL, dof_t>(
 				BLSZ_INTRPL,
 				gridSizeRec,
 				streams[2],
@@ -415,9 +416,9 @@ public:
 
 				*stageResc.simParam,
 				it->size(),
-				d_defoLig.getX(),
-				d_defoLig.getY(),
-				d_defoLig.getZ(),
+				d_defoLig[pipeIdx[1]].getX(),
+				d_defoLig[pipeIdx[1]].getY(),
+				d_defoLig[pipeIdx[1]].getZ(),
 				d_trafoRec.getX(),
 				d_trafoRec.getY(),
 				d_trafoRec.getZ(),
@@ -495,28 +496,27 @@ public:
 //			std::cout << esum ;
 //			exit(EXIT_SUCCESS);
 
-			deviceReduce<REAL, 0, true>(
+			deviceReduce<REAL, DOF_6D_Modes<REAL>,0>(
 				blockSizeReduceRec,
 				it->size(),
 				stageResc.rec,
 				d_dof[pipeIdxDof[2]].get(0),
-				stageResc.rec->xPos, stageResc.rec->yPos, stageResc.rec->zPos,
+				d_defoRec[pipeIdx[0]].getX(), d_defoRec[pipeIdx[0]].getY(), d_defoRec[pipeIdx[0]].getZ(),
 				d_potRec[pipeIdx[0]].getX(), d_potRec[pipeIdx[0]].getY(), d_potRec[pipeIdx[0]].getZ(),
 				d_potRec[pipeIdx[0]].getW(),
 				d_resRec[pipeIdx[0]].get(0),
 				streams[3]);
 
-			deviceReduce<REAL, 1, true>(
+			deviceReduce<REAL, DOF_6D_Modes<REAL>, 1>(
 				blockSizeReduceLig,
 				it->size(),
 				stageResc.lig,
 				d_dof[pipeIdxDof[2]].get(0),
-				stageResc.lig->xPos, stageResc.lig->yPos, stageResc.lig->zPos,
-				d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
+				d_defoLig[pipeIdx[0]].getX(), 	d_defoLig[pipeIdx[0]].getY(), d_defoLig[pipeIdx[0]].getZ(),
+				d_potLig[pipeIdx[0]].getX(), 	d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
 				d_potLig[pipeIdx[0]].getW(),
 				d_resLig[pipeIdx[0]].get(0),
 				streams[3]);
-
 
 
 //			cudaDeviceSynchronize();
@@ -635,8 +635,8 @@ public:
 	}
 
 	WorkerBuffer<dof_t, DeviceAllocator<dof_t>> d_dof[4];
-	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoRec;
-	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoLig;
+	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoRec[2];
+	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoLig[2];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoRec;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoLig;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_potRec[2];
