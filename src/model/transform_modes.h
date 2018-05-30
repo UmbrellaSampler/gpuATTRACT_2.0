@@ -183,14 +183,15 @@ void rotate_forces(
 
 #ifdef CUDA
 
-template<typename REAL, typename DOF_T, int PROTEIN_T >
+template<typename REAL, typename DOF_T>
  void d_DOFPos(
 		 unsigned blockSize,
 		unsigned gridSize,
 		const cudaStream_t &stream,
-		d_Protein<REAL> const*  protein,
-		DOF_T* dofs,
+		d_Protein<REAL> const&  protein,
+		DOF_T const * dofs,
 		unsigned const numDOFs,
+		unsigned const type_protein,
 		REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,
 		 REAL* buffer_trafoX, REAL* buffer_trafoY, REAL* buffer_trafoZ
 		);

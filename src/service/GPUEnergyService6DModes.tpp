@@ -256,28 +256,40 @@ public:
 
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
 			cudaVerify(cudaStreamWaitEvent(streams[2], events[0], 0));
-
 /*
-			d_DOFPos< REAL, Types_6D_Modes<REAL>, 0 >(
+			d_DOFPos(
+					 unsigned blockSize,
+					unsigned gridSize,
+					const cudaStream_t &stream,
+					d_Protein<REAL> const*  protein,
+					DOF_T const * dofs,
+					unsigned const numDOFs,
+					REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,
+					 REAL* buffer_trafoX, REAL* buffer_trafoY, REAL* buffer_trafoZ
+					)*/
+			d_DOFPos(
 				BLSZ_INTRPL,
 				gridSizeRec,
 				streams[2],
-				stageResc.rec,
+				*stageResc.rec,
 				d_dof[pipeIdxDof[1]].get(0),
 				it->size(),
-				d_defoRec.getX(),d_defoRec.getY(),d_defoRec.getZ(),
-				d_trafoRec,d_trafoRec.getY(),d_trafoRec.getZ()
+				0,
+				d_defoRec.getX(), d_defoRec.getY(), d_defoRec.getZ(),
+				d_trafoRec.getX(), d_trafoRec.getY(), d_trafoRec.getZ()
 				);
-			d_DOFPos< REAL, Types_6D_Modes<REAL>, 1 >(
+
+			d_DOFPos(
 				BLSZ_INTRPL,
 				gridSizeLig,
 				streams[2],
-				stageResc.lig,
+				*stageResc.lig,
 				d_dof[pipeIdxDof[1]].get(0),
 				it->size(),
-				d_defoLig.getX(),d_defoLig.getY(),d_defoLig.getZ(),
-				d_trafoLig,d_trafoLig.getY(),d_trafoLig.getZ()
-				);*/
+				1,
+				d_defoLig.getX(), d_defoLig.getY(), d_defoLig.getZ(),
+				d_trafoLig.getX(), d_trafoLig.getY(), d_trafoLig.getZ()
+				);
 
 
 //			 DEBUG
