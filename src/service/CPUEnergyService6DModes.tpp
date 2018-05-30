@@ -123,11 +123,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			const auto& dof = dofs[i];
 			auto& enGrad = results[i];
 
-			//invert the receptor DOF such that it points to the receptor in the ligand system
-			DOF_6D_Modes<REAL> invertedRecDOF=invertDOF(dof);
-
 			//translate the coordinates of the receptor
-
 
 			h_DOFPos(
 				rec,
@@ -200,31 +196,6 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor and the ligand in the receptor system via the neighborlist
-//			NLPotForce(
-//				gridRec->NL.get(),
-//				rec,
-//				lig,
-//				simParams,
-//				table,
-//				buffers->h_defoRec.getX(),
-//				buffers->h_defoRec.getY(),
-//				buffers->h_defoRec.getZ(),
-//				buffers->h_trafoLig.getX(),
-//				buffers->h_trafoLig.getY(),
-//				buffers->h_trafoLig.getZ(),
-//				buffers->h_potLig.getX(), // output
-//				buffers->h_potLig.getY(),
-//				buffers->h_potLig.getZ(),
-//				buffers->h_potLig.getW(),
-//				buffers->h_potRec.getX(), // output
-//				buffers->h_potRec.getY(),
-//				buffers->h_potRec.getZ()
-//			); // OK
-
-
-
-
-
 
 			NLPotForce(
 				gridRec->NL.get(),
@@ -262,10 +233,6 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getW()
 				);
 
-
-
-
-
 			rotate_forces(dof._6D.ang,
 				rec-> numAtoms(),
 				buffers->h_potRec.getX(),
@@ -288,7 +255,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->numAtoms()
 				); // OK
 
-
+/*
 			PotForce_Modes<REAL> redPotForceReceptor = reducePotForce<REAL,PotForce_Modes<REAL>>(
 				buffers->h_potRec.getX(),
 				buffers->h_potRec.getY(),
@@ -296,7 +263,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getW(),
 				rec->numAtoms()
 				); // OK
-
+*/
 //			// Debug
 //			REAL x = redPotForce.pos.x;
 //			REAL y = redPotForce.pos.y;

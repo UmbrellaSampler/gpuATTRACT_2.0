@@ -263,8 +263,7 @@ public:
 				streams[2],
 				*stageResc.rec,
 				d_dof[pipeIdxDof[1]].get(0),
-				it->size(),
-				0,
+				it->size(), 0,
 				d_defoRec.getX(), d_defoRec.getY(), d_defoRec.getZ(),
 				d_trafoRec.getX(), d_trafoRec.getY(), d_trafoRec.getZ()
 				);
@@ -275,15 +274,14 @@ public:
 				streams[2],
 				*stageResc.lig,
 				d_dof[pipeIdxDof[1]].get(0),
-				it->size(),
-				1,
+				it->size(), 1,
 				d_defoLig.getX(), d_defoLig.getY(), d_defoLig.getZ(),
 				d_trafoLig.getX(), d_trafoLig.getY(), d_trafoLig.getZ()
 				);
 
 
 //			 DEBUG
-			cudaDeviceSynchronize();
+//			cudaDeviceSynchronize();
 			//cudaDeviceSynchronize();
 //									size_t bufferSize = d_dof[pipeIdxDof[1]].bufferSize();
 //									WorkerBuffer<dof_t> h_dof(4,bufferSize);
@@ -324,19 +322,19 @@ public:
 //				std::cout << h_TrafoLig.getX()[i] << " " << h_TrafoLig.getY()[i] << " " << h_TrafoLig.getZ()[i] << std::endl;
 //			}
 //			std::cout <<" "<<std::endl;
-			size_t bufferSizeTrafoRec = d_trafoRec.bufferSize();
-
-			WorkerBuffer<REAL> h_trafoRec(3,bufferSizeTrafoRec);
-			size_t cpySizetrafoRec = h_trafoRec.bufferSize()*sizeof(REAL);
+//			size_t bufferSizeTrafoRec = d_trafoRec.bufferSize();
 //
-//			std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
-			cudaMemcpy(h_trafoRec.getX(),d_trafoRec.getX(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
-			cudaMemcpy(h_trafoRec.getY(),d_trafoRec.getY(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
-			cudaMemcpy(h_trafoRec.getZ(),d_trafoRec.getZ(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
-			for(size_t i = 0; i < bufferSizeTrafoRec; ++i) {
-				std::cout <<h_trafoRec.getX()[i] << " " << h_trafoRec.getY()[i] << " " << h_trafoRec.getZ()[i] << std::endl;
-			}
-			exit(EXIT_SUCCESS);
+//			WorkerBuffer<REAL> h_trafoRec(3,bufferSizeTrafoRec);
+//			size_t cpySizetrafoRec = h_trafoRec.bufferSize()*sizeof(REAL);
+////
+////			std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
+//			cudaMemcpy(h_trafoRec.getX(),d_trafoRec.getX(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_trafoRec.getY(),d_trafoRec.getY(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_trafoRec.getZ(),d_trafoRec.getZ(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
+//			for(size_t i = 0; i < bufferSizeTrafoRec; ++i) {
+//				std::cout <<h_trafoRec.getX()[i] << " " << h_trafoRec.getY()[i] << " " << h_trafoRec.getZ()[i] << std::endl;
+//			}
+//			exit(EXIT_SUCCESS);
 
 			/* Device: Signal event when transformation has completed */
 			cudaVerify(cudaEventRecord(events[2], streams[2]));
@@ -348,44 +346,37 @@ public:
 			gridSizeLig = ( numElLig + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 
 
-				d_potForce (
-					BLSZ_INTRPL,
-					gridSizeLig,
-					streams[2],
-					stageResc.gridRec.inner,
-					stageResc.gridRec.outer,
-					*stageResc.lig,
-					it->size(),
-					d_trafoLig.getX(),
-					d_trafoLig.getY(),
-					d_trafoLig.getZ(),
-					d_potLig[pipeIdx[1]].getX(),
-					d_potLig[pipeIdx[1]].getY(),
-					d_potLig[pipeIdx[1]].getZ(),
-					d_potLig[pipeIdx[1]].getW()); // OK
+			d_potForce (
+				BLSZ_INTRPL,
+				gridSizeLig,
+				streams[2],
+				stageResc.gridRec.inner,
+				stageResc.gridRec.outer,
+				*stageResc.lig,
+				it->size(),
+				d_trafoLig.getX(),
+				d_trafoLig.getY(),
+				d_trafoLig.getZ(),
+				d_potLig[pipeIdx[1]].getX(),
+				d_potLig[pipeIdx[1]].getY(),
+				d_potLig[pipeIdx[1]].getZ(),
+				d_potLig[pipeIdx[1]].getW()); // OK
 
-				d_potForce (
-					BLSZ_INTRPL,
-					gridSizeRec,
-					streams[2],
-					stageResc.gridLig.inner,
-					stageResc.gridLig.outer,
-					*stageResc.rec,
-					it->size(),
-					d_trafoRec.getX(),
-					d_trafoRec.getY(),
-					d_trafoRec.getZ(),
-					d_potRec[pipeIdx[1]].getX(),
-					d_potRec[pipeIdx[1]].getY(),
-					d_potRec[pipeIdx[1]].getZ(),
-					d_potRec[pipeIdx[1]].getW()); // OK
-
-
-			//std::cout << sumx <<  " " << sumy << " " << sumz;
-
-
-			// Debug
-
+			d_potForce (
+				BLSZ_INTRPL,
+				gridSizeRec,
+				streams[2],
+				stageResc.gridLig.inner,
+				stageResc.gridLig.outer,
+				*stageResc.rec,
+				it->size(),
+				d_trafoRec.getX(),
+				d_trafoRec.getY(),
+				d_trafoRec.getZ(),
+				d_potRec[pipeIdx[1]].getX(),
+				d_potRec[pipeIdx[1]].getY(),
+				d_potRec[pipeIdx[1]].getZ(),
+				d_potRec[pipeIdx[1]].getW()); // OK
 
 
 			d_NLPotForce(
