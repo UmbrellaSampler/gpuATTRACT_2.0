@@ -43,7 +43,7 @@ void emATTRACT<GenericTypes>::run() {
 			.withServer(server)
 			.withCommon(common)
 			.withDofs(dofs)
-			.withSolverName("sdf")
+			.withSolverName("VA13")
 			.build();
 
 	requestHandler.run();

@@ -8,8 +8,8 @@
 #ifndef SRC_MODEL_TYPES_6D_CONFIG_H_
 #define SRC_MODEL_TYPES_6D_CONFIG_H_
 
-constexpr unsigned MODES_MAX_NUMBER=5;
-constexpr unsigned DOF_MAX_NUMBER= 6 + MODES_MAX_NUMBER;
+constexpr unsigned MODES_MAX_NUMBER = 5;
+constexpr unsigned DOF_MAX_NUMBER = 6 + 2*MODES_MAX_NUMBER;
 
 
 #endif /* TYPES_6D_CONFIG_H_ */
