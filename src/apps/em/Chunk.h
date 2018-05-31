@@ -31,11 +31,11 @@ template<typename GenericTypes>
 class RequestHandler<GenericTypes>::Chunk {
 
 public:
-	request_t request() const {
+	std::shared_ptr<request_t> request() const {
 		return _request;
 	}
 
-	void setRequest(request_t const& request) {
+	void setRequest(std::shared_ptr<request_t> const& request) {
 		_request = request;
 	}
 
@@ -122,7 +122,7 @@ public:
 	static double chunkSizeRatio(std::list<Chunk> const& chunkList);
 
 private:
-	request_t _request; /** server request */
+	std::shared_ptr<request_t> _request; /** server request */
 	unsigned _fetchSize; /** number of requests to fetch */
 	ContainerType _cont; // we use a list to be able to erase arbitrary elements
 

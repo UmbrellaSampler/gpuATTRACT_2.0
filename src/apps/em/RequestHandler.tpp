@@ -114,7 +114,7 @@ void RequestHandler<GenericTypes>::run() {
 			_collectedRequests.push_back(TypesConverter<extDOF,Vector>::toFirst(solver->getState()));
 		}
 
-		request_t request(_collectedRequests.data(), _collectedRequests.size(), _common);
+		auto request = std::make_shared<request_t>( request_t(_collectedRequests.data(), _collectedRequests.size(), _common) );
 		try {
 			_server->submit(request);
 		} catch (std::invalid_argument &e) {
@@ -212,7 +212,7 @@ void RequestHandler<GenericTypes>::run() {
 
 			/* submit request */
 			if (_collectedRequests.size() > 0) { // there is still something to submit
-				request_t request(_collectedRequests.data(), _collectedRequests.size(), _common);
+				auto request = std::make_shared<request_t>(request_t(_collectedRequests.data(), _collectedRequests.size(), _common) );
 				try {
 					_server->submit(request);
 				} catch (std::invalid_argument &e) {

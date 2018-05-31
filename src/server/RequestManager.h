@@ -11,6 +11,7 @@
 #include <set>
 #include <map>
 #include "ThreadSafeQueue.h"
+#include <memory>
 
 namespace as {
 
@@ -34,23 +35,23 @@ class RequestManager {
 	using workItem_t = WorkItem<InputType, CommonType, ResultType>;
 public:
 
-	void registerRequest(request_t const* request);
-	void removeRequest(request_t const* request);
+	void registerRequest(std::shared_ptr<request_t> const& request);
+	void removeRequest(std::shared_ptr<request_t> const& request);
 
 	size_t queueSize() const;
 	size_t containerSize() const;
 
 	const request_t* nextRequest() noexcept;
-	serverBuffers_t* buffers(request_t const* request);
-	std::vector<workItem_t>* workItems(request_t const* request);
-	CommonType* common(request_t const* request);
+	serverBuffers_t* buffers(std::shared_ptr<request_t> const& request);
+	std::vector<workItem_t>* workItems(std::shared_ptr<request_t> const& request);
+	CommonType* common(std::shared_ptr<request_t> const& request);
 
-	bool isValid(request_t const* request) const;
-	bool isProcessed(request_t const* request);
+	bool isValid(std::shared_ptr<request_t> const& request) const;
+	bool isProcessed(std::shared_ptr<request_t> const& request);
 
 
 private:
-	std::map<request_t const*, requestMembers_t> _requestContainer;
+	std::map<std::shared_ptr<request_t const> , requestMembers_t> _requestContainer;
 
 };
 

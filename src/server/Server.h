@@ -75,19 +75,19 @@ public:
 		return _itemSize;
 	}
 
-	void submit(request_t& req);
+	void submit(std::shared_ptr<request_t>& req);
 
-	void wait(request_t const& req, result_t* result);
+	void wait(std::shared_ptr<request_t> const& req, result_t* result);
 
 private:
 
 	void configureBufferAllocators();
-	void attachServerBuffers(request_t const*);
-	void copyRequestBuffer(request_t const*);
-	void createWorkItemsAndPush(request_t const*);
-	void synchronizeWith(request_t const*);
-	void returnServerBuffers(request_t const*);
-	void copyResultBuffer(request_t const*, result_t*);
+	void attachServerBuffers(std::shared_ptr<request_t> const&);
+	void copyRequestBuffer(std::shared_ptr<request_t> const&);
+	void createWorkItemsAndPush(std::shared_ptr<request_t> const&);
+	void synchronizeWith(std::shared_ptr<request_t> const& request);
+	void returnServerBuffers(std::shared_ptr<request_t> const&);
+	void copyResultBuffer(std::shared_ptr<request_t> const&, result_t*);
 
 	std::shared_ptr<service_t> _service;
 	size_t _itemSize;

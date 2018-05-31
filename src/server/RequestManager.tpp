@@ -20,7 +20,7 @@
 namespace as {
 
 template<typename InputType, typename CommonType, typename ResultType>
-void RequestManager<InputType, CommonType, ResultType>::registerRequest(request_t const* request) {
+void RequestManager<InputType, CommonType, ResultType>::registerRequest(std::shared_ptr<request_t> const& request) {
 	assert(!isValid(request));
 	auto& requestMembers = _requestContainer[request]; // implicit construction of new entry
 
@@ -34,12 +34,12 @@ void RequestManager<InputType, CommonType, ResultType>::registerRequest(request_
 }
 
 template<typename InputType, typename CommonType, typename ResultType>
-void RequestManager<InputType, CommonType, ResultType>::removeRequest(request_t const* request) {
+void RequestManager<InputType, CommonType, ResultType>::removeRequest(std::shared_ptr<request_t> const& request) {
 	_requestContainer.erase(request);
 }
 
 template<typename InputType, typename CommonType, typename ResultType>
-bool RequestManager<InputType, CommonType, ResultType>::isValid(request_t const* request) const {
+bool RequestManager<InputType, CommonType, ResultType>::isValid(std::shared_ptr<request_t> const& request) const {
 	return _requestContainer.find(request) != _requestContainer.end();
 }
 
@@ -49,19 +49,19 @@ size_t RequestManager<InputType, CommonType, ResultType>::containerSize() const 
 }
 
 template<typename InputType, typename CommonType, typename ResultType>
-ServerBuffers<InputType, ResultType>* RequestManager<InputType, CommonType, ResultType>::buffers(request_t const* request) {
+ServerBuffers<InputType, ResultType>* RequestManager<InputType, CommonType, ResultType>::buffers(std::shared_ptr<request_t> const& request) {
 	auto& requestMembers = _requestContainer.at(request);
 	return requestMembers.serverBuffers();
 }
 
 template<typename InputType, typename CommonType, typename ResultType>
-std::vector<WorkItem<InputType, CommonType, ResultType>>* RequestManager<InputType, CommonType, ResultType>::workItems(request_t const* request) {
+std::vector<WorkItem<InputType, CommonType, ResultType>>* RequestManager<InputType, CommonType, ResultType>::workItems(std::shared_ptr<request_t> const& request) {
 	auto& requestMembers = _requestContainer.at(request);
 	return requestMembers.items();
 }
 
 template<typename InputType, typename CommonType, typename ResultType>
-bool RequestManager<InputType, CommonType, ResultType>::isProcessed(request_t const* request) {
+bool RequestManager<InputType, CommonType, ResultType>::isProcessed(std::shared_ptr<request_t> const& request) {
 	auto items = workItems(request);
 	for (auto& item : *items) {
 		if (!item.isProcessed()) {
@@ -73,7 +73,7 @@ bool RequestManager<InputType, CommonType, ResultType>::isProcessed(request_t co
 }
 
 template<typename InputType, typename CommonType, typename ResultType>
-CommonType* RequestManager<InputType, CommonType, ResultType>::common(request_t const* request) {
+CommonType* RequestManager<InputType, CommonType, ResultType>::common(std::shared_ptr<request_t> const& request) {
 	auto& requestMembers = _requestContainer.at(request);
 	return requestMembers.common();
 }
