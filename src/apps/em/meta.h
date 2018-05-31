@@ -220,18 +220,18 @@ public:
 		objGrad.obj = enGrad._6D.E;
 		objGrad.grad = Vector( DOF_MAX_NUMBER );
 		// for ATTRACT multiply gradients by -1.0
-		objGrad.grad(0) = enGrad._6D.ang.x;
-		objGrad.grad(1) = enGrad._6D.ang.y;
-		objGrad.grad(2) = enGrad._6D.ang.z;
-		objGrad.grad(3) = enGrad._6D.pos.x;
-		objGrad.grad(4) = enGrad._6D.pos.y;
-		objGrad.grad(5) = enGrad._6D.pos.z;
+		objGrad.grad(0) = -enGrad._6D.ang.x;
+		objGrad.grad(1) = -enGrad._6D.ang.y;
+		objGrad.grad(2) = -enGrad._6D.ang.z;
+		objGrad.grad(3) = -enGrad._6D.pos.x;
+		objGrad.grad(4) = -enGrad._6D.pos.y;
+		objGrad.grad(5) = -enGrad._6D.pos.z;
 
 		for(int mode=0;mode< Common_Modes::numModesRec; mode++){
-			objGrad.grad(6 + mode)  = enGrad.modesRec[mode];
+			objGrad.grad(6 + mode)  = -enGrad.modesRec[mode];
 		}
 		for(int mode=0;mode< Common_Modes::numModesLig; mode++){
-			objGrad.grad(6 + Common_Modes::numModesRec +  mode)  = enGrad.modesLig[mode];
+			objGrad.grad(6 + Common_Modes::numModesRec +  mode)  = -enGrad.modesLig[mode];
 		}
 		return objGrad;
 	}

@@ -1,5 +1,5 @@
       subroutine minfor(
-     1 smug, ivmax, x
+     1 smug, ivmax, numModesRec, numModesLig, x
      2 )
 c
 c  variable metric minimizer (Harwell subroutine lib.  as in Jumna with modifications)
@@ -13,8 +13,8 @@ c     Parameters
       type(c_ptr) smug
       integer ivmax
       real*8 x
-      dimension x(6)
-
+      dimension x(26)
+      integer numModesRec, numModesLig
 c     Local variables
       real*8  gesa
       integer i,k,ir,isfv,itr,nfun,np,jn
@@ -22,15 +22,15 @@ c     Local variables
       real*8 fb
       
       real*8 h,g,ga,gb,xaa,xbb,d,step,stepbd,steplb,stmin
-      dimension h(6*6)
-      dimension g(6),ga(6),gb(6),w(6)
-      dimension xaa(6), xbb(6), d(6)
+      dimension h(26*26)
+      dimension g(26),ga(26),gb(26),w(26)
+      dimension xaa(26), xbb(26), d(26)
 
       integer, parameter:: ERROR_UNIT = 0
 
       xnull=0.0d0
       dga=xnull
-      jn = 6
+      jn = 6 + numModesRec + numModesLig
 
       do i=1,jn
        ga(i)=xnull
@@ -105,8 +105,12 @@ c     test whether func has been called ivmax times
 c     calculate another function value and gradient
       
 c     make an Euler rotation + tranlation of ligand center
-      do i=1,jn
+      do i=1,6
        xbb(i)=xaa(i)+c*d(i)
+      enddo
+
+      do i=7,jn
+       xbb(i)=xaa(i)-c*d(i)
       enddo
 
       call energy_for_fortran_to_call(smug, xbb, fb, gb)

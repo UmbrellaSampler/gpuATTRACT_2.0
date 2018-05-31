@@ -26,7 +26,7 @@ using std::endl;
 
 as::VA13Solver::Options as::VA13Solver::settings;
 
-extern "C" void minfor_(void* FortranSmuggler_ptr, int const& maxFunEval,
+extern "C" void minfor_(void* FortranSmuggler_ptr, int const& maxFunEval, int const& numModesRec, int const& numModesLig,
 		double const* state);
 
 namespace as {
@@ -41,7 +41,7 @@ void VA13Solver::run(push_type& ca) {
 		state_array[i] = state(i);
 	}
 
-	minfor_(&smuggler, settings.maxFunEval, state_array);
+	minfor_(&smuggler, settings.maxFunEval, Common_Modes::numModesRec, Common_Modes::numModesLig, state_array);
 }
 
 } // namespace
