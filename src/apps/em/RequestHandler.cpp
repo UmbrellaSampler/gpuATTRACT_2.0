@@ -20,5 +20,10 @@ class RequestHandler<Types_6D<float>>;
 template
 class RequestHandler<Types_6D<double>>;
 
+template
+class RequestHandler<Types_6D_Modes<float>>;
+
+template
+class RequestHandler<Types_6D_Modes<double>>;
 }  // namespace as
 
