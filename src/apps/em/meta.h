@@ -137,26 +137,47 @@ public:
 
 
 // Typesconverter for modes
+
 template<typename REAL>
 class TypesConverter<DOF_6D_Modes<REAL>, Vector> {
 public:
 	static DOF_6D_Modes<REAL> toFirst(Vector const& vec) {
 		DOF_6D_Modes<REAL> dof;
-		dof.ang.x = vec(0);
-		dof.ang.y = vec(1);
-		dof.ang.z = vec(2);
-		dof.pos.x = vec(3);
-		dof.pos.y = vec(4);
-		dof.pos.z = vec(5);
-		for(int mode=0;mode< dof.numModes; mode++){dof.modes[mode]=vec(6+mode);}
+		dof._6D.ang.x = vec(0);
+		dof._6D.ang.y = vec(1);
+		dof._6D.ang.z = vec(2);
+		dof._6D.pos.x = vec(3);
+		dof._6D.pos.y = vec(4);
+		dof._6D.pos.z = vec(5);
+		for(int mode=0;mode< Common_Modes::numModesRec; mode++){
+			dof.modesRec[mode]=vec(6 + mode);
+		}
+		for(int mode=0;mode< Common_Modes::numModesLig; mode++){
+			dof.modesLig[mode]=vec(6 + mode + Common_Modes::numModesRec);
+		}
 		return dof;
 	}
 
 	static Vector toSecond(DOF_6D_Modes<REAL> const& dof) {
-		Vector vec(6+dof.numModes);
-		vec  << dof.ang.x, dof.ang.y, dof.ang.z,
-				dof.pos.x, dof.pos.y , dof.pos.z;
-		for(int mode=0;mode< dof.numModes; mode++){vec  << dof.modes[mode];}
+		//Vector vec(6 + Common_Modes::numModesRec + Common_Modes::numModesLig);
+		Vector vec(26);
+		vec(0) = dof._6D.ang.x;
+		vec(1) = dof._6D.ang.y;
+		vec(2) = dof._6D.ang.z;
+		vec(3) = dof._6D.pos.x;
+		vec(4) = dof._6D.pos.y;
+		vec(5) = dof._6D.pos.z;
+
+//		vec  << dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z,
+//				dof._6D.pos.x, dof._6D.pos.y , dof._6D.pos.z;
+		for(int mode=0;mode< Common_Modes::numModesRec; mode++){
+			//vec  << dof.modesRec[mode];
+			vec(6 + mode)  = dof.modesRec[mode];
+		}
+		for(int mode=0;mode< Common_Modes::numModesLig; mode++){
+			//vec  << dof.modesLig[mode];
+			vec(6 + Common_Modes::numModesRec + mode)  = dof.modesLig[mode];
+		}
 		return vec;
 	}
 };
@@ -178,25 +199,40 @@ class TypesConverter<Result_6D_Modes<REAL>, ObjGrad> {
 public:
 	static Result_6D_Modes<REAL> toFirst(ObjGrad const& objGrad) {
 		Result_6D_Modes<REAL> enGrad;
-		enGrad.E = objGrad.obj;
-		enGrad.ang.x = objGrad.grad(0);
-		enGrad.ang.y = objGrad.grad(1);
-		enGrad.ang.z = objGrad.grad(2);
-		enGrad.pos.x = objGrad.grad(3);
-		enGrad.pos.y = objGrad.grad(4);
-		enGrad.pos.z = objGrad.grad(5);
-		for(int mode=0;mode< enGrad.numModes; mode++){	enGrad.modes[mode] = objGrad.grad(6+mode);}
+		enGrad._6D.E = objGrad.obj;
+		enGrad._6D.ang.x = objGrad.grad(0);
+		enGrad._6D.ang.y = objGrad.grad(1);
+		enGrad._6D.ang.z = objGrad.grad(2);
+		enGrad._6D.pos.x = objGrad.grad(3);
+		enGrad._6D.pos.y = objGrad.grad(4);
+		enGrad._6D.pos.z = objGrad.grad(5);
+		for(int mode=0;mode< Common_Modes::numModesRec; mode++){
+			enGrad.modesRec[mode] = objGrad.grad(6 + mode);
+		}
+		for(int mode=0;mode< Common_Modes::numModesLig; mode++){
+			enGrad.modesLig[mode] = objGrad.grad(6 + mode + Common_Modes::numModesRec);
+		}
 		return enGrad;
 	}
 
 	static ObjGrad toSecond (Result_6D_Modes<REAL> const& enGrad) {
 		ObjGrad objGrad;
-		objGrad.obj = enGrad.E;
-		objGrad.grad = Vector(6+enGrad.numModes);
+		objGrad.obj = enGrad._6D.E;
+		objGrad.grad = Vector( DOF_MAX_NUMBER );
 		// for ATTRACT multiply gradients by -1.0
-		objGrad.grad  << -enGrad.ang.x, -enGrad.ang.y,  -enGrad.ang.z,
-						 -enGrad.pos.x, -enGrad.pos.y , -enGrad.pos.z;
-		for(int mode=0;mode< enGrad.numModes; mode++){objGrad.grad  << -enGrad.modes[mode];}
+		objGrad.grad(0) = enGrad._6D.ang.x;
+		objGrad.grad(1) = enGrad._6D.ang.y;
+		objGrad.grad(2) = enGrad._6D.ang.z;
+		objGrad.grad(3) = enGrad._6D.pos.x;
+		objGrad.grad(4) = enGrad._6D.pos.y;
+		objGrad.grad(5) = enGrad._6D.pos.z;
+
+		for(int mode=0;mode< Common_Modes::numModesRec; mode++){
+			objGrad.grad(6 + mode)  = enGrad.modesRec[mode];
+		}
+		for(int mode=0;mode< Common_Modes::numModesLig; mode++){
+			objGrad.grad(6 + Common_Modes::numModesRec +  mode)  = enGrad.modesLig[mode];
+		}
 		return objGrad;
 	}
 };
