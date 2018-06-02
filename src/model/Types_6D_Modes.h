@@ -57,6 +57,8 @@ struct Result_6D_Modes {
 	Result_6D<real_t> _6D;
 	real_t modesRec[MODES_MAX_NUMBER];
 	real_t modesLig[MODES_MAX_NUMBER];
+	// This method is just for testing purposes in emattract
+	REAL get_Energy(){ return _6D.E;}
 };
 
 template<typename REAL>

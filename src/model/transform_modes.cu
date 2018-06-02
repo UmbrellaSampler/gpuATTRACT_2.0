@@ -98,7 +98,7 @@ __global__ void d_DOFPos_kernel(
 							protein.yPos[atomIdx],
 							protein.zPos[atomIdx]);
 
-		deform< REAL, DOF_T>( dof, posAtom, protein, atomIdx, 0, idx, buffer_defoX, buffer_defoY, buffer_defoZ);
+		deform< REAL, DOF_T>( dof, posAtom, protein, atomIdx, type_protein, idx, buffer_defoX, buffer_defoY, buffer_defoZ);
 		translate_rotate< REAL, DOF_T>( dof, posAtom, type_protein );
 
 		buffer_trafoX[idx] = posAtom.x;

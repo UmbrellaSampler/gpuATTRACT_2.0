@@ -59,7 +59,7 @@ c     set the hessian to a diagonal matrix
 c     set some variables for the first iteration
       dff=xnull
       call energy_for_fortran_to_call(smug, xaa, gesa, g)
-      
+
 110   fa=gesa
       isfv=1
 c store forces, Euler angle, position and ligand and receptor coordinates

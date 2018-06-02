@@ -35,7 +35,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	auto ligand = createProteinFromPDB<real_t>(args.ligName);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
-
+	receptor->setNumModes( Common_Modes::numModesRec );
+	ligand->setNumModes( Common_Modes::numModesLig );
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
 		simParam->dielec = Dielec::variable;

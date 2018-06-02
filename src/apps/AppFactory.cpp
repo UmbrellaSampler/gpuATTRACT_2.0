@@ -22,12 +22,16 @@ std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
 	const bool useModes = args.numModes > 0;
 	if (args.precision == "single") {
 		if (useModes) {
+			Common_Modes::numModesRec = args.numModes;
+			Common_Modes::numModesLig = args.numModes;
 			app = create<Types_6D_Modes<float>>(args.app);
 		} else {
 			app = create<Types_6D<float>>(args.app);
 		}
 	} else if (args.precision == "double") {
 		if (useModes) {
+			Common_Modes::numModesRec = args.numModes;
+			Common_Modes::numModesLig = args.numModes;
 			app = create<Types_6D_Modes<double>>(args.app);
 
 		} else {

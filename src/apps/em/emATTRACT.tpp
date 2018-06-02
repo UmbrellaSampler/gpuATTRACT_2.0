@@ -48,11 +48,15 @@ void emATTRACT<GenericTypes>::run() {
 
 	requestHandler.run();
 
+// THis is just for testing purposes
+	auto results_grad = requestHandler.getResultEnGrads();
+	auto results_dof = requestHandler.getResultStates();
+	int count = 0;
+	//for (auto const res : results_dof) {
+	for( int i = 0; i< results_dof.size();i++){
+		std::cout << results_grad[i].get_Energy() << std::endl;
+		std::cout << results_dof[i] << std::endl;
 
-	auto results = requestHandler.getResultEnGrads();
-
-	for (result_t const res : results) {
-		std::cout << res << std::endl;
 	}
 
 }

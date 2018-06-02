@@ -122,7 +122,6 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 		for (unsigned i = 0; i < itemSize; ++i) {
 			const auto& dof = dofs[i];
 			auto& enGrad = results[i];
-
 			//translate the coordinates of the receptor
 
 			h_DOFPos(
@@ -152,10 +151,17 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			// Debug
+//			std::cout <<"defoRec"<<std::endl;
 //			for(size_t i = 0; i < rec->numAtoms(); ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
-//				std::cout << buffers->h_trafoRec.getX()[i] << " " << buffers->h_trafoRec.getY()[i] << " " << buffers->h_trafoRec.getZ()[i] << std::endl;
+//				std::cout << buffers->h_defoRec.getX()[i] << " " << buffers->h_defoRec.getY()[i] << " " << buffers->h_defoRec.getZ()[i] << std::endl;
 //			}
+//
+//			std::cout <<"trafo lig"<<std::endl;
+//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
+//	//			for(size_t i = 0; i < 20; ++i) {
+//					std::cout << buffers->h_trafoLig.getX()[i] << " " << buffers->h_trafoLig.getY()[i] << " " << buffers->h_trafoLig.getZ()[i] << std::endl;
+//				}
 			//exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor via the ligand grid in the ligand system
@@ -189,11 +195,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			); // OK
 
 //			exit(EXIT_SUCCESS);
+//			std::cout <<"before nl" <<std::endl;
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-//			for(size_t i = 0; i < 20; ++i) {
-				//std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
+//				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
 //			}
-//			exit(EXIT_SUCCESS);
+	//		exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor and the ligand in the receptor system via the neighborlist
 
@@ -239,7 +245,11 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getY(),
 				buffers->h_potRec.getZ()
 				);
-
+//			std::cout <<"before nl" <<std::endl;
+//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
+//				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
+//			}
+//			exit(EXIT_SUCCESS);
 
 //			////			// Debug
 //						for(size_t i = 0; i < rec->numAtoms(); ++i) {
@@ -331,9 +341,9 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			enGrad._6D.pos = redPotForce.pos;
 
 			enGrad._6D.ang = reduceTorque(
-					lig->xPos(),
-					lig->yPos(),
-					lig->zPos(),
+					buffers->h_defoLig.getX(),
+					buffers->h_defoLig.getY(),
+					buffers->h_defoLig.getZ(),
 					buffers->h_potLig.getX(),
 					buffers->h_potLig.getY(),
 					buffers->h_potLig.getZ(),

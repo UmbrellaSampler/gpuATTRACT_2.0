@@ -308,32 +308,37 @@ public:
 //									}
 //									std::cout <<std::endl<< std::endl;
 
-
-
-//			std::cout <<"x y z"<<std::endl;
-//			size_t bufferSizeTrafoLig = d_trafoLig.bufferSize();
-//			WorkerBuffer<REAL> h_TrafoLig(3,bufferSizeTrafoLig);
-//			size_t cpySizeTrafoLig = h_TrafoLig.bufferSize()*sizeof(REAL);
-//
-//			std::cout << "bufferSize: " << bufferSizeTrafoLig << " cpySize: " << cpySizeTrafoLig << std::endl;
-//			cudaMemcpy(h_TrafoLig.getX(),d_trafoLig.getX(), cpySizeTrafoLig, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_TrafoLig.getY(),d_trafoLig.getY(), cpySizeTrafoLig, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_TrafoLig.getZ(),d_trafoLig.getZ(), cpySizeTrafoLig, cudaMemcpyDeviceToHost);
-//			for(size_t i = 0; i < bufferSizeTrafoLig; ++i) {
-//				std::cout << h_TrafoLig.getX()[i] << " " << h_TrafoLig.getY()[i] << " " << h_TrafoLig.getZ()[i] << std::endl;
-//			}
-//			std::cout <<" "<<std::endl;
-//			size_t bufferSizeTrafoRec = d_trafoRec.bufferSize();
-//
-//			WorkerBuffer<REAL> h_trafoRec(3,bufferSizeTrafoRec);
-//			size_t cpySizetrafoRec = h_trafoRec.bufferSize()*sizeof(REAL);
+//						cudaDeviceSynchronize();
 ////
-////			std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
-//			cudaMemcpy(h_trafoRec.getX(),d_trafoRec.getX(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_trafoRec.getY(),d_trafoRec.getY(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_trafoRec.getZ(),d_trafoRec.getZ(), cpySizetrafoRec, cudaMemcpyDeviceToHost);
-//			for(size_t i = 0; i < bufferSizeTrafoRec; ++i) {
-//				std::cout <<h_trafoRec.getX()[i] << " " << h_trafoRec.getY()[i] << " " << h_trafoRec.getZ()[i] << std::endl;
+//			std::cout <<"defoRec"<<std::endl;
+//			size_t bufferSizeDefoRec1 = d_defoRec[pipeIdx[1]].bufferSize();
+//			WorkerBuffer<REAL> h_DefoRec(3,bufferSizeDefoRec1);
+//			size_t cpySizeDefoRec1 = h_DefoRec.bufferSize()*sizeof(REAL);
+//
+//			//std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
+//			cudaMemcpy(h_DefoRec.getX(),d_defoRec[pipeIdx[1]].getX(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_DefoRec.getY(),d_defoRec[pipeIdx[1]].getY(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_DefoRec.getZ(),d_defoRec[pipeIdx[1]].getZ(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+//			for(size_t i = 0; i < stageResc.rec->numAtoms; ++i) {
+//				std::cout << h_DefoRec.getX()[i] << " " << h_DefoRec.getY()[i] << " " << h_DefoRec.getZ()[i] << std::endl;
+//			}
+
+//
+//
+//
+//
+//			std::cout <<"trafo lig "<<std::endl;
+//			size_t bufferSizeTrafoLig = d_trafoLig.bufferSize();
+//
+//			WorkerBuffer<REAL> h_trafoLig(3,bufferSizeTrafoLig);
+//			size_t cpySizetrafoLig = h_trafoLig.bufferSize()*sizeof(REAL);
+////
+////			std::cout << "bufferSize: " << bufferSizeDefoLig << " cpySize: " << cpySizeDefoLig << std::endl;
+//			cudaMemcpy(h_trafoLig.getX(),d_trafoLig.getX(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_trafoLig.getY(),d_trafoLig.getY(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_trafoLig.getZ(),d_trafoLig.getZ(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
+//			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
+//				std::cout <<h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
 //			}
 //			exit(EXIT_SUCCESS);
 
@@ -379,7 +384,21 @@ public:
 				d_potRec[pipeIdx[1]].getZ(),
 				d_potRec[pipeIdx[1]].getW()); // OK
 
-
+//			std::cout <<"before nl" <<std::endl;
+//			cudaDeviceSynchronize();
+//			WorkerBuffer<REAL> h_potLig(4,stageResc.lig->numAtoms);
+//			size_t cpySize = stageResc.lig->numAtoms*sizeof(REAL);
+//			//std::cout <<"fx fy fz"<<std::endl;
+//			cudaMemcpy(h_potLig.getX(),d_potLig[pipeIdx[1]].getX(), cpySize, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig.getY(),d_potLig[pipeIdx[1]].getY(), cpySize, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig.getZ(),d_potLig[pipeIdx[1]].getZ(), cpySize, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig.getW(),d_potLig[pipeIdx[1]].getW(), cpySize, cudaMemcpyDeviceToHost);
+//			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
+//				//			for(size_t i = 0; i < 20; ++i) {
+//				std::cout << h_potLig.getX()[i] << " " << h_potLig.getY()[i] << " " << h_potLig.getZ()[i]<< std::endl;// << " " << h_potLig.getW()[i] ;
+//
+//			}
+//			exit(EXIT_SUCCESS);
 			d_NLPotForce<REAL, dof_t>(
 				BLSZ_INTRPL,
 				gridSizeLig,
@@ -442,17 +461,18 @@ public:
 				stageResc.rec->numAtoms,
 				it->size()
 				);
+//			std::cout <<"after nl"<< std::endl;
 //			cudaDeviceSynchronize();
-//			WorkerBuffer<REAL> h_potLig(4,3*stageResc.lig->numAtoms);
-//			size_t cpySize = 3*stageResc.lig->numAtoms*sizeof(REAL);
+//			WorkerBuffer<REAL> h_potLig1(4,stageResc.lig->numAtoms);
+//			size_t cpySize1 = stageResc.lig->numAtoms*sizeof(REAL);
 //			std::cout <<"fx fy fz"<<std::endl;
-//			cudaMemcpy(h_potLig.getX(),d_potLig[pipeIdx[1]].getX(), cpySize, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig.getY(),d_potLig[pipeIdx[1]].getY(), cpySize, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig.getZ(),d_potLig[pipeIdx[1]].getZ(), cpySize, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig.getW(),d_potLig[pipeIdx[1]].getW(), cpySize, cudaMemcpyDeviceToHost);
-//			for(size_t i = 0; i < 3*stageResc.lig->numAtoms; ++i) {
+//			cudaMemcpy(h_potLig1.getX(),d_potLig[pipeIdx[1]].getX(), cpySize1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig1.getY(),d_potLig[pipeIdx[1]].getY(), cpySize1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig1.getZ(),d_potLig[pipeIdx[1]].getZ(), cpySize1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig1.getW(),d_potLig[pipeIdx[1]].getW(), cpySize1, cudaMemcpyDeviceToHost);
+//			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
 //				//			for(size_t i = 0; i < 20; ++i) {
-//				std::cout << h_potLig.getX()[i] << " " << h_potLig.getY()[i] << " " << h_potLig.getZ()[i]<< std::endl;// << " " << h_potLig.getW()[i] ;
+//				std::cout << h_potLig1.getX()[i] << " " << h_potLig1.getY()[i] << " " << h_potLig1.getZ()[i]<< std::endl;// << " " << h_potLig1.getW()[i] ;
 //
 //			}
 //			exit(EXIT_SUCCESS);

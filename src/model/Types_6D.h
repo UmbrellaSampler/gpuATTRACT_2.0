@@ -51,6 +51,7 @@ struct Result_6D {
 	real_t E;
 	vec3_t pos;
 	vec3_t ang;
+	REAL get_Energy(){ return E;}
 };
 
 template<typename REAL>
