@@ -81,6 +81,7 @@ void potForce(
 
 			if (innerGrid->outOfBounds_byPos(pos)) {
 				if (!outerGrid->outOfBounds_byPos(pos)) {
+
 					pot = interpolate(outerGrid, pos, type, charge);
 				}
 			} else {
@@ -88,6 +89,9 @@ void potForce(
 //				if (++count < 50) {
 //					printf("%u\n", i);
 //				}
+				//const int3 idx = innerGrid->getIndex(pos); //added
+				//VoxelOctet<REAL> voxel =  innerGrid->getVoxelByIndex(idx, type);
+				//printf("%d \t %d   %d   %d   \t %f %f %f %f \n",i,idx.x,idx.y,idx.z,voxel.data[0][0][0].x ,voxel.data[0][0][0].y,voxel.data[0][0][0].z,voxel.data[0][0][0].w); //added
 				pot = interpolate(innerGrid, pos, type, charge);
 			}
 		}

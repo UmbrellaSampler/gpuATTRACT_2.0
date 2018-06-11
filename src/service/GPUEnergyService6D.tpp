@@ -35,6 +35,8 @@
 
 // ToDo: remove
 #include <iostream>
+#include "cuda_profiler_api.h"
+//#include "cudaProfiler.h"
 
 namespace as {
 
@@ -235,8 +237,8 @@ public:
 //			size_t bufferSize = d_trafoLig.bufferSize();
 //			WorkerBuffer<REAL> h_trafoLig(3,bufferSize);
 //			size_t cpySize = h_trafoLig.bufferSize()*sizeof(REAL);
-//
-//			std::cout << "bufferSize: " << bufferSize << " cpySize: " << cpySize << std::endl;
+//			std::cout << "#gpu trafo" << std::endl;
+//			//std::cout << "bufferSize: " << bufferSize << " cpySize: " << cpySize << std::endl;
 //			cudaMemcpy(h_trafoLig.getX(),d_trafoLig.getX(), cpySize, cudaMemcpyDeviceToHost);
 //			cudaMemcpy(h_trafoLig.getY(),d_trafoLig.getY(), cpySize, cudaMemcpyDeviceToHost);
 //			cudaMemcpy(h_trafoLig.getZ(),d_trafoLig.getZ(), cpySize, cudaMemcpyDeviceToHost);
@@ -251,7 +253,9 @@ public:
 			cudaVerify(cudaStreamWaitEvent(streams[2], events[5+pipeIdx[1]], 0));
 
 			/* Perform cuda kernel calls */
+
 			gridSize = ( numEl + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
+			cudaProfilerStart();
 			d_potForce (
 				BLSZ_INTRPL,
 				gridSize,
@@ -267,7 +271,7 @@ public:
 				d_potLig[pipeIdx[1]].getY(),
 				d_potLig[pipeIdx[1]].getZ(),
 				d_potLig[pipeIdx[1]].getW()); // OK
-
+			cudaProfilerStop();
 
 			// Debug
 //			cudaDeviceSynchronize();

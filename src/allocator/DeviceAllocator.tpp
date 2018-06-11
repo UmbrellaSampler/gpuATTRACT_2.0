@@ -20,6 +20,7 @@ template<typename BufferType>
 BufferType* DeviceAllocator<BufferType>::allocate(size_t size) {
 	BufferType* buffer;
 	CUDA_CHECK(cudaMalloc((void**)&buffer, size*sizeof(BufferType)));
+	CUDA_CHECK(cudaMemset(buffer, 0, size*sizeof(BufferType)));
 	return buffer;
 }
 

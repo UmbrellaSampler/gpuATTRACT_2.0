@@ -38,7 +38,12 @@
 #include "reduction_modes.h"
 
 #include "macros.h"
+#include <iostream>
 
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <limits>
 
 
 namespace as {
@@ -309,8 +314,8 @@ public:
 //									std::cout <<std::endl<< std::endl;
 
 //						cudaDeviceSynchronize();
-////
-//			std::cout <<"defoRec"<<std::endl;
+//
+//			std::cout <<"defoRec g"<<std::endl;
 //			size_t bufferSizeDefoRec1 = d_defoRec[pipeIdx[1]].bufferSize();
 //			WorkerBuffer<REAL> h_DefoRec(3,bufferSizeDefoRec1);
 //			size_t cpySizeDefoRec1 = h_DefoRec.bufferSize()*sizeof(REAL);
@@ -320,9 +325,9 @@ public:
 //			cudaMemcpy(h_DefoRec.getY(),d_defoRec[pipeIdx[1]].getY(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
 //			cudaMemcpy(h_DefoRec.getZ(),d_defoRec[pipeIdx[1]].getZ(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
 //			for(size_t i = 0; i < stageResc.rec->numAtoms; ++i) {
-//				std::cout << h_DefoRec.getX()[i] << " " << h_DefoRec.getY()[i] << " " << h_DefoRec.getZ()[i] << std::endl;
+//				std::cout  << std::setprecision(10)<< h_DefoRec.getX()[i] << " " << h_DefoRec.getY()[i] << " " << h_DefoRec.getZ()[i] << std::endl;
 //			}
-
+//
 //
 //
 //
@@ -338,10 +343,10 @@ public:
 //			cudaMemcpy(h_trafoLig.getY(),d_trafoLig.getY(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
 //			cudaMemcpy(h_trafoLig.getZ(),d_trafoLig.getZ(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
 //			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
-//				std::cout <<h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
+//				std::cout  << std::setprecision(10)<<h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
 //			}
 //			exit(EXIT_SUCCESS);
-
+//
 			/* Device: Signal event when transformation has completed */
 			cudaVerify(cudaEventRecord(events[2], streams[2]));
 			/* Device: Wait for completion of reduction of the previous round */
@@ -384,7 +389,7 @@ public:
 				d_potRec[pipeIdx[1]].getZ(),
 				d_potRec[pipeIdx[1]].getW()); // OK
 
-//			std::cout <<"before nl" <<std::endl;
+			//std::cout <<"before nl gpu" <<std::endl;
 //			cudaDeviceSynchronize();
 //			WorkerBuffer<REAL> h_potLig(4,stageResc.lig->numAtoms);
 //			size_t cpySize = stageResc.lig->numAtoms*sizeof(REAL);

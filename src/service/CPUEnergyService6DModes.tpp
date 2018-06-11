@@ -29,6 +29,11 @@
 // ToDo: remove
 #include <iostream>
 
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include <limits>
+
 #include "CPUEnergyService6DModes.h"
 
 namespace as {
@@ -154,15 +159,15 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			std::cout <<"defoRec"<<std::endl;
 //			for(size_t i = 0; i < rec->numAtoms(); ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
-//				std::cout << buffers->h_defoRec.getX()[i] << " " << buffers->h_defoRec.getY()[i] << " " << buffers->h_defoRec.getZ()[i] << std::endl;
+//				std::cout << std::setprecision(10) << buffers->h_defoRec.getX()[i] << " " << buffers->h_defoRec.getY()[i] << " " << buffers->h_defoRec.getZ()[i] << std::endl;
 //			}
 //
 //			std::cout <<"trafo lig"<<std::endl;
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
 //	//			for(size_t i = 0; i < 20; ++i) {
-//					std::cout << buffers->h_trafoLig.getX()[i] << " " << buffers->h_trafoLig.getY()[i] << " " << buffers->h_trafoLig.getZ()[i] << std::endl;
+//					std::cout << std::setprecision(10) << buffers->h_trafoLig.getX()[i] << " " << buffers->h_trafoLig.getY()[i] << " " << buffers->h_trafoLig.getZ()[i] << std::endl;
 //				}
-			//exit(EXIT_SUCCESS);
+//			exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor via the ligand grid in the ligand system
 			potForce(
