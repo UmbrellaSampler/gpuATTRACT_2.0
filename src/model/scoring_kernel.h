@@ -8,7 +8,20 @@
 #ifndef SCORING_KERNEL_H_
 #define SCORING_KERNEL_H_
 #include "transform_modes.h"
+#include "Protein.h"
+#include "IntrplGrid.h"
+#include "nativeTypesFunctions.h"
+#include "nativeTypesMath.h"
+#include "VoxelOctet.h"
+#include "trilinIntrpl.h"
+#include <cmath>
 
+#ifdef CUDA
+#include "nativeTypesWrapper.h"
+#include "DeviceIntrplGrid.h"
+#include "DeviceProtein.h"
+#include "macros.h"
+#endif
 namespace as{
 
 template<typename REAL, typename DOF_T>

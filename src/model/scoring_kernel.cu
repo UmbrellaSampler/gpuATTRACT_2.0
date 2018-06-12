@@ -1,19 +1,5 @@
 #include "scoring_kernel.h"
-#include "Protein.h"
-#include "IntrplGrid.h"
-#include "nativeTypesFunctions.h"
-#include "nativeTypesMath.h"
-#include "VoxelOctet.h"
-#include "trilinIntrpl.h"
-#include <cmath>
 
-#ifdef CUDA
-#include "nativeTypesWrapper.h"
-#include "DeviceIntrplGrid.h"
-#include "DeviceProtein.h"
-#include "macros.h"
-
-#endif
 namespace as{
 template <typename T>
 __host__ __device__
@@ -150,18 +136,27 @@ __device__ __forceinline__ void PotForce_device(
 	const unsigned numAtoms = prot.numAtoms;
 	unsigned type = prot.mappedType[idx % numAtoms];
 	REAL charge = prot.charge[idx % numAtoms];
+
 	if (type != 0) {
 		if ((x >= inner.minDim.x && x <= inner.maxDim.x)
-		 && (y >= inner.minDim.y && y <= inner.maxDim.y)
-		 && (z >= inner.minDim.z && z <= inner.maxDim.z)){
+			&& (y >= inner.minDim.y && y <= inner.maxDim.y)
+			&& (z >= inner.minDim.z && z <= inner.maxDim.z))
+		{
+			//printf("inner %.20f %.20f %.20f %d\n",x,y,z,type);
 			 gridForce( inner, x, y, z,idx, type,charge, data_out);
+
 		}
 
-		else if ( ((x >= outer.minDim.x && x <= outer.maxDim.x)
-				&& (y >= outer.minDim.y && y <= outer.maxDim.y)
-				&& (z >= outer.minDim.z && z <= outer.maxDim.z)))
-		{
+		if (      ((x < inner.minDim.x || x > inner.maxDim.x)
+							|| (y < inner.minDim.y || y > inner.maxDim.y)
+							|| (z < inner.minDim.z || z > inner.maxDim.z))
+							&&
+							  ((x >= outer.minDim.x && x <= outer.maxDim.x)
+							&& (y >= outer.minDim.y && y <= outer.maxDim.y)
+							&& (z >= outer.minDim.z && z <= outer.maxDim.z))){
+			//printf("outer %.20f %.20f %.20f %d\n",x,y,z,type);
 			gridForce( outer, x, y, z, idx,type,charge, data_out);
+			//printf("outer %d %.20f %.20f %.20f \n",idx ,data_out.x,data_out.y,data_out.z);
 		}
 	}
 }
@@ -233,16 +228,22 @@ __global__ void scoring_kernel(
 		unsigned DOFidx = idx / numAtoms;
 		auto dof = dofs[DOFidx];
 		REAL x_trafo,y_trafo,z_trafo;
-		float4 potForce;
+		float4 potForce{0,0,0,0};
 		d_DOFPos_device( protein, dof, idx,	type_protein,
 				 buffer_defoX[idx],  buffer_defoY[idx], buffer_defoZ[idx],
 				 x_trafo,y_trafo,z_trafo
 				);
-
+		//printf("%d %f %f %f\n",idx, x_trafo,y_trafo,z_trafo);
 		PotForce_device(inner, outer, protein, numDOFs, idx, x_trafo, y_trafo, z_trafo, potForce);
+
 		 buffer_trafoX[idx] = x_trafo;
 		 buffer_trafoY[idx] = y_trafo;
 		 buffer_trafoZ[idx] = z_trafo;
+
+		data_out_x[idx] = potForce.x;
+		data_out_y[idx] = potForce.y;
+		data_out_z[idx] = potForce.z;
+		data_out_E[idx] = potForce.w;
 	}
 }
 

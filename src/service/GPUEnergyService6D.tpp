@@ -205,6 +205,7 @@ public:
 			size_t gridSize = ( numEl + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
+			REAL * ptr;
 			d_score(
 				BLSZ_TRAFO,
 				gridSize,
@@ -215,9 +216,9 @@ public:
 				d_dof[id_stream].get(0),
 				it->size(),
 				1,
-				 d_defoLig[id_stream].getX(),
-				 d_defoLig[id_stream].getY(),
-				 d_defoLig[id_stream].getZ(),
+				ptr,
+				ptr,
+				ptr,
 				d_trafoLig[id_stream].getX(),
 				d_trafoLig[id_stream].getY(),
 				d_trafoLig[id_stream].getZ(),
@@ -394,7 +395,6 @@ public:
 	static unsigned constexpr num_streams = 1;
 	WorkerBuffer<dof_t, DeviceAllocator<dof_t>> d_dof[num_streams];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoLig[num_streams];
-	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoLig[num_streams];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_potLig[num_streams];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_res[num_streams];
 	WorkerBuffer<REAL, HostPinnedAllocator<REAL>> h_res[num_streams];
