@@ -183,6 +183,15 @@ void rotate_forces(
 
 #ifdef CUDA
 
+template<typename REAL, typename DOF_T >
+__device__ __forceinline__ void d_DOFPos_device(
+		d_Protein<REAL> const&  protein,
+		DOF_T const & dof,
+		unsigned const idx,
+		unsigned const type_protein,
+		 REAL& buffer_defoX, REAL& buffer_defoY, REAL& buffer_defoZ,
+		 REAL& buffer_trafoX, REAL& buffer_trafoY, REAL& buffer_trafoZ
+		);
 
 template<typename REAL, typename DOF_T>
  void d_DOFPos(
