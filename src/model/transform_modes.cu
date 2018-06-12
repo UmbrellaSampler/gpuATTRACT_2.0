@@ -9,9 +9,9 @@ namespace as {
 
 
 template <typename REAL, typename DOF_T>
-__device__ void deform(
+__device__ __forceinline__ void deform(
 		DOF_T const& dof, Vec3<REAL> & posAtom, d_Protein<REAL> const&  protein, unsigned const idxAtom, unsigned const idx_protein, unsigned const bufIdx,
-		REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,
+		REAL& buffer_defoX, REAL& buffer_defoY, REAL& buffer_defoZ,
 		typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0 )
 {
 	REAL const * dlig;
@@ -27,15 +27,15 @@ __device__ void deform(
 		posAtom.y += dlig[mode] * protein.yModes[idxAtom*numModes+mode];
 		posAtom.z += dlig[mode] * protein.zModes[idxAtom*numModes+mode];
 	}
-	buffer_defoX[bufIdx] = posAtom.x;
-	buffer_defoY[bufIdx] = posAtom.y;
-	buffer_defoZ[bufIdx] = posAtom.z;
+	buffer_defoX = posAtom.x;
+	buffer_defoY = posAtom.y;
+	buffer_defoZ = posAtom.z;
 }
 
 template <typename REAL, typename DOF_T>
-__device__ void deform(
+__device__ __forceinline__ void deform(
 		DOF_T const& dof, Vec3<REAL> & posAtom, d_Protein<REAL> const&  protein, unsigned const idxAtom, unsigned const idx_protein, unsigned const bufIdx,
-		REAL* buffer_defoX, REAL* buffer_defoY, REAL* buffer_defoZ,
+		REAL& buffer_defoX, REAL& buffer_defoY, REAL& buffer_defoZ,
 		typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0 )
 {
 
@@ -43,7 +43,7 @@ __device__ void deform(
 
 
 template <typename REAL, typename DOF_T>
-__device__ void translate_rotate( DOF_T const& dof, Vec3<REAL> & posAtom, unsigned const type_protein,
+__device__ __forceinline__ void translate_rotate( DOF_T const& dof, Vec3<REAL> & posAtom, unsigned const type_protein,
 	typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0 )
 {
 	RotMat<REAL> rotMat = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
@@ -60,7 +60,7 @@ __device__ void translate_rotate( DOF_T const& dof, Vec3<REAL> & posAtom, unsign
 }
 
 template <typename REAL, typename DOF_T>
-__device__ void translate_rotate( DOF_T const& dof, Vec3<REAL> & posAtom , unsigned const type_protein,
+__device__ __forceinline__ void translate_rotate( DOF_T const& dof, Vec3<REAL> & posAtom , unsigned const type_protein,
 	typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0 )
 {
 	RotMat<REAL> rotMat = euler2rotmat(dof.ang.x, dof.ang.y, dof.ang.z);
@@ -73,6 +73,35 @@ __device__ void translate_rotate( DOF_T const& dof, Vec3<REAL> & posAtom , unsig
 	posAtom = rotMat*posAtom;
 	posAtom += translation;
 }
+
+template<typename REAL, typename DOF_T >
+__device__ __forceinline__ void d_DOFPos_device(
+		d_Protein<REAL> const&  protein,
+		DOF_T const & dof,
+		unsigned const idx,
+		unsigned const type_protein,
+		 REAL& buffer_defoX, REAL& buffer_defoY, REAL& buffer_defoZ,
+		 REAL& buffer_trafoX, REAL& buffer_trafoY, REAL& buffer_trafoZ
+		)
+{
+	/* calculate element index that is to be prcessed */
+	const unsigned int num_atoms = protein.numAtoms;
+
+		/* load DOF from global memory */
+		unsigned atomIdx = idx % num_atoms;
+
+		Vec3<REAL> posAtom(	protein.xPos[atomIdx],
+							protein.yPos[atomIdx],
+							protein.zPos[atomIdx]);
+
+		deform< REAL, DOF_T>( dof, posAtom, protein, atomIdx, type_protein, idx, buffer_defoX, buffer_defoY, buffer_defoZ);
+		translate_rotate< REAL, DOF_T>( dof, posAtom, type_protein );
+
+		buffer_trafoX = posAtom.x;
+		buffer_trafoY = posAtom.y;
+		buffer_trafoZ = posAtom.z;
+}
+
 
 template<typename REAL, typename DOF_T >
 __global__ void d_DOFPos_kernel(
@@ -98,7 +127,7 @@ __global__ void d_DOFPos_kernel(
 							protein.yPos[atomIdx],
 							protein.zPos[atomIdx]);
 
-		deform< REAL, DOF_T>( dof, posAtom, protein, atomIdx, type_protein, idx, buffer_defoX, buffer_defoY, buffer_defoZ);
+		deform< REAL, DOF_T>( dof, posAtom, protein, atomIdx, type_protein, idx, buffer_defoX[idx], buffer_defoY[idx], buffer_defoZ[idx] );
 		translate_rotate< REAL, DOF_T>( dof, posAtom, type_protein );
 
 		buffer_trafoX[idx] = posAtom.x;

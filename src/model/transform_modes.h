@@ -183,6 +183,7 @@ void rotate_forces(
 
 #ifdef CUDA
 
+
 template<typename REAL, typename DOF_T>
  void d_DOFPos(
 		 unsigned blockSize,

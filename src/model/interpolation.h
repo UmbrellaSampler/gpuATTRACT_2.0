@@ -124,6 +124,7 @@ void d_potForce (
 		REAL* data_out_z,
 		REAL* data_out_E);
 
+
 #endif
 
 } // namespace

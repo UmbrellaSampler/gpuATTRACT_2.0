@@ -17,20 +17,20 @@ namespace as {
 
 template <typename T>
 __host__ __device__
-inline T lerp(T v0, T v1, T t) {
+__forceinline__ T lerp(T v0, T v1, T t) {
     return fma(t, v1, fma(-t, v0, v0));
 }
 
 
 __host__ __device__
-inline float4 lerp4f(float4 v0, float4 v1, float t) {
+__forceinline__ float4 lerp4f(float4 v0, float4 v1, float t) {
     return make_float4( lerp<float>(v0.x, v1.x, t), lerp<float>(v0.y, v1.y, t), lerp<float>(v0.z, v1.z, t), lerp<float>(v0.w, v1.w, t) );
 }
 
 
 template<typename REAL>
 __host__ __device__
-inline float4 interpolate2( const d_IntrlpGrid<REAL>& grid,unsigned const type, REAL x, REAL y, REAL z, unsigned const i){
+__forceinline__ float4 interpolate2( const d_IntrlpGrid<REAL>& grid,unsigned const type, REAL x, REAL y, REAL z, unsigned const i){
 //TEMP
 //	unsigned idxX1 = (unsigned) floor(
 //				(x - grid.minDim.x) * grid.dVox_inv);
@@ -130,7 +130,7 @@ return result;
 
 
  template <typename REAL>
-__inline__ __device__ void getVoxelDevice(const d_IntrlpGrid<REAL>& grid, const unsigned &type,
+ __forceinline__ __device__ void getVoxelDevice(const d_IntrlpGrid<REAL>& grid, const unsigned &type,
 		const float &x, const float &y,	const float &z,  VoxelOctet<float>& voxelOct, unsigned const i)
 {
 	unsigned idxX = (unsigned) floor(
@@ -172,7 +172,7 @@ __inline__ __device__ void getVoxelDevice(const d_IntrlpGrid<REAL>& grid, const 
  ** @brief: function body for a trilinear interpolation.
  */
 
-__inline__ __host__ __device__ void trilinearInterpolation(const float &x,
+ __forceinline__ __host__ __device__ void trilinearInterpolation(const float &x,
 		const float &y, const float &z, const VoxelOctet<float> &voxelOct,
 		const float &voxelVol_inv, float4 &V)
 {
@@ -210,7 +210,7 @@ __inline__ __host__ __device__ void trilinearInterpolation(const float &x,
 	return;
 }
 template<typename REAL>
-__inline__ __device__ float4 Intrpl3D(const d_IntrlpGrid<REAL>& grid, const unsigned& type, const float &x, const float &y,
+__forceinline__ __device__ float4 Intrpl3D(const d_IntrlpGrid<REAL>& grid, const unsigned& type, const float &x, const float &y,
 		const float &z, unsigned const i)
 {
 
@@ -289,6 +289,82 @@ __global__ void d_innerPotForce (
 		data_out_E[idx] = static_cast<REAL>(pot.w);
 	}
 }
+template<typename REAL>
+__device__ __forceinline__ void PotForce_device(
+		const d_IntrlpGrid<REAL> inner,
+		const d_IntrlpGrid<REAL> outer,
+		const d_Protein<REAL> prot,
+		const unsigned numDOFs,
+		const unsigned idx,
+		const REAL x,
+		const REAL y,
+		const REAL z,
+		float4 & data_out
+		)
+{
+
+	using real4_t = typename TypeWrapper<REAL>::real4_t;
+
+
+	const unsigned numAtoms = prot.numAtoms;
+	unsigned type = prot.mappedType[idx % numAtoms];
+	REAL charge = prot.charge[idx % numAtoms];
+	if (type != 0) {
+		if ((x >= inner.minDim.x && x <= inner.maxDim.x)
+		 && (y >= inner.minDim.y && y <= inner.maxDim.y)
+		 && (z >= inner.minDim.z && z <= inner.maxDim.z)){
+			 gridForce( inner, x, y, z, type,charge, data_out);
+		}
+
+		else if ( ((x >= outer.minDim.x && x <= outer.maxDim.x)
+				&& (y >= outer.minDim.y && y <= outer.maxDim.y)
+				&& (z >= outer.minDim.z && z <= outer.maxDim.z)))
+		{
+			gridForce( outer, x, y, z, type,charge, data_out);
+		}
+	}
+}
+
+
+template<typename REAL>
+__device__ __forceinline__ void gridForce(
+		const d_IntrlpGrid<REAL> grid,
+		 REAL x,
+		 REAL y,
+		 REAL z,
+		const unsigned type,
+		REAL charge,
+		float4& data_out
+		)
+{
+
+	using real4_t = typename TypeWrapper<REAL>::real4_t;
+	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+	bool test =false;
+	if(test){
+		x = (x - grid.minDim.x) * grid.dVox_inv + 0.5f;
+		y = (y - grid.minDim.y) * grid.dVox_inv + 0.5f;
+		z = (z - grid.minDim.z) * grid.dVox_inv + 0.5f;
+		data_out = tex3D<float4>(grid.texArrayLin[type], x, y, z); /** Interpolated value */
+
+
+		if (fabs(charge) > 0.001f) {
+			float4 V_el = tex3D<float4>(grid.texArrayLin[0], x, y, z); /** Interpolated value */
+			data_out = data_out + V_el * charge;
+		}
+	}else{
+		data_out = Intrpl3D<REAL>( grid, type, (float)x,  (float)y,  (float)z,idx);
+		//pot = interpolate2<REAL>(  outer, type,  x, y,  z,idx);
+		//REAL charge = prot.charge[idx % numAtoms];
+		if (fabs(charge) > 0.001f) {
+
+			float4 V_el = Intrpl3D<REAL>( grid, 0, x, y, z,idx);
+			//float4 V_el = interpolate2<REAL>(  outer, 0,  x, y,  z,idx);
+			data_out = data_out + V_el * charge;
+		}
+	}
+}
+
 
 template<typename REAL>
 __global__ void d_outerPotForce(
