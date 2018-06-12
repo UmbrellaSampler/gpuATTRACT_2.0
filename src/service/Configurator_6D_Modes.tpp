@@ -24,7 +24,7 @@
 #include "DOFTransform.h"
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
-
+#include "scoring_kernel.h"
 namespace as {
 
 template<typename SERVICE>
