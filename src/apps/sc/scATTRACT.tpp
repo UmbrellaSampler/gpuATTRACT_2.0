@@ -37,6 +37,7 @@ void scATTRACT<GenericTypes>::run() {
 	auto& common = _config->common();
 	size_t numDofs = dofs.size();
 	auto request = std::make_shared<Request<input_t, common_t>>( Request<input_t, common_t>(dofs.data(), numDofs, common) );
+
 	server->submit(request);
 
 	auto results = std::vector<result_t>(dofs.size());

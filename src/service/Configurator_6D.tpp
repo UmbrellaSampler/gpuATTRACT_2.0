@@ -136,7 +136,8 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 	if (args.numCPUs > 0) {
 		this->_server->createWorkers(args.numCPUs);
 	} else {
-		this->_server->createWorkers(args.deviceIds.size());
+		//this->_server->createWorkers(args.deviceIds.size());
+		this->_server->createWorkers( 2 );
 	}
 
 }

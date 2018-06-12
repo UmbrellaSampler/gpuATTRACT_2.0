@@ -18,6 +18,7 @@ class WorkItem;
 template<typename InputType, typename CommonType, typename ResultType>
 class Worker : public Thread {
 	using workItem_t = WorkItem<InputType, CommonType, ResultType>;
+	using queue_t = ThreadSafeQueue<workItem_t*>;
 public:
 
 	void setItemQueue(ThreadSafeQueue<workItem_t*>* queue ) noexcept {
@@ -35,6 +36,8 @@ public:
 private:
 
 	void run() override;
+
+	void launch();
 
 	std::function<bool(workItem_t*)> _serviceFnc;
 	ThreadSafeQueue<workItem_t*>* _itemQueue;

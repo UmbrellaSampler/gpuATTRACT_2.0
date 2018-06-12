@@ -35,7 +35,7 @@
 
 // ToDo: remove
 #include <iostream>
-#include "cuda_profiler_api.h"
+#include <mutex>
 #include "ThreadSafeQueue.h"
 //#include "cudaProfiler.h"
 
@@ -101,7 +101,7 @@ class GPUEnergyService6D<REAL>::Private {
 
 public:
 
-	Private() :  pipeIdx{0,1}, numItemsInPipe(0) {
+	Private() :   numItemsInPipe(0) {
 		for(unsigned i = 0; i< num_streams; ++i){
 			unsigned id_stream = i;
 			stream_queue.push( id_stream );
@@ -126,7 +126,9 @@ public:
 	}
 
 	void addItemAndLigandSize(StageResource const& resc, unsigned const id_stream) {
+		//_lock.lock();
 		++numItemsInPipe;
+		//_lock.unlock();
 		//predicates[pipeIdx[0]][0] = true;
 		resources[id_stream] = resc;
 		//stagesMngt.push(resc);
@@ -138,22 +140,18 @@ public:
 		}
 	}
 
-	void swapBuffers() {
-		std::swap(pipeIdx[0], pipeIdx[1]);
-	}
+	bool pipelineEmpty()  {
+		//_lock.lock();
+		bool tmp = numItemsInPipe;
+		//_lock.unlock();
+		return tmp == 0;
 
-	bool pipelineEmpty() const {
-		return numItemsInPipe == 0;
 	}
 
 	void signalItemPassedLastStage() {
+		//_lock.lock();
 		--numItemsInPipe;
-	}
-
-	void resetPrediacatesForIteration() {
-		for (unsigned i = 0; i < numStages; ++i) {
-			predicates[pipeIdx[0]][i] = false;
-		}
+		//_lock.unlock();
 	}
 
 	void enqueueStream( unsigned id_stream){
@@ -181,15 +179,18 @@ public:
 		}
 
 	}
+	int getnumpipe(){
+		return numItemsInPipe;
+	}
 
 	void score(unsigned const id_stream) {
 		/* check if new item enters the pipeline */
-
 
 			auto const& stageResc = resources[id_stream];
 			auto* const it = stageResc.item;
 			const unsigned numEl = it->size()*stageResc.lig->numAtoms;
 			assert(numEl <= bufferSize( id_stream ));
+
 
 //			//DEBUG
 //			for (size_t i = 0; i < it->size(); ++i) {
@@ -236,7 +237,7 @@ public:
 			/* Perform cuda kernel calls */
 
 			gridSize = ( numEl + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
-			cudaProfilerStart();
+
 			d_potForce (
 				BLSZ_INTRPL,
 				gridSize,
@@ -252,7 +253,7 @@ public:
 				d_potLig[id_stream].getY(),
 				d_potLig[id_stream].getZ(),
 				d_potLig[id_stream].getW()); // OK
-			cudaProfilerStop();
+
 
 			// Debug
 //			cudaDeviceSynchronize();
@@ -308,7 +309,7 @@ public:
 
 
 			/* Device: Wait for completion of PotForce calc. to complete */
-			cudaVerify(cudaStreamWaitEvent(streams[3], events[3+pipeIdx[0]], 0));
+
 
 			deviceReduce(
 				blockSizeReduce,
@@ -348,8 +349,9 @@ public:
 
 			/* Device: Signal event when reduction has completed */
 
-			cudaVerify(cudaEventRecord(events[id_stream], streams[id_stream]));
-			cudaVerify(cudaEventSynchronize(events[id_stream]));
+//			cudaVerify(cudaEventRecord(events[id_stream], streams[id_stream]));
+//			cudaVerify(cudaEventSynchronize(events[id_stream]));
+			cudaVerify(cudaStreamSynchronize(streams[id_stream]));
 
 			nvtxRangePushA("Host");
 			h_finalReduce(
@@ -365,10 +367,11 @@ public:
 			signalItemPassedLastStage();
 			/* signal that this stage was executed within the current iteration */
 
+
 	}
 
 
-	static unsigned constexpr num_streams = 4;
+	static unsigned constexpr num_streams = 1;
 	WorkerBuffer<dof_t, DeviceAllocator<dof_t>> d_dof[num_streams];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoLig[num_streams];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_potLig[num_streams];
@@ -380,16 +383,13 @@ public:
 	size_t blockSizeReduce = 0;
 	static constexpr unsigned numStages = 5;
 
-	bool predicates[2][numStages];
-	//RingArray<StageResource> stagesMngt;
-	unsigned pipeIdx[2];
 
 	int numItemsInPipe; /** number of items in the pipeline */
 	StageResource resources[num_streams];
 	cudaStream_t streams[num_streams]; /** cuda streams */
 	ThreadSafeQueue<unsigned> stream_queue;
 	cudaEvent_t events[7];   /** cuda events */
-
+	std::mutex _lock;
 
 
 };
@@ -397,9 +397,14 @@ public:
 template<typename REAL>
 auto GPUEnergyService6D<REAL>::createDistributor() -> distributor_t {
 	distributor_t fncObj = [this] (common_t const* common, size_t numWorkers) {
-		(void)numWorkers;
+		//(void)numWorkers;
 		std::vector<id_t> ids = {common->gridId, common->ligId, common->recId, common->tableId};
-		return this->_dataMng->getCommonDeviceIds(ids);
+
+		auto id = this->_dataMng->getCommonDeviceIds(ids);
+		std::vector<as::workerId_t> vec(numWorkers);
+
+		std::iota(vec.begin(), vec.end(), id[0]);
+		return vec;
 	};
 	return fncObj;
 }
@@ -408,7 +413,8 @@ template<typename REAL>
 auto GPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 
 	std::shared_ptr<Private> p = std::make_shared<Private>();
-	deviceId_t deviceId = _workerId++;
+	//deviceId_t deviceId = _workerId++;
+	deviceId_t deviceId = 0;
 	itemProcessor_t fncObj = [this, deviceId, p] (workItem_t* item) -> bool {
 
 		/* Set the device to work with */
@@ -416,7 +422,6 @@ auto GPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 
 		/* reset the predicates for the actual iteration*/
 		//p->resetPrediacatesForIteration();
-
 		p->configureDevice();
 		unsigned id_stream = p->get_idStream();
 		if (item != nullptr) {
@@ -431,9 +436,9 @@ auto GPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 			p->resizeBuffersIfRequired(itemSize, numAtoms,id_stream);
 
 		} else {
+			return false;
 			//p->stagesMngt.rotate();
 		}
-
 		p->score( id_stream );
 		p->enqueueStream( id_stream);
 	//	p->swapBuffers();
