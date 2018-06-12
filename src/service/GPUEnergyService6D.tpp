@@ -37,6 +37,7 @@
 #include <iostream>
 #include <mutex>
 #include "ThreadSafeQueue.h"
+#include "scoring_kernel.h"
 //#include "cudaProfiler.h"
 
 namespace as {
@@ -204,21 +205,40 @@ public:
 			size_t gridSize = ( numEl + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
+			d_score(
+				BLSZ_TRAFO,
+				gridSize,
+				streams[id_stream],
+				stageResc.grid.inner,
+				stageResc.grid.outer,
+				*stageResc.lig,
+				d_dof[id_stream].get(0),
+				it->size(),
+				1,
+				 d_defoLig[id_stream].getX(),
+				 d_defoLig[id_stream].getY(),
+				 d_defoLig[id_stream].getZ(),
+				d_trafoLig[id_stream].getX(),
+				d_trafoLig[id_stream].getY(),
+				d_trafoLig[id_stream].getZ(),
+				d_potLig[id_stream].getX(),
+				d_potLig[id_stream].getY(),
+				d_potLig[id_stream].getZ(),
+				d_potLig[id_stream].getW());
 
-
-			d_DOF2Pos(
-					BLSZ_TRAFO,
-					gridSize,
-					streams[id_stream],
-					stageResc.lig->xPos,
-					stageResc.lig->yPos,
-					stageResc.lig->zPos,
-					d_dof[id_stream].get(0),
-					stageResc.lig->numAtoms,
-					it->size(),
-					d_trafoLig[id_stream].getX(),
-					d_trafoLig[id_stream].getY(),
-					d_trafoLig[id_stream].getZ()); //OK
+//			d_DOF2Pos(
+//					BLSZ_TRAFO,
+//					gridSize,
+//					streams[id_stream],
+//					stageResc.lig->xPos,
+//					stageResc.lig->yPos,
+//					stageResc.lig->zPos,
+//					d_dof[id_stream].get(0),
+//					stageResc.lig->numAtoms,
+//					it->size(),
+//					d_trafoLig[id_stream].getX(),
+//					d_trafoLig[id_stream].getY(),
+//					d_trafoLig[id_stream].getZ()); //OK
 
 			// DEBUG
 //			cudaDeviceSynchronize();
@@ -238,21 +258,21 @@ public:
 
 			gridSize = ( numEl + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 
-			d_potForce (
-				BLSZ_INTRPL,
-				gridSize,
-				streams[id_stream],
-				stageResc.grid.inner,
-				stageResc.grid.outer,
-				*stageResc.lig,
-				it->size(),
-				d_trafoLig[id_stream].getX(),
-				d_trafoLig[id_stream].getY(),
-				d_trafoLig[id_stream].getZ(),
-				d_potLig[id_stream].getX(),
-				d_potLig[id_stream].getY(),
-				d_potLig[id_stream].getZ(),
-				d_potLig[id_stream].getW()); // OK
+//			d_potForce (
+//				BLSZ_INTRPL,
+//				gridSize,
+//				streams[id_stream],
+//				stageResc.grid.inner,
+//				stageResc.grid.outer,
+//				*stageResc.lig,
+//				it->size(),
+//				d_trafoLig[id_stream].getX(),
+//				d_trafoLig[id_stream].getY(),
+//				d_trafoLig[id_stream].getZ(),
+//				d_potLig[id_stream].getX(),
+//				d_potLig[id_stream].getY(),
+//				d_potLig[id_stream].getZ(),
+//				d_potLig[id_stream].getW()); // OK
 
 
 			// Debug
@@ -374,6 +394,7 @@ public:
 	static unsigned constexpr num_streams = 1;
 	WorkerBuffer<dof_t, DeviceAllocator<dof_t>> d_dof[num_streams];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoLig[num_streams];
+	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_defoLig[num_streams];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_potLig[num_streams];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_res[num_streams];
 	WorkerBuffer<REAL, HostPinnedAllocator<REAL>> h_res[num_streams];
