@@ -7,10 +7,15 @@ __forceinline__ T lerp(T v0, T v1, T t) {
     return fma(t, v1, fma(-t, v0, v0));
 }
 
+template <typename T>
+__host__ __device__
+__forceinline__ T lerp1(T v0, T v1, T t) {
+    return t*v0+(1-t)*v1;
+}
 
 __host__ __device__
 __forceinline__ float4 lerp4f(float4 v0, float4 v1, float t) {
-    return make_float4( lerp<float>(v0.x, v1.x, t), lerp<float>(v0.y, v1.y, t), lerp<float>(v0.z, v1.z, t), lerp<float>(v0.w, v1.w, t) );
+    return make_float4( lerp1<float>(v0.x, v1.x, t), lerp1<float>(v0.y, v1.y, t), lerp1<float>(v0.z, v1.z, t), lerp1<float>(v0.w, v1.w, t) );
 }
 
 
@@ -92,7 +97,8 @@ __device__ __forceinline__ void PotForce_device(
 							&&
 							  ((x >= outer.minDim.x && x <= outer.maxDim.x)
 							&& (y >= outer.minDim.y && y <= outer.maxDim.y)
-							&& (z >= outer.minDim.z && z <= outer.maxDim.z))){
+							&& (z >= outer.minDim.z && z <= outer.maxDim.z))
+							){
 			gridForce( outer, x, y, z, idx,type,charge, data_out);
 		}
 	}
@@ -114,7 +120,7 @@ __device__ __forceinline__ void gridForce(
 
 	using real4_t = typename TypeWrapper<REAL>::real4_t;
 
-	bool test =false;
+	bool test = true;
 	if(test){
 		x = (x - grid.minDim.x) * grid.dVox_inv + 0.5f;
 		y = (y - grid.minDim.y) * grid.dVox_inv + 0.5f;
