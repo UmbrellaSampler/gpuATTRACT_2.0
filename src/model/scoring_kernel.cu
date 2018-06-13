@@ -17,58 +17,7 @@ __forceinline__ float4 lerp4f(float4 v0, float4 v1, float t) {
 template<typename REAL>
 __host__ __device__
 __forceinline__ float4 interpolate2( const d_IntrlpGrid<REAL>& grid,unsigned const type, REAL x, REAL y, REAL z, unsigned const i){
-//TEMP
-//	unsigned idxX1 = (unsigned) floor(
-//				(x - grid.minDim.x) * grid.dVox_inv);
-//		unsigned idxY1 = (unsigned) floor(
-//				(y - grid.minDim.y) * grid.dVox_inv);
-//		unsigned idxZ1 = (unsigned) floor(
-//				(z - grid.minDim.z) * grid.dVox_inv);
-//
-//		// compute absolute position of the vertices
-//		VoxelOctet<float> voxelOct;
-//		voxelOct.min.x = idxX1 * grid.dVox + grid.minDim.x;
-//		voxelOct.min.y = idxY1 * grid.dVox + grid.minDim.y;
-//		voxelOct.min.z = idxZ1 * grid.dVox + grid.minDim.z;
-//		voxelOct.max.x = voxelOct.min.x + grid.dVox;
-//		voxelOct.max.y = voxelOct.min.y + grid.dVox;
-//		voxelOct.max.z = voxelOct.min.z + grid.dVox;
-//		voxelOct.data[0][0][0] = tex3D<float4>(grid.texArrayPt[type], idxX1, idxY1, idxZ1);
-//		/** use of non-normalized coordinates */
-//
-//		float idxNx1 =  0.5 +(float) idxX1;  //
-//		float idxNy1 =  0.5 +(float) idxY1;  //
-//		float idxNz1 =  0.5 +(float) idxZ1;  //
-//
-//		float3 pos = make_float3(x, y, z);
-//			float3 pos_m_posMin ;
-//			pos_m_posMin.x = pos.x - voxelOct.min.x;
-//			pos_m_posMin.y = pos.y - voxelOct.min.y;
-//			pos_m_posMin.z = pos.z - voxelOct.min.z;
-//			float3 posMax_m_pos ;
-//			posMax_m_pos.x = voxelOct.max.x - pos.x;
-//			posMax_m_pos.y = voxelOct.max.y - pos.y;
-//			posMax_m_pos.z = voxelOct.max.z - pos.z;
-//
-//			float tmpMax_xy = (posMax_m_pos.x) * (posMax_m_pos.y);
-//			float tmpMin_xy = (pos_m_posMin.x) * (pos_m_posMin.y);
-//
-//			float4 V = voxelOct.data[0][0][0] * (tmpMax_xy * (posMax_m_pos.z))
-//					+ voxelOct.data[1][0][0]
-//							* ((pos_m_posMin.x) * (posMax_m_pos.y) * (posMax_m_pos.z))
-//					+ voxelOct.data[0][1][0]
-//							* ((posMax_m_pos.x) * (pos_m_posMin.y) * (posMax_m_pos.z))
-//					+ voxelOct.data[0][0][1] * (tmpMax_xy * (pos_m_posMin.z))
-//					+ voxelOct.data[1][0][1]
-//							* ((pos_m_posMin.x) * (posMax_m_pos.y) * (pos_m_posMin.z))
-//					+ voxelOct.data[0][1][1]
-//							* ((posMax_m_pos.x) * (pos_m_posMin.y) * (pos_m_posMin.z))
-//					+ voxelOct.data[1][1][0] * (tmpMin_xy * (posMax_m_pos.z))
-//					+ voxelOct.data[1][1][1] * (tmpMin_xy * (pos_m_posMin.z));
 
-
-
-		//TEMP
 	x = (x - grid.minDim.x) * grid.dVox_inv;
 	y = (y - grid.minDim.y) * grid.dVox_inv;
 	z = (z - grid.minDim.z) * grid.dVox_inv;
@@ -100,16 +49,7 @@ __forceinline__ float4 interpolate2( const d_IntrlpGrid<REAL>& grid,unsigned con
 						lerp4f(data[1][1][0],data[1][1][1],c),
 						b),
 					a);
-
-
-	//printf("%d %d %d %d     %f %f %f\n",i,idxX,idxY,idxZ,idxNx1,idxNy1,idxNz1);
-	//printf("%d %f \n",i,data[0][0][0].x - voxelOct.data[0][0][0].x);
-	//printf("%d %f %f\n",i,result.x, V.x);
-
-
-return result;
-
-
+	return result;
 }
 
 
@@ -142,7 +82,6 @@ __device__ __forceinline__ void PotForce_device(
 			&& (y >= inner.minDim.y && y <= inner.maxDim.y)
 			&& (z >= inner.minDim.z && z <= inner.maxDim.z))
 		{
-			//printf("inner %.20f %.20f %.20f %d\n",x,y,z,type);
 			 gridForce( inner, x, y, z,idx, type,charge, data_out);
 
 		}
@@ -154,9 +93,7 @@ __device__ __forceinline__ void PotForce_device(
 							  ((x >= outer.minDim.x && x <= outer.maxDim.x)
 							&& (y >= outer.minDim.y && y <= outer.maxDim.y)
 							&& (z >= outer.minDim.z && z <= outer.maxDim.z))){
-			//printf("outer %.20f %.20f %.20f %d\n",x,y,z,type);
 			gridForce( outer, x, y, z, idx,type,charge, data_out);
-			//printf("outer %d %.20f %.20f %.20f \n",idx ,data_out.x,data_out.y,data_out.z);
 		}
 	}
 }
@@ -184,7 +121,6 @@ __device__ __forceinline__ void gridForce(
 		z = (z - grid.minDim.z) * grid.dVox_inv + 0.5f;
 		data_out = tex3D<float4>(grid.texArrayLin[type], x, y, z); /** Interpolated value */
 
-
 		if (fabs(charge) > 0.001f) {
 			float4 V_el = tex3D<float4>(grid.texArrayLin[0], x, y, z); /** Interpolated value */
 			data_out = data_out + V_el * charge;
@@ -192,10 +128,7 @@ __device__ __forceinline__ void gridForce(
 	}else{
 
 		data_out = interpolate2(  grid, type,  x, y,  z,idx);
-		//REAL charge = prot.charge[idx % numAtoms];
 		if (fabs(charge) > 0.001f) {
-
-
 			float4 V_el = interpolate2(  grid, 0,  x, y,  z,idx);
 			data_out = data_out + V_el * charge;
 		}
@@ -229,16 +162,19 @@ __global__ void scoring_kernel(
 		auto dof = dofs[DOFidx];
 		REAL x_trafo,y_trafo,z_trafo;
 		float4 potForce{0,0,0,0};
-		d_DOFPos_device( protein, dof, idx,	type_protein,
-				 buffer_defoX[idx],  buffer_defoY[idx], buffer_defoZ[idx],
-				 x_trafo,y_trafo,z_trafo
+		d_DOFPos_device< REAL, DOF_T>( protein, dof, idx, type_protein,
+				 buffer_defoX[idx],
+				 buffer_defoY[idx],
+				 buffer_defoZ[idx],
+				 x_trafo,
+				 y_trafo,
+				 z_trafo
 				);
-		//printf("%d %f %f %f\n",idx, x_trafo,y_trafo,z_trafo);
-		PotForce_device(inner, outer, protein, numDOFs, idx, x_trafo, y_trafo, z_trafo, potForce);
+		PotForce_device( inner, outer, protein, numDOFs, idx, x_trafo, y_trafo, z_trafo, potForce );
 
-		 buffer_trafoX[idx] = x_trafo;
-		 buffer_trafoY[idx] = y_trafo;
-		 buffer_trafoZ[idx] = z_trafo;
+		buffer_trafoX[idx] = x_trafo;
+		buffer_trafoY[idx] = y_trafo;
+		buffer_trafoZ[idx] = z_trafo;
 
 		data_out_x[idx] = potForce.x;
 		data_out_y[idx] = potForce.y;

@@ -115,6 +115,8 @@ public:
 	Private() : numItemsInPipe(0) {
 		for (unsigned i = 0; i<num_streams; ++i) {
 			CUDA_CHECK(cudaStreamCreate(&streams[i]));
+			unsigned id_stream = i;
+						stream_queue.push( id_stream );
 
 		}
 	}
@@ -212,47 +214,51 @@ public:
 		auto const& stageResc = _resources[id_stream];
 		auto* const it = stageResc.item;
 
-//			for (int i = 0; i <3; i++ ){
-//				std::cout << it->inputBuffer()[i]<< std::endl;
-//			}
-
-
 		cudaVerify(cudaMemcpyAsync(d_dof[id_stream].get(0), it->inputBuffer(),
 				it->size()*sizeof(dof_t), cudaMemcpyHostToDevice, streams[id_stream]));
 
-			const unsigned numElRec = it->size()*stageResc.rec->numAtoms;
-			const unsigned numElLig = it->size()*stageResc.lig->numAtoms;
+		const unsigned numElRec = it->size()*stageResc.rec->numAtoms;
+		const unsigned numElLig = it->size()*stageResc.lig->numAtoms;
 
-			assert( numElRec <= d_trafoRec[id_stream].bufferSize() );
-			assert( numElLig <= d_trafoLig[id_stream].bufferSize() );
+		assert( numElRec <= d_trafoRec[id_stream].bufferSize() );
+		assert( numElLig <= d_trafoLig[id_stream].bufferSize() );
 
-			/* Perform cuda kernel calls */
-			size_t gridSizeRec = ( numElRec + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
-			size_t gridSizeLig = ( numElLig + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
+		/* Perform cuda kernel calls */
+		size_t gridSizeRec = ( numElRec + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
+		size_t gridSizeLig = ( numElLig + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 
 
 //			d_DOFPos(
 //				BLSZ_INTRPL,
 //				gridSizeRec,
-//				streams[2],
+//				streams[id_stream],
 //				*stageResc.rec,
-//				d_dof[pipeIdxDof[1]].get(0),
+//				d_dof[id_stream].get(0),
 //				it->size(), 0,
-//				d_defoRec[pipeIdx[1]].getX(), d_defoRec[pipeIdx[1]].getY(), d_defoRec[pipeIdx[1]].getZ(),
-//				d_trafoRec.getX(), d_trafoRec.getY(), d_trafoRec.getZ()
+//				d_defoRec[id_stream].getX(),
+//				d_defoRec[id_stream].getY(),
+//				d_defoRec[id_stream].getZ(),
+//				d_trafoRec[id_stream].getX(),
+//				d_trafoRec[id_stream].getY(),
+//				d_trafoRec[id_stream].getZ()
 //				);
 //
 //			d_DOFPos(
 //				BLSZ_INTRPL,
 //				gridSizeLig,
-//				streams[2],
+//				streams[id_stream],
 //				*stageResc.lig,
-//				d_dof[pipeIdxDof[1]].get(0),
+//				d_dof[id_stream].get(0),
 //				it->size(), 1,
-//				d_defoLig[pipeIdx[1]].getX(), d_defoLig[pipeIdx[1]].getY(), d_defoLig[pipeIdx[1]].getZ(),
-//				d_trafoLig.getX(), d_trafoLig.getY(), d_trafoLig.getZ()
+//				d_defoLig[id_stream].getX(),
+//				d_defoLig[id_stream].getY(),
+//				d_defoLig[id_stream].getZ(),
+//				d_trafoLig[id_stream].getX(),
+//				d_trafoLig[id_stream].getY(),
+//				d_trafoLig[id_stream].getZ()
 //				);
 
+//
 
 			d_score(
 				BLSZ_TRAFO,
@@ -260,10 +266,10 @@ public:
 				streams[id_stream],
 				stageResc.gridLig.inner,
 				stageResc.gridLig.outer,
-				*stageResc.lig,
+				*stageResc.rec,
 				d_dof[id_stream].get(0),
 				it->size(),
-				1,
+				0,
 				d_defoRec[id_stream].getX(),
 				d_defoRec[id_stream].getY(),
 				d_defoRec[id_stream].getZ(),
@@ -281,7 +287,7 @@ public:
 				streams[id_stream],
 				stageResc.gridRec.inner,
 				stageResc.gridRec.outer,
-				*stageResc.rec,
+				*stageResc.lig,
 				d_dof[id_stream].get(0),
 				it->size(),
 				1,
@@ -295,6 +301,7 @@ public:
 				d_potLig[id_stream].getY(),
 				d_potLig[id_stream].getZ(),
 				d_potLig[id_stream].getW());
+
 
 //			 DEBUG
 //			cudaDeviceSynchronize();
@@ -326,32 +333,32 @@ public:
 //						cudaDeviceSynchronize();
 //
 //			std::cout <<"defoRec g"<<std::endl;
-//			size_t bufferSizeDefoRec1 = d_defoRec[pipeIdx[1]].bufferSize();
+//			size_t bufferSizeDefoRec1 = d_defoRec[id_stream].bufferSize();
 //			WorkerBuffer<REAL> h_DefoRec(3,bufferSizeDefoRec1);
 //			size_t cpySizeDefoRec1 = h_DefoRec.bufferSize()*sizeof(REAL);
 //
 //			//std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
-//			cudaMemcpy(h_DefoRec.getX(),d_defoRec[pipeIdx[1]].getX(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_DefoRec.getY(),d_defoRec[pipeIdx[1]].getY(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_DefoRec.getZ(),d_defoRec[pipeIdx[1]].getZ(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_DefoRec.getX(),d_defoRec[id_stream].getX(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_DefoRec.getY(),d_defoRec[id_stream].getY(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_DefoRec.getZ(),d_defoRec[id_stream].getZ(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
 //			for(size_t i = 0; i < stageResc.rec->numAtoms; ++i) {
 //				std::cout  << std::setprecision(10)<< h_DefoRec.getX()[i] << " " << h_DefoRec.getY()[i] << " " << h_DefoRec.getZ()[i] << std::endl;
 //			}
-//
+////
 //
 //
 //
 //
 //			std::cout <<"trafo lig "<<std::endl;
-//			size_t bufferSizeTrafoLig = d_trafoLig.bufferSize();
+//			size_t bufferSizeTrafoLig = d_trafoLig[id_stream].bufferSize();
 //
 //			WorkerBuffer<REAL> h_trafoLig(3,bufferSizeTrafoLig);
 //			size_t cpySizetrafoLig = h_trafoLig.bufferSize()*sizeof(REAL);
 ////
 ////			std::cout << "bufferSize: " << bufferSizeDefoLig << " cpySize: " << cpySizeDefoLig << std::endl;
-//			cudaMemcpy(h_trafoLig.getX(),d_trafoLig.getX(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_trafoLig.getY(),d_trafoLig.getY(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_trafoLig.getZ(),d_trafoLig.getZ(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_trafoLig.getX(),d_trafoLig[id_stream].getX(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_trafoLig.getY(),d_trafoLig[id_stream].getY(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_trafoLig.getZ(),d_trafoLig[id_stream].getZ(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
 //			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
 //				std::cout  << std::setprecision(10)<<h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
 //			}
@@ -361,38 +368,38 @@ public:
 			gridSizeRec = ( numElRec + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 			gridSizeLig = ( numElLig + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 
-
+//
 //			d_potForce (
 //				BLSZ_INTRPL,
 //				gridSizeLig,
-//				streams[2],
+//				streams[id_stream],
 //				stageResc.gridRec.inner,
 //				stageResc.gridRec.outer,
 //				*stageResc.lig,
 //				it->size(),
-//				d_trafoLig.getX(),
-//				d_trafoLig.getY(),
-//				d_trafoLig.getZ(),
-//				d_potLig[pipeIdx[1]].getX(),
-//				d_potLig[pipeIdx[1]].getY(),
-//				d_potLig[pipeIdx[1]].getZ(),
-//				d_potLig[pipeIdx[1]].getW()); // OK
+//				d_trafoLig[id_stream].getX(),
+//				d_trafoLig[id_stream].getY(),
+//				d_trafoLig[id_stream].getZ(),
+//				d_potLig[id_stream].getX(),
+//				d_potLig[id_stream].getY(),
+//				d_potLig[id_stream].getZ(),
+//				d_potLig[id_stream].getW()); // OK
 //
 //			d_potForce (
 //				BLSZ_INTRPL,
 //				gridSizeRec,
-//				streams[2],
+//				streams[id_stream],
 //				stageResc.gridLig.inner,
 //				stageResc.gridLig.outer,
 //				*stageResc.rec,
 //				it->size(),
-//				d_trafoRec.getX(),
-//				d_trafoRec.getY(),
-//				d_trafoRec.getZ(),
-//				d_potRec[pipeIdx[1]].getX(),
-//				d_potRec[pipeIdx[1]].getY(),
-//				d_potRec[pipeIdx[1]].getZ(),
-//				d_potRec[pipeIdx[1]].getW()); // OK
+//				d_trafoRec[id_stream].getX(),
+//				d_trafoRec[id_stream].getY(),
+//				d_trafoRec[id_stream].getZ(),
+//				d_potRec[id_stream].getX(),
+//				d_potRec[id_stream].getY(),
+//				d_potRec[id_stream].getZ(),
+//				d_potRec[id_stream].getW()); // OK
 
 			//std::cout <<"before nl gpu" <<std::endl;
 //			cudaDeviceSynchronize();
@@ -664,9 +671,13 @@ public:
 template<typename REAL>
 auto GPUEnergyService6DModes<REAL>::createDistributor() -> distributor_t {
 	distributor_t fncObj = [this] (common_t const* common, size_t numWorkers) {
-		(void)numWorkers;
+		//(void)numWorkers;
 		std::vector<id_t> ids = {common->gridIdRec, common->gridIdLig, common->ligId, common->recId, common->tableId};
-		return this->_dataMng->getCommonDeviceIds(ids);
+		auto id = this->_dataMng->getCommonDeviceIds(ids);
+		std::vector<as::workerId_t> vec(numWorkers);
+
+		std::iota(vec.begin(), vec.end(), id[0]);
+		return vec;
 	};
 	return fncObj;
 }
@@ -675,7 +686,8 @@ template<typename REAL>
 auto GPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 	std::shared_ptr<Private> p = std::make_shared<Private>();
-	deviceId_t deviceId = _workerId++;
+	//deviceId_t deviceId = _workerId++;
+	deviceId_t deviceId = 0;
 	itemProcessor_t fncObj = [this, deviceId, p] (workItem_t* item) -> bool {
 
 		/* Set the device to work with */
@@ -692,8 +704,8 @@ auto GPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			const auto itemSize = item->size();
 			assert(itemSize > 0);
 
-			const unsigned& numAtomsRec = dI.lig->numAtoms;
-			unsigned const& numAtomsLig = dI.rec->numAtoms;
+			const unsigned& numAtomsRec = dI.rec->numAtoms;
+			unsigned const& numAtomsLig = dI.lig->numAtoms;
 			unsigned const& dofSizeRec = 13 + Common_Modes::numModesRec;
 			unsigned const& dofSizeLig = 13 + Common_Modes::numModesLig;
 

@@ -202,6 +202,7 @@ __device__ __forceinline__ void deform(
 		posAtom.y += dlig[mode] * protein.yModes[idxAtom*numModes+mode];
 		posAtom.z += dlig[mode] * protein.zModes[idxAtom*numModes+mode];
 	}
+
 	buffer_defoX = posAtom.x;
 	buffer_defoY = posAtom.y;
 	buffer_defoZ = posAtom.z;
@@ -213,7 +214,6 @@ __device__ __forceinline__ void deform(
 		REAL& buffer_defoX, REAL& buffer_defoY, REAL& buffer_defoZ,
 		typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0 )
 {
-
 }
 
 

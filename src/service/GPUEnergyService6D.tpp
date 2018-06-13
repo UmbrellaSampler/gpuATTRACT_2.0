@@ -127,12 +127,10 @@ public:
 	}
 
 	void addItemAndLigandSize(StageResource const& resc, unsigned const id_stream) {
-		//_lock.lock();
+		_lock.lock();
 		++numItemsInPipe;
-		//_lock.unlock();
-		//predicates[pipeIdx[0]][0] = true;
+		_lock.unlock();
 		resources[id_stream] = resc;
-		//stagesMngt.push(resc);
 	}
 
 	void resizeBuffersIfRequired(size_t const& numDOFs, size_t const& numAtoms, unsigned const id_stream ) {
@@ -142,17 +140,17 @@ public:
 	}
 
 	bool pipelineEmpty()  {
-		//_lock.lock();
+		_lock.lock();
 		bool tmp = numItemsInPipe;
-		//_lock.unlock();
+		_lock.unlock();
 		return tmp == 0;
 
 	}
 
 	void signalItemPassedLastStage() {
-		//_lock.lock();
+		_lock.lock();
 		--numItemsInPipe;
-		//_lock.unlock();
+		_lock.unlock();
 	}
 
 	void enqueueStream( unsigned id_stream){
