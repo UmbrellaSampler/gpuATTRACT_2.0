@@ -178,6 +178,7 @@ void d_NLPotForce(
 		const d_Protein<REAL>& rec,
 		const d_Protein<REAL>& lig,
 		const d_ParamTable<REAL>& table,
+		const double radius_cutoff,
 		const SimParam<REAL>& simParam,
 		const unsigned& numDOFs,
 		const REAL* LigPosX,

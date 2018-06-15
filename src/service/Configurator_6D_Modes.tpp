@@ -25,12 +25,14 @@
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
 #include "scoring_kernel.h"
+
 namespace as {
 
 template<typename SERVICE>
 void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 
 	/* load dataItems */
+	this->_ids.radius_cutoff = args.cutoff;
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
 	auto ligand = createProteinFromPDB<real_t>(args.ligName);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);

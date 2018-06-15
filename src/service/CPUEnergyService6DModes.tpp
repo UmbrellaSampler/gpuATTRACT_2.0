@@ -170,35 +170,36 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor via the ligand grid in the ligand system
-			potForce(
-				gridLig->inner.get(),
-				gridLig->outer.get(),
-				rec,
-				buffers->h_trafoRec.getX(),
-				buffers->h_trafoRec.getY(),
-				buffers->h_trafoRec.getZ(),
-				buffers->h_potRec.getX(), // output
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ(),
-				buffers->h_potRec.getW()
-			);
+			if ( common->radius_cutoff < 0){
+				potForce(
+					gridLig->inner.get(),
+					gridLig->outer.get(),
+					rec,
+					buffers->h_trafoRec.getX(),
+					buffers->h_trafoRec.getY(),
+					buffers->h_trafoRec.getZ(),
+					buffers->h_potRec.getX(), // output
+					buffers->h_potRec.getY(),
+					buffers->h_potRec.getZ(),
+					buffers->h_potRec.getW()
+				);
 
-			//rotate forces back into the receptor frame
+				//rotate forces back into the receptor frame
 
-			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
-			potForce(
-				gridRec->inner.get(),
-				gridRec->outer.get(),
-				lig,
-				buffers->h_trafoLig.getX(),
-				buffers->h_trafoLig.getY(),
-				buffers->h_trafoLig.getZ(),
-				buffers->h_potLig.getX(), // output
-				buffers->h_potLig.getY(),
-				buffers->h_potLig.getZ(),
-				buffers->h_potLig.getW()
-			); // OK
-
+				// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
+				potForce(
+					gridRec->inner.get(),
+					gridRec->outer.get(),
+					lig,
+					buffers->h_trafoLig.getX(),
+					buffers->h_trafoLig.getY(),
+					buffers->h_trafoLig.getZ(),
+					buffers->h_potLig.getX(), // output
+					buffers->h_potLig.getY(),
+					buffers->h_potLig.getZ(),
+					buffers->h_potLig.getW()
+				); // OK
+			}
 //			exit(EXIT_SUCCESS);
 //			std::cout <<"before nl" <<std::endl;
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
@@ -214,6 +215,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig,
 				simParams,
 				table,
+				common->radius_cutoff,
 				buffers->h_defoRec.getX(),
 				buffers->h_defoRec.getY(),
 				buffers->h_defoRec.getZ(),
@@ -232,6 +234,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				rec,
 				simParams,
 				table,
+				common->radius_cutoff,
 				buffers->h_defoLig.getX(),
 				buffers->h_defoLig.getY(),
 				buffers->h_defoLig.getZ(),

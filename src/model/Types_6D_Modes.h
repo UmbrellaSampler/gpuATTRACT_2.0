@@ -40,7 +40,10 @@ struct DOF_6D_Modes {
 
 };
 
+
 struct Common_Modes {
+	using real_t =  double;
+	using vec3_t = Vec3<real_t>;
 	id_t gridIdRec;
 	id_t gridIdLig;
 	id_t ligId;
@@ -49,6 +52,10 @@ struct Common_Modes {
 	id_t paramsId;
 	static unsigned int numModesRec;
 	static unsigned int numModesLig;
+	vec3_t pivotRec;
+	vec3_t pivotLig;
+	real_t radius_cutoff;
+
 };
 
 template<typename REAL>

@@ -187,6 +187,7 @@ public:
 
 			auto const& stageResc = resources[id_stream];
 			auto* const it = stageResc.item;
+			const auto common = it->common();
 			const unsigned numEl = it->size()*stageResc.lig->numAtoms;
 			assert(numEl <= bufferSize( id_stream ));
 
@@ -214,6 +215,7 @@ public:
 				d_dof[id_stream].get(0),
 				it->size(),
 				1,
+				common->radius_cutoff,
 				ptr,
 				ptr,
 				ptr,
@@ -301,6 +303,7 @@ public:
 				*stageResc.rec,
 				*stageResc.lig,
 				*stageResc.table,
+				common->radius_cutoff,
 				*stageResc.simParam,
 				it->size(),
 				d_trafoLig[id_stream].getX(),

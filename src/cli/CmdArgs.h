@@ -40,6 +40,7 @@ public:
 	std::string precision;
 	std::string dielec;
 	double epsilon;
+	double cutoff;
 
 	/* Minimization */
 	std::string solver;

@@ -57,6 +57,7 @@ void TwoBodyParser::addOptions() noexcept {
       ("numModes", po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes")
 			("dielec", po::value<string>()->default_value(SIM_DEFAULT_DIELEC),
 					descriptionWithOptions("dielectric behavior", SIM_ALLOWED_DIELEC).c_str())
+			("cutoff", po::value<double>()->default_value(DEFAULT_CUTOFF), "squared cutoff radius in angstroem. Beyond this radius interactions are neglected. If set to -1 (default), no cutoff is used.")
 			("epsilon", po::value<double>()->default_value(SIM_DEFAULT_EPSILON), "dielectric constant");
 	_optsDesc.add(sim);
 
@@ -114,6 +115,8 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->epsilon = vm["epsilon"].as<double>();
 	if(vm.count("numModes"))
 		_args->numModes = vm["numModes"].as<int>();
+	if(vm.count("cutoff"))
+		_args->cutoff= vm["cutoff"].as<double>();
 
 }
 

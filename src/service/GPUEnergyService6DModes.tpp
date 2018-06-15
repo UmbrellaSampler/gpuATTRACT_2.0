@@ -213,7 +213,7 @@ public:
 
 		auto const& stageResc = _resources[id_stream];
 		auto* const it = stageResc.item;
-
+		const auto common = it->common();
 		cudaVerify(cudaMemcpyAsync(d_dof[id_stream].get(0), it->inputBuffer(),
 				it->size()*sizeof(dof_t), cudaMemcpyHostToDevice, streams[id_stream]));
 
@@ -270,6 +270,7 @@ public:
 				d_dof[id_stream].get(0),
 				it->size(),
 				0,
+				common->radius_cutoff,
 				d_defoRec[id_stream].getX(),
 				d_defoRec[id_stream].getY(),
 				d_defoRec[id_stream].getZ(),
@@ -291,6 +292,7 @@ public:
 				d_dof[id_stream].get(0),
 				it->size(),
 				1,
+				common->radius_cutoff,
 				d_defoLig[id_stream].getX(),
 				d_defoLig[id_stream].getY(),
 				d_defoLig[id_stream].getZ(),
@@ -424,6 +426,7 @@ public:
 				*stageResc.rec,
 				*stageResc.lig,
 				*stageResc.table,
+				common->radius_cutoff,
 
 				*stageResc.simParam,
 				it->size(),
@@ -449,7 +452,7 @@ public:
 				*stageResc.lig,
 				*stageResc.rec,
 				*stageResc.table,
-
+				common->radius_cutoff,
 				*stageResc.simParam,
 				it->size(),
 				d_defoLig[id_stream].getX(),

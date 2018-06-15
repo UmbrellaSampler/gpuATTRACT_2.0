@@ -36,12 +36,18 @@ struct DOF_6D {
 	vec3_t ang;
 };
 
+
 struct Common {
+	using real_t = double;
+	using vec3_t = Vec3<real_t>;
 	id_t gridId;
 	id_t ligId;
 	id_t recId;
 	id_t tableId;
 	id_t paramsId;
+	vec3_t pivotRec;
+	vec3_t pivotLig;
+	real_t radius_cutoff;
 };
 
 template<typename REAL>
