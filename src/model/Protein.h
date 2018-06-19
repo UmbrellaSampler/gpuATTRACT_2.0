@@ -146,6 +146,14 @@ public:
 
 	void print(int numEl) const;
 
+	void setOrigin( bool isOrigin ){
+		_isOrigin = isOrigin;
+	}
+
+	bool getOrigin(){
+		return _isOrigin;
+	}
+
 protected:
 	std::string _tag;	/** identifier: filename (default) */
 	unsigned _numAtoms; /** number of atoms/particles */
@@ -159,6 +167,7 @@ protected:
 	type_t* _mappedTypes; /* for receptor grid mapping */
 
 	REAL* _charge;	/** charge of the atoms/particle */
+	bool _isOrigin;
 
 	unsigned _numModes; /** number of modes */
 	REAL* _modes; /** normal mode deformation vectors */

@@ -77,6 +77,7 @@ __global__ void d_rotateForces(
 
 
 
+
 template<typename REAL>
 void d_rotateForces(
 		unsigned blockSize,

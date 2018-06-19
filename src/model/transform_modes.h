@@ -158,6 +158,7 @@ void h_DOFPos(
  * they have to be rotated back into the global/receptor system which is what this function does
  */
 
+
 template<typename REAL>
 void rotate_forces(
 		Vec3<REAL> const& ang,
@@ -182,6 +183,23 @@ void rotate_forces(
 }
 
 #ifdef CUDA
+
+template<typename REAL, typename DOF_T>
+__forceinline__ __device__ void device_rotateForces(
+		REAL& xForce, REAL& yForce, REAL& zForce,
+		DOF_6D_Modes<REAL> const dof, typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0)
+{
+	REAL xf = xForce,yf = yForce,zf = zForce;
+	const RotMat<REAL> rotMat = euler2rotmat( dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z );
+	xForce = rotMat[0] * xf + rotMat[1] * yf + rotMat[2] * zf;
+	yForce = rotMat[3] * xf + rotMat[4] * yf + rotMat[5] * zf;
+	zForce = rotMat[6] * xf + rotMat[7] * yf + rotMat[8] * zf;
+}
+
+template<typename REAL, typename DOF_T>
+__forceinline__ __device__ void device_rotateForces(
+		REAL& xForce, REAL& yForce, REAL& zForce,
+		DOF_6D<REAL> const dof, typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0){}
 
 template <typename REAL, typename DOF_T>
 __device__ __forceinline__ void deform(

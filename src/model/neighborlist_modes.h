@@ -354,7 +354,7 @@ void NLPotForce(
 }
 #ifdef CUDA
 
-template<typename REAL, typename DOFT_T>
+template<typename REAL, typename DOF_T>
 void d_NLPotForce(
 		unsigned blockSize,
 		unsigned gridSize,
@@ -363,6 +363,7 @@ void d_NLPotForce(
 		const d_Protein<REAL>& rec,
 		const d_Protein<REAL>& lig,
 		const d_ParamTable<REAL>& table,
+		const DOF_T* dofs,
 		const double radius_cutoff,
 		const SimParam<REAL>& simParam,
 		const unsigned& numDOFs,

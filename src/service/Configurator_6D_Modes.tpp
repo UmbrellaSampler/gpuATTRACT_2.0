@@ -57,7 +57,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	ligand->getOrCreateMappedPtr();
 	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
 	applyMapping(typeMapRec, ligand->numAtoms(), ligand->type(), ligand->mappedType());
-
+	receptor->setOrigin( true );
+	ligand->setOrigin( false );
 
 	/* read dof file */
 	DOFHeader<real_t> h = readDOFHeader<real_t>(args.dofName);

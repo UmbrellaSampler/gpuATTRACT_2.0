@@ -15,6 +15,7 @@
 #include "forcefield.h"
 #include "macros.h"
 #include "Types_6D_Modes.h"
+#include "transform_modes.h"
 
 namespace as {
 
@@ -29,6 +30,7 @@ __global__ void d_NLPotForce(
 		const d_Protein<REAL> rec,
 		const d_Protein<REAL> lig,
 		const d_ParamTable<REAL> table,
+		const DOF_T* dofs,
 		const double radius_cutoff,
 		const SimParam<REAL> simParam,
 		const unsigned numDOFs,
@@ -187,10 +189,16 @@ __global__ void d_NLPotForce(
 
 				/* store results back to global memory */
 				if (nDesc.x > 0) {
+					fAcc.x = fAcc.x + outLig_fx[i];
+					fAcc.y = fAcc.y + outLig_fy[i];
+					fAcc.z = fAcc.z + outLig_fz[i];
+					if(lig.isOrigin ){
+						device_rotateForces<REAL, DOF_T>( fAcc.x, fAcc.y, fAcc.z, dofs[i/LigNumEl] );
+					}
+					outLig_fx[i] = fAcc.x;
+					outLig_fy[i] = fAcc.y;
+					outLig_fz[i] = fAcc.z;
 
-					outLig_fx[i] += fAcc.x;
-					outLig_fy[i] += fAcc.y;
-					outLig_fz[i] += fAcc.z;
 					outLigand_E[i] += eAcc;
 				}
 			}
@@ -210,6 +218,7 @@ void d_NLPotForce(
 		const d_Protein<REAL>& rec,
 		const d_Protein<REAL>& lig,
 		const d_ParamTable<REAL>& table,
+		const DOF_T* dofs,
 		const double radius_cutoff,
 		const SimParam<REAL>& simParam,
 		const unsigned& numDOFs,
@@ -230,6 +239,7 @@ void d_NLPotForce(
 				rec,
 				lig,
 				table,
+				dofs,
 				radius_cutoff,
 				simParam,
 				numDOFs,
@@ -256,6 +266,7 @@ void d_NLPotForce<float, DOF_6D_Modes<float>>(
 		const d_Protein<float>& rec,
 		const d_Protein<float>& lig,
 		const d_ParamTable<float>& table,
+		const DOF_6D_Modes<float>* dofs,
 		const double radius_cutoff,
 		const SimParam<float>& simParam,
 		const unsigned& numDOFs,
@@ -280,6 +291,7 @@ void d_NLPotForce<double, DOF_6D_Modes<double>>(
 		const d_Protein<double>& rec,
 		const d_Protein<double>& lig,
 		const d_ParamTable<double>& table,
+		const DOF_6D_Modes<double>* dofs,
 		const double radius_cutoff,
 		const SimParam<double>& simParam,
 		const unsigned& numDOFs,
@@ -304,6 +316,7 @@ void d_NLPotForce<float, DOF_6D<float>>(
 		const d_Protein<float>& rec,
 		const d_Protein<float>& lig,
 		const d_ParamTable<float>& table,
+		const DOF_6D<float>* dofs,
 		const double radius_cutoff,
 		const SimParam<float>& simParam,
 		const unsigned& numDOFs,
@@ -328,6 +341,7 @@ void d_NLPotForce<double, DOF_6D<double>>(
 		const d_Protein<double>& rec,
 		const d_Protein<double>& lig,
 		const d_ParamTable<double>& table,
+		const DOF_6D<double>* dofs,
 		const double radius_cutoff,
 		const SimParam<double>& simParam,
 		const unsigned& numDOFs,
