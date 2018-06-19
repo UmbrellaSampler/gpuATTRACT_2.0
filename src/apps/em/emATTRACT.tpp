@@ -53,8 +53,19 @@ void emATTRACT<GenericTypes>::run() {
 	auto results_dof = requestHandler.getResultStates();
 	int count = 0;
 	//for (auto const res : results_dof) {
+	std::cout << "#pivot 1 " << common.pivotRec.x << " " << common.pivotRec.y << " " << common.pivotRec.z << std::endl;
+	std::cout << "#pivot 2 " << common.pivotLig.x << " " << common.pivotLig.y << " " << common.pivotLig.z << std::endl;
+	std::cout << "#centered receptor: false "<< std::endl;
+	std::cout << "#centered ligand: false "<< std::endl;
 	for( int i = 0; i< results_dof.size();i++){
-		std::cout << results_grad[i].get_Energy() << std::endl;
+		std::cout << "#"<< i+i << std::endl;
+		std::cout << "## Energy: " << results_grad[i].get_Energy() << std::endl;
+		auto pos = results_dof[i].get_pos();
+		pos.x += common.pivotRec.x - common.pivotLig.x;
+		pos.y += common.pivotRec.y - common.pivotLig.y;
+		pos.z += common.pivotRec.z - common.pivotLig.z;
+		results_dof[i].set_pos(pos.x,pos.y,pos.z );
+
 		std::cout << results_dof[i] << std::endl;
 
 	}

@@ -81,17 +81,17 @@ void reduceModeForce(
 template<typename REAL>
 void correctModeForce(
 		const REAL* modeForceConstant,
+		const double modeForceFactor,
 		unsigned const& numModes,
 		const REAL* dlig,
 		REAL* delta
 		)
 {
-	constexpr REAL factor = 4.0;
-	constexpr int exp = 3;
-	REAL counterForce;
 
+	REAL counterForce;
+	constexpr int exp = 3;
 	for(int mode = 0; mode < numModes; mode++){
-		counterForce=factor*modeForceConstant[mode]*pow(dlig[mode],exp);
+		counterForce=4.0*modeForceFactor*modeForceConstant[mode]*pow(dlig[mode],exp);
 		delta[mode]=delta[mode]+counterForce;
 	}
 }
@@ -99,6 +99,7 @@ void correctModeForce(
 template<typename REAL>
 REAL getModeEngergy(
 		const REAL* modeForceConstant,
+		const double modeForceFactor,
 		unsigned const& numModes,
 		const REAL* dlig
 		)
@@ -106,7 +107,7 @@ REAL getModeEngergy(
 	constexpr int exp = 4;
 	REAL energy = 0;
 	for(int mode = 0; mode < numModes; mode++){
-		energy += modeForceConstant[mode]*pow(dlig[mode],exp);
+		energy += modeForceFactor*modeForceConstant[mode]*pow(dlig[mode],exp);
 	}
 	return energy;
 }
@@ -131,6 +132,7 @@ void h_finalReduce(
 			const unsigned& numDOFs,
 			d_Protein<REAL>* protein,
 			DOF_6D_Modes<REAL>* dofs,
+			double modeForceFactor,
 			const REAL* deviceOut,
 			Result_6D_Modes<REAL>* enGrads)
 {
@@ -190,6 +192,7 @@ void h_finalReduce(
 				}
 				correctModeForce(
 					protein->modeForce,
+					modeForceFactor,
 					protein->numModes,
 					dof.modesLig,
 					enGrad.modesLig
@@ -197,6 +200,7 @@ void h_finalReduce(
 
 
 				enGrad._6D.E += getModeEngergy(protein->modeForce,
+						modeForceFactor,
 					protein->numModes,
 					dof.modesLig
 					);
@@ -207,12 +211,14 @@ void h_finalReduce(
 				}
 				correctModeForce(
 					protein->modeForce,
+					modeForceFactor,
 					protein->numModes,
 					dof.modesRec,
 					enGrad.modesRec
 					);
 
 				enGrad._6D.E += getModeEngergy(protein->modeForce,
+						modeForceFactor,
 					protein->numModes,
 					dof.modesRec
 					);

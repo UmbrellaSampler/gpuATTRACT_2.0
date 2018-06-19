@@ -34,6 +34,13 @@ struct DOF_6D {
 	using vec3_t = Vec3<real_t>;
 	vec3_t pos;
 	vec3_t ang;
+	vec3_t get_pos(){
+		return pos;
+	}
+	void set_pos( real_t x, real_t y, real_t z ){
+		pos = vec3_t( x,y,z );
+	}
+
 };
 
 

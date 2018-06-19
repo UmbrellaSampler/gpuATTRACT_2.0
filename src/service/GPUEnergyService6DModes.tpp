@@ -618,6 +618,7 @@ public:
 				it->size(),
 				stageResc.lig,
 				it->inputBuffer(),
+				common->modeForceFactor,
 				h_resLig[id_stream].get(0),
 				it->resultBuffer());
 				nvtxRangePop();
@@ -626,7 +627,9 @@ public:
 				it->size(),
 				stageResc.rec,
 				it->inputBuffer(),
+				common->modeForceFactor,
 				h_resRec[id_stream].get(0),
+
 				it->resultBuffer());
 			nvtxRangePop();
 

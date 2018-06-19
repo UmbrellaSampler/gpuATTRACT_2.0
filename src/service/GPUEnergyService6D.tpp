@@ -28,6 +28,7 @@
 
 #include "transform.h"
 #include "interpolation.h"
+#include "scoring_kernel.h"
 #include "neighborlist.h"
 #include "reduction.h"
 
@@ -37,7 +38,7 @@
 #include <iostream>
 #include <mutex>
 #include "ThreadSafeQueue.h"
-#include "scoring_kernel.h"
+
 //#include "cudaProfiler.h"
 
 namespace as {

@@ -31,6 +31,8 @@ std::ostream& operator<<(std::ostream& s, CmdArgs const& args) {
 	s << "dielec          = "  << args.dielec              << endl;
 	s << "numModes        = "  << args.numModes		   	   << endl;
 	s << "cutoff 		  = "  << args.cutoff			   << endl;
+	s << "modeForceFactor = "  << args.modeForceFac		   << endl;
+
 	s << "epsilon         = "  << args.epsilon;
 
 	return s;

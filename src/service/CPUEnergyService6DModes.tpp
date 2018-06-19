@@ -323,12 +323,14 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 			correctModeForce(
 				rec->modeForce(),
+				common->modeForceFactor,
 				rec-> numModes(),
 				dof.modesRec,
 				enGrad.modesRec
 				);
 			correctModeForce(
 				lig-> modeForce(),
+				common->modeForceFactor,
 				lig-> numModes(),
 				dof.modesLig,
 				enGrad.modesLig
@@ -336,11 +338,13 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 
 			double modeEnergyLigand = getModeEngergy(lig->modeForce(),
+					common->modeForceFactor,
 					lig->numModes(),
 					dof.modesLig
 					);
 
 			double modeEnergyReceptor = getModeEngergy(rec->modeForce(),
+					common->modeForceFactor,
 					rec->numModes(),
 					dof.modesRec
 					);

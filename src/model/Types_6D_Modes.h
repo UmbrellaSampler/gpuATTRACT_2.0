@@ -37,6 +37,12 @@ struct DOF_6D_Modes {
 	DOF_6D<real_t> _6D;
 	real_t modesRec[MODES_MAX_NUMBER];
 	real_t modesLig[MODES_MAX_NUMBER];
+	vec3_t get_pos(){
+		return _6D.pos;
+	}
+	void set_pos(real_t x, real_t y, real_t z){
+		_6D.pos = vec3_t(x,y,z);
+	}
 
 };
 
@@ -55,6 +61,7 @@ struct Common_Modes {
 	vec3_t pivotRec;
 	vec3_t pivotLig;
 	real_t radius_cutoff;
+	real_t modeForceFactor;
 
 };
 

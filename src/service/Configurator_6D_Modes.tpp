@@ -33,6 +33,7 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 
 	/* load dataItems */
 	this->_ids.radius_cutoff = args.cutoff;
+	this->_ids.modeForceFactor = args.modeForceFac;
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
 	auto ligand = createProteinFromPDB<real_t>(args.ligName);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);

@@ -58,6 +58,7 @@ void TwoBodyParser::addOptions() noexcept {
 			("dielec", po::value<string>()->default_value(SIM_DEFAULT_DIELEC),
 					descriptionWithOptions("dielectric behavior", SIM_ALLOWED_DIELEC).c_str())
 			("cutoff", po::value<double>()->default_value(DEFAULT_CUTOFF), "squared cutoff radius in angstroem. Beyond this radius interactions are neglected. If set to -1 (default), no cutoff is used.")
+			("modeForceFac", po::value<double>()->default_value(DEFAULT_MODEFORCEFAC), "This factor is multiplied with the quadratic mode energy, determining the deformation energy.")
 			("epsilon", po::value<double>()->default_value(SIM_DEFAULT_EPSILON), "dielectric constant");
 	_optsDesc.add(sim);
 
@@ -117,6 +118,8 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->numModes = vm["numModes"].as<int>();
 	if(vm.count("cutoff"))
 		_args->cutoff= vm["cutoff"].as<double>();
+	if(vm.count("modeForceFac"))
+		_args->modeForceFac= vm["modeForceFac"].as<double>();
 
 }
 

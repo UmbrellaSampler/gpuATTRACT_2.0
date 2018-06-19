@@ -177,8 +177,9 @@ __global__ void scoring_kernel(
 				 y_trafo,
 				 z_trafo
 				);
-		PotForce_device( inner, outer, protein, numDOFs, idx, x_trafo, y_trafo, z_trafo, potForce );
-
+		if( radius_cutoff < 0){
+			PotForce_device( inner, outer, protein, numDOFs, idx, x_trafo, y_trafo, z_trafo, potForce );
+		}
 		buffer_trafoX[idx] = x_trafo;
 		buffer_trafoY[idx] = y_trafo;
 		buffer_trafoZ[idx] = z_trafo;
