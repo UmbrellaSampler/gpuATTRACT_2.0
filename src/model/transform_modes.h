@@ -186,20 +186,22 @@ void rotate_forces(
 
 template<typename REAL, typename DOF_T>
 __forceinline__ __device__ void device_rotateForces(
-		REAL& xForce, REAL& yForce, REAL& zForce,
+		REAL xForce, REAL yForce, REAL zForce, REAL *out_xForce, REAL* out_yForce, REAL* out_zForce,
 		DOF_6D_Modes<REAL> const dof, typename std::enable_if<std::is_same< DOF_T, DOF_6D_Modes<REAL> >::value, void>::type* dummy = 0)
 {
-	REAL xf = xForce,yf = yForce,zf = zForce;
+	printf("hello\n");
+	//REAL xf = xForce,yf = yForce,zf = zForce;
+	printf("ad%f\n",dof._6D.ang.x);
 	const RotMat<REAL> rotMat = euler2rotmat( dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z );
-	xForce = rotMat[0] * xf + rotMat[1] * yf + rotMat[2] * zf;
-	yForce = rotMat[3] * xf + rotMat[4] * yf + rotMat[5] * zf;
-	zForce = rotMat[6] * xf + rotMat[7] * yf + rotMat[8] * zf;
+	*out_xForce = rotMat[0] * xForce + rotMat[1] * yForce + rotMat[2] * zForce;
+	*out_yForce = rotMat[3] * xForce + rotMat[4] * yForce + rotMat[5] * zForce;
+	*out_zForce = rotMat[6] * xForce + rotMat[7] * yForce + rotMat[8] * zForce;
 }
 
 template<typename REAL, typename DOF_T>
 __forceinline__ __device__ void device_rotateForces(
-		REAL& xForce, REAL& yForce, REAL& zForce,
-		DOF_6D<REAL> const dof, typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0){}
+		REAL xForce, REAL yForce, REAL zForce, REAL* out_xForce, REAL* out_yForce, REAL* out_zForce,
+		DOF_6D<REAL> const dof, typename std::enable_if<std::is_same< DOF_T, DOF_6D<REAL> >::value, void>::type* dummy = 0){printf(" adfsaf");}
 
 template <typename REAL, typename DOF_T>
 __device__ __forceinline__ void deform(

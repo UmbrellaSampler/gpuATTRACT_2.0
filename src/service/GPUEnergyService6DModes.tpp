@@ -471,17 +471,17 @@ public:
 //
 
 
-//			d_rotateForces(
-//				BLSZ_INTRPL,
-//				gridSizeRec,
-//				streams[id_stream],
-//				d_potRec[id_stream].getX(),
-//				d_potRec[id_stream].getY(),
-//				d_potRec[id_stream].getZ(),
-//				d_dof[id_stream].get(0),
-//				stageResc.rec->numAtoms,
-//				it->size()
-//				);
+			d_rotateForces(
+				BLSZ_INTRPL,
+				gridSizeRec,
+				streams[id_stream],
+				d_potRec[id_stream].getX(),
+				d_potRec[id_stream].getY(),
+				d_potRec[id_stream].getZ(),
+				d_dof[id_stream].get(0),
+				stageResc.rec->numAtoms,
+				it->size()
+				);
 //			std::cout <<"after nl"<< std::endl;
 //			cudaDeviceSynchronize();
 //			WorkerBuffer<REAL> h_potLig1(4,stageResc.lig->numAtoms);

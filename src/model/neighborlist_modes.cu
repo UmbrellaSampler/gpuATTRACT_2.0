@@ -48,6 +48,7 @@ __global__ void d_NLPotForce(
 	using real3_t = typename TypeWrapper<REAL>::real3_t;
 	const unsigned i = blockDim.x * blockIdx.x + threadIdx.x;
 	const unsigned LigNumEl = lig.numAtoms;
+	const unsigned idx_dof = i / LigNumEl;
 	if (i < LigNumEl*numDOFs) {
 		const unsigned LigAttrIdx = i % LigNumEl;
 		unsigned recBase = 0;
@@ -100,7 +101,7 @@ __global__ void d_NLPotForce(
 
 					const REAL dr2 = dx * dx + dy * dy + dz * dz;
 					const REAL dPlateau2 = grid.dPlateau2;
-					if ((dr2) > dPlateau2) {
+					if ((dr2) > dPlateau2  || (radius_cutoff > 0 && radius_cutoff > dr2)) {
 						continue;
 					}
 
@@ -189,15 +190,16 @@ __global__ void d_NLPotForce(
 
 				/* store results back to global memory */
 				if (nDesc.x > 0) {
-					fAcc.x = fAcc.x + outLig_fx[i];
-					fAcc.y = fAcc.y + outLig_fy[i];
-					fAcc.z = fAcc.z + outLig_fz[i];
-					if(lig.isOrigin ){
-						device_rotateForces<REAL, DOF_T>( fAcc.x, fAcc.y, fAcc.z, dofs[i/LigNumEl] );
-					}
-					outLig_fx[i] = fAcc.x;
-					outLig_fy[i] = fAcc.y;
-					outLig_fz[i] = fAcc.z;
+//					fAcc.x = fAcc.x + outLig_fx[i];
+//					fAcc.y = fAcc.y + outLig_fy[i];
+//					fAcc.z = fAcc.z + outLig_fz[i];
+//					if(lig.isOrigin ){
+//
+//						device_rotateForces<REAL, DOF_T>( fAcc.x, fAcc.y, fAcc.z,outLig_fx + i,outLig_fy + i,outLig_fz + i, dofs[idx_dof] );
+//					}
+					outLig_fx[i] += fAcc.x;
+					outLig_fy[i] += fAcc.y;
+					outLig_fz[i] += fAcc.z;
 
 					outLigand_E[i] += eAcc;
 				}
