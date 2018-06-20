@@ -26,9 +26,10 @@ std::ostream& operator<<(std::ostream& outStream, DOF_6D<REAL> const& dof)
 	outStream.precision(3);
 
 	int w = 13;
-	outStream 	<< setw(w) << "DOF"
-				<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z
-				<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z;
+	//	<< setw(w) << "DOF"
+				outStream 		<< setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << 0 << setw(w) << std::endl;
+				outStream	<< setw(w) << dof.ang.x << setw(w) << dof.ang.y << setw(w) << dof.ang.z	<< setw(w) << dof.pos.x << setw(w) << dof.pos.y << setw(w) << dof.pos.z;
+
 
 	outStream.precision(precisionSetting);
 	outStream.flags(flagSettings);
@@ -55,8 +56,9 @@ std::ostream& operator<<(std::ostream& s, Result_6D<REAL> const& enGrad) {
 	s.setf(ios::scientific);
 	s.precision(8);
 	int width = 20;
-	s << " Gradients: "
-			<< setw(width) << enGrad.ang.x  << setw(width) << enGrad.ang.y  << setw(width) << enGrad.ang.z
+	//s << " Gradients: "
+			s << setw(width) << 0 << setw(width) << 0 << setw(width) << 0 << setw(width) << 0 << setw(width) << 0 << setw(width) << 0 << setw(width) << std::endl;
+		s	<< setw(width) << enGrad.ang.x  << setw(width) << enGrad.ang.y  << setw(width) << enGrad.ang.z
 			<< setw(width) << enGrad.pos.x  << setw(width) << enGrad.pos.y  << setw(width) << enGrad.pos.z;
 	s.unsetf(ios::scientific);
 

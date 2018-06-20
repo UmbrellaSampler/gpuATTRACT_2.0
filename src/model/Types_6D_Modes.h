@@ -37,6 +37,14 @@ struct DOF_6D_Modes {
 	DOF_6D<real_t> _6D;
 	real_t modesRec[MODES_MAX_NUMBER];
 	real_t modesLig[MODES_MAX_NUMBER];
+	vec3_t get_pos(){
+			return (_6D.pos);
+		}
+		void set_pos(real_t x,real_t y,real_t z ){
+			_6D.pos.x = x;
+			_6D.pos.y = y;
+			_6D.pos.z = z;
+					}
 
 };
 
@@ -49,6 +57,10 @@ struct Common_Modes {
 	id_t paramsId;
 	static unsigned int numModesRec;
 	static unsigned int numModesLig;
+	Vec3<double> pivotRec;
+			Vec3<double> pivotLig;
+			bool centeredLig;
+			bool centeredRec;
 };
 
 template<typename REAL>

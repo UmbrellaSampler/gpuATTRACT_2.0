@@ -114,7 +114,7 @@ __device__ __forceinline__ void gridForce(
 
 	using real4_t = typename TypeWrapper<REAL>::real4_t;
 
-	bool test =false;
+	bool test =true;
 	if(test){
 		x = (x - grid.minDim.x) * grid.dVox_inv + 0.5f;
 		y = (y - grid.minDim.y) * grid.dVox_inv + 0.5f;

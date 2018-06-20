@@ -34,6 +34,14 @@ struct DOF_6D {
 	using vec3_t = Vec3<real_t>;
 	vec3_t pos;
 	vec3_t ang;
+	vec3_t get_pos(){
+			return (pos);
+		}
+		void set_pos(real_t x,real_t y,real_t z ){
+			pos.x = x;
+			pos.y = y;
+			pos.z = z;
+					}
 };
 
 struct Common {
@@ -42,6 +50,10 @@ struct Common {
 	id_t recId;
 	id_t tableId;
 	id_t paramsId;
+	Vec3<double> pivotRec;
+			Vec3<double> pivotLig;
+			bool centeredLig;
+			bool centeredRec;
 };
 
 template<typename REAL>

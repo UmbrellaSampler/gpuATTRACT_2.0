@@ -13,7 +13,7 @@
 #include "Configurator_6D.h"
 #include "Request.h"
 #include "Server.h"
-
+#include <chrono>
 namespace as {
 
 template<typename GenericTypes>
@@ -37,12 +37,18 @@ void scATTRACT<GenericTypes>::run() {
 	auto& common = _config->common();
 	size_t numDofs = dofs.size();
 	auto request = std::make_shared<Request<input_t, common_t>>( Request<input_t, common_t>(dofs.data(), numDofs, common) );
+	auto start = std::chrono::system_clock::now();
+
+	/* do some work */
+
 
 	server->submit(request);
 
 	auto results = std::vector<result_t>(dofs.size());
 	server->wait(request, results.data());
+	auto end = std::chrono::system_clock::now();
 
+	std::cout << "time"<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
 	for (result_t const res : results) {
 		std::cout << res << std::endl;
 	}

@@ -368,7 +368,7 @@ public:
 			gridSizeRec = ( numElRec + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 			gridSizeLig = ( numElLig + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 
-//
+
 //			d_potForce (
 //				BLSZ_INTRPL,
 //				gridSizeLig,

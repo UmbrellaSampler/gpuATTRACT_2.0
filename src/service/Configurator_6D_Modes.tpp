@@ -134,7 +134,13 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	auto gridLig = createGridFromGridFile<real_t>(args.gridLigName);
 	gridLig->translate(-make_real3(ligand->pivot().x,ligand->pivot().y,ligand->pivot().z));
 	this->_ids.gridIdLig = dataManager->add(gridLig);
+	this->_ids.pivotRec.x =  receptor->pivot().x;
+		this->_ids.pivotRec.y =  receptor->pivot().y;
+		this->_ids.pivotRec.z =  receptor->pivot().z;
 
+		this->_ids.pivotLig.x =  ligand->pivot().x;
+		this->_ids.pivotLig.y =  ligand->pivot().y;
+		this->_ids.pivotLig.z =  ligand->pivot().z;
 
 #ifdef CUDA
 	if (args.deviceIds.size() > 0) {

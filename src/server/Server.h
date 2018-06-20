@@ -36,7 +36,7 @@ class WorkerManager;
 template<typename T>
 class ThreadSafeQueue;
 
-constexpr unsigned DEFAULT_ITEM_SIZE = 100;
+constexpr unsigned DEFAULT_ITEM_SIZE = 1000;
 constexpr unsigned MAX_WAIT_MILLISECONDS = 200000;
 
 template<typename GenericTypes>
