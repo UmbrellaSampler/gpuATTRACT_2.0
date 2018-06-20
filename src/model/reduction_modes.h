@@ -91,7 +91,7 @@ void correctModeForce(
 	REAL counterForce;
 	constexpr int exp = 3;
 	for(int mode = 0; mode < numModes; mode++){
-		counterForce=4.0*modeForceFactor*modeForceConstant[mode]*pow(dlig[mode],exp);
+		counterForce=4.0*modeForceConstant[mode]*pow(dlig[mode],exp);
 		delta[mode]=delta[mode]+counterForce;
 	}
 }
@@ -107,7 +107,7 @@ REAL getModeEngergy(
 	constexpr int exp = 4;
 	REAL energy = 0;
 	for(int mode = 0; mode < numModes; mode++){
-		energy += modeForceFactor*modeForceConstant[mode]*pow(dlig[mode],exp);
+		energy += modeForceConstant[mode]*pow(dlig[mode],exp);
 	}
 	return energy;
 }

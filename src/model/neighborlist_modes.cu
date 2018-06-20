@@ -101,7 +101,7 @@ __global__ void d_NLPotForce(
 
 					const REAL dr2 = dx * dx + dy * dy + dz * dz;
 					const REAL dPlateau2 = grid.dPlateau2;
-					if ((dr2) > dPlateau2  || (radius_cutoff > 0 && radius_cutoff > dr2)) {
+					if ((dr2) > dPlateau2  ) {
 						continue;
 					}
 

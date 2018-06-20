@@ -58,7 +58,7 @@ void scATTRACT<GenericTypes>::run() {
 	for (result_t const res : results) {
 		std::cout << res << std::endl;
 	}
-std::cout << "elapsed time(ms): "<< std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()<<std::endl;
+//std::cout << "elapsed time(ms): "<< std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()<<std::endl;
 }
 
 }  // namespace as

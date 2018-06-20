@@ -91,6 +91,13 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 			receptor->pivotize(h.pivots[0]);
 			ligand->pivotize(h.pivots[1]);
 		}
+		this->_ids.pivotRec.x =  receptor->pivot().x;
+			this->_ids.pivotRec.y =  receptor->pivot().y;
+			this->_ids.pivotRec.z =  receptor->pivot().z;
+
+			this->_ids.pivotLig.x =  ligand->pivot().x;
+			this->_ids.pivotLig.y =  ligand->pivot().y;
+			this->_ids.pivotLig.z =  ligand->pivot().z;
 
 	/* transform ligand dofs assuming that the receptor is always centered in the origin */
 	transformDOF_glob2rec(DOF_molecules[0], DOF_molecules[1], h.pivots[0], h.pivots[1], h.centered_receptor, h.centered_ligands);
@@ -128,8 +135,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	readHMMode<real_t>(receptor, args.recModesName);
 	readHMMode<real_t>(ligand, args.ligModesName);
 
-	receptor->scaleModeForce( this->_ids.modeForceFactor );
-	ligand->scaleModeForce( this->_ids.modeForceFactor );
+//	receptor->scaleModeForce( this->_ids.modeForceFactor );
+//	ligand->scaleModeForce( this->_ids.modeForceFactor );
 
 	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
 	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);
