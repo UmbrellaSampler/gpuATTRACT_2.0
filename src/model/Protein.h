@@ -154,6 +154,13 @@ public:
 		return _isOrigin;
 	}
 
+	//this function scales the eigenvalues of the modes. Since the eigenvalues are squared in the readHMMode function already, the factor is bein squeared here as well
+	void scaleModeForce( double modeForceFactor ){
+		for (int i = 0; i< _numModes; ++i){
+			_modeForceConstant[i] *= modeForceFactor * modeForceFactor;
+		}
+	}
+
 protected:
 	std::string _tag;	/** identifier: filename (default) */
 	unsigned _numAtoms; /** number of atoms/particles */
