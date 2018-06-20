@@ -7,14 +7,14 @@
 
 #ifndef SRC_WORKER_TPP_
 #define SRC_WORKER_TPP_
-#include "cuda_profiler_api.h"
+
+
 namespace as {
 
 template<typename InputType, typename CommonType, typename ResultType>
 void Worker<InputType, CommonType, ResultType>::run() {
 
 	bool callAgain = false;
-	cudaProfilerStart();
 	while(true) {
 		workItem_t* item;
 
@@ -38,7 +38,7 @@ void Worker<InputType, CommonType, ResultType>::run() {
 	//	printf("call %d\n",  Thread::id());
 		callAgain = _serviceFnc(item);
 	}
-	cudaProfilerStop();
+
 }
 
 } // namespace as

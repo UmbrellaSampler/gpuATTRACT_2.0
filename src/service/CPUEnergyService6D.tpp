@@ -148,6 +148,7 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 					lig,
 					simParams,
 					table,
+					common->radius_cutoff,
 					buffers->h_trafoLig.getX(),
 					buffers->h_trafoLig.getY(),
 					buffers->h_trafoLig.getZ(),

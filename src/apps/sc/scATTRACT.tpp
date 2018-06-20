@@ -14,6 +14,7 @@
 #include "Request.h"
 #include "Server.h"
 #include <chrono>
+#include "cuda_profiler_api.h"
 
 namespace as {
 
@@ -42,7 +43,7 @@ void scATTRACT<GenericTypes>::run() {
 
 	/* do some work */
 
-
+	cudaProfilerStart();
 	auto start = std::chrono::system_clock::now();
 	server->submit(request);
 
@@ -51,10 +52,11 @@ void scATTRACT<GenericTypes>::run() {
 
 	server->wait(request, results.data());
 	auto end = std::chrono::system_clock::now();
+	cudaProfilerStop();
 
 
 	for (result_t const res : results) {
-		std::cout << res << std::endl;
+		//std::cout << res << std::endl;
 	}
 std::cout << "elapsed time(ms): "<< std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()<<std::endl;
 }

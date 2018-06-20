@@ -32,6 +32,7 @@ void NLPotForce(
 		Protein<REAL> const* lig,
 		SimParam<REAL> const* simParam,
 		ParamTable<REAL> const* table,
+		const double radius_cutoff,
 		REAL const* LigPosX,
 		REAL const* LigPosY,
 		REAL const* LigPosZ,
@@ -77,7 +78,7 @@ void NLPotForce(
 
 				const REAL dr2 = dx * dx + dy * dy + dz * dz;
 
-				if (grid->outOfPlateau(dr2)) {
+				if (grid->outOfPlateau(dr2) || (radius_cutoff > 0 && radius_cutoff > dr2)) {
 					continue;
 				}
 
