@@ -228,81 +228,81 @@ public:
 		size_t gridSizeLig = ( numElLig + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 
 
-			d_DOFPos(
-				BLSZ_INTRPL,
-				gridSizeRec,
-				streams[id_stream],
-				*stageResc.rec,
-				d_dof[id_stream].get(0),
-				it->size(), 0,
-				d_defoRec[id_stream].getX(),
-				d_defoRec[id_stream].getY(),
-				d_defoRec[id_stream].getZ(),
-				d_trafoRec[id_stream].getX(),
-				d_trafoRec[id_stream].getY(),
-				d_trafoRec[id_stream].getZ()
-				);
-
-			d_DOFPos(
-				BLSZ_INTRPL,
-				gridSizeLig,
-				streams[id_stream],
-				*stageResc.lig,
-				d_dof[id_stream].get(0),
-				it->size(), 1,
-				d_defoLig[id_stream].getX(),
-				d_defoLig[id_stream].getY(),
-				d_defoLig[id_stream].getZ(),
-				d_trafoLig[id_stream].getX(),
-				d_trafoLig[id_stream].getY(),
-				d_trafoLig[id_stream].getZ()
-				);
-
-//
-
-//			d_score(
-//				BLSZ_TRAFO,
+//			d_DOFPos(
+//				BLSZ_INTRPL,
 //				gridSizeRec,
 //				streams[id_stream],
-//				stageResc.gridLig.inner,
-//				stageResc.gridLig.outer,
 //				*stageResc.rec,
 //				d_dof[id_stream].get(0),
-//				it->size(),
-//				0,
-//				common->radius_cutoff,
+//				it->size(), 0,
 //				d_defoRec[id_stream].getX(),
 //				d_defoRec[id_stream].getY(),
 //				d_defoRec[id_stream].getZ(),
 //				d_trafoRec[id_stream].getX(),
 //				d_trafoRec[id_stream].getY(),
-//				d_trafoRec[id_stream].getZ(),
-//				d_potRec[id_stream].getX(),
-//				d_potRec[id_stream].getY(),
-//				d_potRec[id_stream].getZ(),
-//				d_potRec[id_stream].getW());
+//				d_trafoRec[id_stream].getZ()
+//				);
 //
-//			d_score(
-//				BLSZ_TRAFO,
+//			d_DOFPos(
+//				BLSZ_INTRPL,
 //				gridSizeLig,
 //				streams[id_stream],
-//				stageResc.gridRec.inner,
-//				stageResc.gridRec.outer,
 //				*stageResc.lig,
 //				d_dof[id_stream].get(0),
-//				it->size(),
-//				1,
-//				common->radius_cutoff,
+//				it->size(), 1,
 //				d_defoLig[id_stream].getX(),
 //				d_defoLig[id_stream].getY(),
 //				d_defoLig[id_stream].getZ(),
 //				d_trafoLig[id_stream].getX(),
 //				d_trafoLig[id_stream].getY(),
-//				d_trafoLig[id_stream].getZ(),
-//				d_potLig[id_stream].getX(),
-//				d_potLig[id_stream].getY(),
-//				d_potLig[id_stream].getZ(),
-//				d_potLig[id_stream].getW());
+//				d_trafoLig[id_stream].getZ()
+//				);
+
+//
+
+			d_score(
+				BLSZ_TRAFO,
+				gridSizeRec,
+				streams[id_stream],
+				stageResc.gridLig.inner,
+				stageResc.gridLig.outer,
+				*stageResc.rec,
+				d_dof[id_stream].get(0),
+				it->size(),
+				0,
+				common->radius_cutoff,
+				d_defoRec[id_stream].getX(),
+				d_defoRec[id_stream].getY(),
+				d_defoRec[id_stream].getZ(),
+				d_trafoRec[id_stream].getX(),
+				d_trafoRec[id_stream].getY(),
+				d_trafoRec[id_stream].getZ(),
+				d_potRec[id_stream].getX(),
+				d_potRec[id_stream].getY(),
+				d_potRec[id_stream].getZ(),
+				d_potRec[id_stream].getW());
+
+			d_score(
+				BLSZ_TRAFO,
+				gridSizeLig,
+				streams[id_stream],
+				stageResc.gridRec.inner,
+				stageResc.gridRec.outer,
+				*stageResc.lig,
+				d_dof[id_stream].get(0),
+				it->size(),
+				1,
+				common->radius_cutoff,
+				d_defoLig[id_stream].getX(),
+				d_defoLig[id_stream].getY(),
+				d_defoLig[id_stream].getZ(),
+				d_trafoLig[id_stream].getX(),
+				d_trafoLig[id_stream].getY(),
+				d_trafoLig[id_stream].getZ(),
+				d_potLig[id_stream].getX(),
+				d_potLig[id_stream].getY(),
+				d_potLig[id_stream].getZ(),
+				d_potLig[id_stream].getW());
 
 
 //			 DEBUG
@@ -371,37 +371,37 @@ public:
 			gridSizeLig = ( numElLig + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 
 
-			d_potForce (
-				BLSZ_INTRPL,
-				gridSizeLig,
-				streams[id_stream],
-				stageResc.gridRec.inner,
-				stageResc.gridRec.outer,
-				*stageResc.lig,
-				it->size(),
-				d_trafoLig[id_stream].getX(),
-				d_trafoLig[id_stream].getY(),
-				d_trafoLig[id_stream].getZ(),
-				d_potLig[id_stream].getX(),
-				d_potLig[id_stream].getY(),
-				d_potLig[id_stream].getZ(),
-				d_potLig[id_stream].getW()); // OK
-
-			d_potForce (
-				BLSZ_INTRPL,
-				gridSizeRec,
-				streams[id_stream],
-				stageResc.gridLig.inner,
-				stageResc.gridLig.outer,
-				*stageResc.rec,
-				it->size(),
-				d_trafoRec[id_stream].getX(),
-				d_trafoRec[id_stream].getY(),
-				d_trafoRec[id_stream].getZ(),
-				d_potRec[id_stream].getX(),
-				d_potRec[id_stream].getY(),
-				d_potRec[id_stream].getZ(),
-				d_potRec[id_stream].getW()); // OK
+//			d_potForce (
+//				BLSZ_INTRPL,
+//				gridSizeLig,
+//				streams[id_stream],
+//				stageResc.gridRec.inner,
+//				stageResc.gridRec.outer,
+//				*stageResc.lig,
+//				it->size(),
+//				d_trafoLig[id_stream].getX(),
+//				d_trafoLig[id_stream].getY(),
+//				d_trafoLig[id_stream].getZ(),
+//				d_potLig[id_stream].getX(),
+//				d_potLig[id_stream].getY(),
+//				d_potLig[id_stream].getZ(),
+//				d_potLig[id_stream].getW()); // OK
+//
+//			d_potForce (
+//				BLSZ_INTRPL,
+//				gridSizeRec,
+//				streams[id_stream],
+//				stageResc.gridLig.inner,
+//				stageResc.gridLig.outer,
+//				*stageResc.rec,
+//				it->size(),
+//				d_trafoRec[id_stream].getX(),
+//				d_trafoRec[id_stream].getY(),
+//				d_trafoRec[id_stream].getZ(),
+//				d_potRec[id_stream].getX(),
+//				d_potRec[id_stream].getY(),
+//				d_potRec[id_stream].getZ(),
+//				d_potRec[id_stream].getW()); // OK
 
 			//std::cout <<"before nl gpu" <<std::endl;
 //			cudaDeviceSynchronize();
