@@ -54,10 +54,11 @@ void TwoBodyParser::addOptions() noexcept {
 	_optsDesc.add(concurrency);
 	po::options_description sim("simulation");
 	sim.add_options()
-      ("numModes", po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes")
-			("dielec", po::value<string>()->default_value(SIM_DEFAULT_DIELEC),
-					descriptionWithOptions("dielectric behavior", SIM_ALLOWED_DIELEC).c_str())
-			("epsilon", po::value<double>()->default_value(SIM_DEFAULT_EPSILON), "dielectric constant");
+    		 ("numModes", 	po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes")
+    		 ("cutoff", 	po::value<double>()->default_value(SIM_DEFAULT_CUTOFF), "squared interaction cutoff radius - beyond this radius all interaction is neglected. By default this value is set to -1 which is equivalent to no cutoff.")
+    		 ("modeEVFac", 	po::value<double>()->default_value(SIM_DEFAULT_MODEFACTOR), "Factor used to scale the eigenvalues of the Eigenmodes. By default this is set to 1.0.")
+    		 ("dielec", 	po::value<string>()->default_value(SIM_DEFAULT_DIELEC),	descriptionWithOptions("dielectric behavior", SIM_ALLOWED_DIELEC).c_str())
+			 ("epsilon", po::value<double>()->default_value(SIM_DEFAULT_EPSILON), "dielectric constant");
 	_optsDesc.add(sim);
 
 }
@@ -112,6 +113,10 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 		_args->dielec = vm["dielec"].as<string>();
 	if(vm.count("epsilon"))
 		_args->epsilon = vm["epsilon"].as<double>();
+	if(vm.count("cutoff"))
+			_args->radius_cutoff = vm["cutoff"].as<double>();
+	if(vm.count("modeEVFac"))
+			_args->modeEVFactor = vm["modeEVFac"].as<double>();
 	if(vm.count("numModes"))
 		_args->numModes = vm["numModes"].as<int>();
 

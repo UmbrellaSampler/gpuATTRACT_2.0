@@ -161,12 +161,12 @@ public:
 	static Vector toSecond(DOF_6D_Modes<REAL> const& dof) {
 		//Vector vec(6 + Common_Modes::numModesRec + Common_Modes::numModesLig);
 		Vector vec(26);
-		vec(0) = -dof._6D.ang.x;
-		vec(1) = -dof._6D.ang.y;
-		vec(2) = -dof._6D.ang.z;
-		vec(3) = -dof._6D.pos.x;
-		vec(4) = -dof._6D.pos.y;
-		vec(5) = -dof._6D.pos.z;
+		vec(0) = dof._6D.ang.x;
+		vec(1) = dof._6D.ang.y;
+		vec(2) = dof._6D.ang.z;
+		vec(3) = dof._6D.pos.x;
+		vec(4) = dof._6D.pos.y;
+		vec(5) = dof._6D.pos.z;
 
 //		vec  << dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z,
 //				dof._6D.pos.x, dof._6D.pos.y , dof._6D.pos.z;

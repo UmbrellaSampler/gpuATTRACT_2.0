@@ -121,19 +121,20 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 //			}
 ////			exit(EXIT_SUCCESS);
 
-			potForce(
-					grid->inner.get(),
-					grid->outer.get(),
-					lig,
-					buffers->h_trafoLig.getX(),
-					buffers->h_trafoLig.getY(),
-					buffers->h_trafoLig.getZ(),
-					buffers->h_potLig.getX(), // output
-					buffers->h_potLig.getY(),
-					buffers->h_potLig.getZ(),
-					buffers->h_potLig.getW()
-			); // OK
-
+			if(  !(common->radius_cutoff < 10000)){
+				potForce(
+						grid->inner.get(),
+						grid->outer.get(),
+						lig,
+						buffers->h_trafoLig.getX(),
+						buffers->h_trafoLig.getY(),
+						buffers->h_trafoLig.getZ(),
+						buffers->h_potLig.getX(), // output
+						buffers->h_potLig.getY(),
+						buffers->h_potLig.getZ(),
+						buffers->h_potLig.getW()
+				); // OK
+			}
 //			exit(EXIT_SUCCESS);
 //			std::cout << "#cpu pot"<< std::endl;
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
@@ -148,6 +149,7 @@ auto CPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
 					lig,
 					simParams,
 					table,
+					 common->radius_cutoff,
 					buffers->h_trafoLig.getX(),
 					buffers->h_trafoLig.getY(),
 					buffers->h_trafoLig.getZ(),

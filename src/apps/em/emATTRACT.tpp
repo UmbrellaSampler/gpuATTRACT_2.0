@@ -65,7 +65,7 @@ void emATTRACT<GenericTypes>::run() {
 	std::cout << "#centered ligand: false "<< std::endl;
 	for (int i = 0; i < results_dof.size(); i++){
 		std::cout << "#"<< i+1<< std::endl;
-		std::cout <<"## Energy: " << results_grad[i].get_Energy() << std::endl;
+//std::cout <<"## Energy: " << results_grad[i].get_Energy() << std::endl;
 		auto  pos = results_dof[i].get_pos();
 				pos.x = pos.x + common.pivotRec.x -  common.pivotLig.x;
 				pos.y = pos.y + common.pivotRec.y -  common.pivotLig.y;

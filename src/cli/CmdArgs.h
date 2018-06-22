@@ -40,6 +40,8 @@ public:
 	std::string precision;
 	std::string dielec;
 	double epsilon;
+	double modeEVFactor;
+	double radius_cutoff;
 
 	/* Minimization */
 	std::string solver;

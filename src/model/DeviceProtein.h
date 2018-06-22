@@ -26,18 +26,16 @@ public:
 		REAL *xPos = nullptr;	/** Cartesian coordinates in cm-frame*/
 		REAL *yPos = nullptr;
 		REAL *zPos = nullptr;
-
-		unsigned* type = nullptr; 	/** atom type */
-		unsigned numMappedTypes;
-		unsigned* mappedType = nullptr;
-
 		REAL* charge;	/** charge of the atoms/particle */
-
-		unsigned numModes; /** number of modes */
 		REAL* xModes = nullptr; /** normal mode deformation vectors */
 		REAL* yModes = nullptr;
 		REAL* zModes = nullptr;
+		unsigned* type = nullptr; 	/** atom type */
+		unsigned* mappedType = nullptr;
 		REAL modeForce[MODES_MAX_NUMBER];
+		unsigned numModes; /** number of modes */
+		unsigned numMappedTypes;
+		bool isOrigin;
 
 	};
 

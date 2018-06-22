@@ -170,6 +170,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 //			exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor via the ligand grid in the ligand system
+			if(  !(common->radius_cutoff < 10000)){
 			potForce(
 				gridLig->inner.get(),
 				gridLig->outer.get(),
@@ -198,7 +199,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potLig.getZ(),
 				buffers->h_potLig.getW()
 			); // OK
-
+			}
 //			exit(EXIT_SUCCESS);
 //			std::cout <<"before nl" <<std::endl;
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
@@ -214,6 +215,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig,
 				simParams,
 				table,
+				 common->radius_cutoff,
 				buffers->h_defoRec.getX(),
 				buffers->h_defoRec.getY(),
 				buffers->h_defoRec.getZ(),
@@ -232,6 +234,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				rec,
 				simParams,
 				table,
+				 common->radius_cutoff,
 				buffers->h_defoLig.getX(),
 				buffers->h_defoLig.getY(),
 				buffers->h_defoLig.getZ(),

@@ -72,6 +72,7 @@ std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::s
 
 	typename DeviceProtein<REAL>::Desc deviceDesc;
 	deviceDesc.numAtoms = numAtoms;
+	deviceDesc.isOrigin = protein->getOrigin();
 	deviceDesc.xPos = d_xPos;
 	deviceDesc.yPos = d_yPos;
 	deviceDesc.zPos = d_zPos;

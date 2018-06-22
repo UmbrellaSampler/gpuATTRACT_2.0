@@ -58,9 +58,10 @@ struct Common_Modes {
 	static unsigned int numModesRec;
 	static unsigned int numModesLig;
 	Vec3<double> pivotRec;
-			Vec3<double> pivotLig;
-			bool centeredLig;
-			bool centeredRec;
+	Vec3<double> pivotLig;
+	bool centeredLig;
+	bool centeredRec;
+	double radius_cutoff;
 };
 
 template<typename REAL>

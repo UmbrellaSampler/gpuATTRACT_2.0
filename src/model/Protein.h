@@ -137,6 +137,23 @@ public:
 		_numMappedTypes = num;
 	}
 
+	void scaleModeEigenValues( double factor){
+		for (int i = 0; i < _numModes; ++i)
+		{
+			_modeForceConstant[i] *= factor*factor;
+		}
+	}
+
+	void isOrigin( bool isOrigin)
+	{
+		_isOrigin = isOrigin;
+	}
+
+	bool getOrigin()
+	{
+		return _isOrigin;
+	}
+
 	//TODO: refactor the pivotize functions to non-members
 	void pivotize(vec3_t pivot);
 
@@ -162,6 +179,7 @@ protected:
 
 	unsigned _numModes; /** number of modes */
 	REAL* _modes; /** normal mode deformation vectors */
+	bool _isOrigin;
 
 	REAL* _modeForceConstant;
 };

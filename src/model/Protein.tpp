@@ -40,6 +40,7 @@ Protein<REAL>::Protein() :
 	_numMappedTypes(0),
 	_mappedTypes(nullptr),
 	_charge(nullptr),
+	_isOrigin(false),
 	_numModes(0), _modes(nullptr), _modeForceConstant(nullptr) {};
 
 template<typename REAL>
