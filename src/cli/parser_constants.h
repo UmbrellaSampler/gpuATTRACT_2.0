@@ -31,6 +31,7 @@ constexpr auto FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR = "receptorgrid.alphabet";
 constexpr auto FILE_DEFAULT_GRID_ALPAHBET_LIGAND = "ligandgrid.alphabet";
 constexpr auto DEFAULT_MODE_RECEPTOR_FILE = "modesReceptor.dat";
 constexpr auto DEFAULT_MODE_LIGAND_FILE = "modesLigand.dat";
+constexpr auto FILE_DEFAULT_ALPHABET = "alphabet.dat";
 
 /* Generic */
 constexpr auto GENERIC_DEFAULT_PRECISION = "single";
@@ -43,6 +44,7 @@ constexpr double SIM_DEFAULT_MODEFACTOR = 1.0;
 constexpr double SIM_DEFAULT_CUTOFF = 100000;
 constexpr auto SIM_DEFAULT_EPSILON = 15.0;
 constexpr int  DEFAULT_NUM_MODES = 0;
+constexpr int  DEFAULT_NUM_PROTEIN = 2;
 
 /**
  * Server context

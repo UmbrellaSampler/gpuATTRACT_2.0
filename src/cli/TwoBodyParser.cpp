@@ -31,13 +31,31 @@ void TwoBodyParser::addOptions() noexcept {
 			("dof"     			  , po::value<string>()->required()									, "structure (DOF) file")
 			("receptor-pdb,r"     , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_PDB)	, "pdb-file of receptor")
 			("ligand-pdb,l"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of ligand")
-			("gridrec"             , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "receptor grid file")
-			("gridlig"             , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "ligand grid file")
+			("gridrec"            , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "receptor grid file")
+			("gridlig"            , po::value<string>()->default_value(FILE_DEFAULT_LIGAND_GRID)	, "ligand grid file")
 			("par,p"	          , po::value<string>()->default_value(FILE_DEFAULT_PARAMETER)		, "attract forcefield parameter file")
+
 			("alphabetrec"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_RECEPTOR)	, "receptor grid alphabet file")
 			("alphabetlig"		  , po::value<string>()->default_value(FILE_DEFAULT_GRID_ALPAHBET_LIGAND)	, "ligand grid alphabet file")
+			("modesr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor")
 			("modesl"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of ligand")
-			("modesr"	          , po::value<string>()->default_value(DEFAULT_MODE_LIGAND_FILE)	, "mode file of receptor");
+			//MB
+			("alphabet"		  	  , po::value<string>()->default_value(FILE_DEFAULT_ALPHABET)	    , "alphabet file for multibodydocking mostly")
+			("grid1"            , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "grid1 file")
+			("grid2"            , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "grid2 file")
+			("grid3"            , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "grid3 file")
+			("grid4"            , po::value<string>()->default_value(FILE_DEFAULT_RECEPTOR_GRID)	, "grid4 file")
+			("prot-pdb1"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of Protein1")
+			("prot-pdb2"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of Protein2")
+			("prot-pdb3"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of Protein3")
+			("prot-pdb4"       , po::value<string>()->default_value(FILE_DEFAULT_LIGANG_PDB)   	, "pdb-file of Protein4")
+			("modes1"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of Protein1")
+			("modes2"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of Protein2")
+			("modes3"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of Protein3")
+			("modes4"	          , po::value<string>()->default_value(DEFAULT_MODE_RECEPTOR_FILE)  , "mode file of Protein4")
+
+
+			;
 	_optsDesc.add(input);
 
 	po::options_description concurrency("concurrency");
@@ -55,6 +73,7 @@ void TwoBodyParser::addOptions() noexcept {
 	po::options_description sim("simulation");
 	sim.add_options()
     		 ("numModes", 	po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of modes")
+    		 ("numProtein", 	po::value<int>()->default_value(DEFAULT_NUM_MODES), "number of proteins")
     		 ("cutoff", 	po::value<double>()->default_value(SIM_DEFAULT_CUTOFF), "squared interaction cutoff radius - beyond this radius all interaction is neglected. By default this value is set to -1 which is equivalent to no cutoff.")
     		 ("modeEVFac", 	po::value<double>()->default_value(SIM_DEFAULT_MODEFACTOR), "Factor used to scale the eigenvalues of the Eigenmodes. By default this is set to 1.0.")
     		 ("dielec", 	po::value<string>()->default_value(SIM_DEFAULT_DIELEC),	descriptionWithOptions("dielectric behavior", SIM_ALLOWED_DIELEC).c_str())
@@ -119,6 +138,29 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 			_args->modeEVFactor = vm["modeEVFac"].as<double>();
 	if(vm.count("numModes"))
 		_args->numModes = vm["numModes"].as<int>();
+
+
+
+	if(vm.count("alphabet"))
+		_args->alphabetName = vm["alphabet"].as<string>();
+	if(vm.count("modes1"))
+		_args->modeNames[0] = vm["modes1"].as<string>();
+	if(vm.count("modes2"))
+		_args->modeNames[1] = vm["modes2"].as<string>();
+
+
+	if(vm.count("numProtein"))
+			_args->numProtein = vm["numProtein"].as<int>();
+	if(vm.count("grid1"))
+			_args->gridNames[0] = vm["grid1"].as<string>();
+	if(vm.count("grid2"))
+		_args->gridNames[1] = vm["grid2"].as<string>();
+
+	if(vm.count("prot-pdb1"))
+			_args->proteinNames[0] = vm["prot-pdb1"].as<string>();
+	if(vm.count("prot-pdb2"))
+		_args->proteinNames[0] = vm["prot-pdb2"].as<string>();
+
 
 }
 

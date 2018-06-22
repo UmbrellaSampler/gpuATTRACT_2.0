@@ -11,7 +11,7 @@
 #include <vector>
 #include <iosfwd>
 #include <AppType.h>
-
+#include "Types_6D_Config.h"
 namespace as {
 
 class CmdArgs {
@@ -29,12 +29,18 @@ public:
 	std::string alphabetLigName;
 	std::string recModesName;
 	std::string ligModesName;
+
+	std::string alphabetName;
+	std::string modeNames[NUM_MAX_PROTEIN];
+	std::string proteinNames[NUM_MAX_PROTEIN];
+	std::string gridNames[NUM_MAX_PROTEIN];
  
 	/* Concurrency */
   int numModes;
 	int numCPUs;
 	std::vector<int> deviceIds;
 	int chunkSize;
+	int numProtein;
 
 	/* Simulation */
 	std::string precision;

@@ -9,6 +9,7 @@
 #define DOFCONVERTER_H_
 #include "Types_6D_Modes.h"
 #include "Types_6D.h"
+#include "Types_MB_Modes.h"
 #include "readFile.h"
 #include <vector>
 
@@ -90,6 +91,33 @@ std::vector<std::vector<DOF_6D_Modes<REAL>>> DOFConverter_Modes(std::vector<std:
 	outVec.push_back(outRec);
 	outVec.push_back(outLig);
 	return outVec;
+}
+
+template<typename REAL>
+std::vector<DOF_MB_Modes<REAL>> DOFConverter_MB_Modes(std::vector<std::vector<DOF>>  &in) {
+	std::vector<DOF_MB_Modes<REAL>> out(in[0].size());
+
+
+	for (int i=0; i < in[0].size(); i++){
+		for (int idxProtein = 0; idxProtein < in.size();++idxProtein){
+			out[i].protein[idxProtein].ang.x = in[idxProtein][i]._6D.ang.x;
+			out[i].protein[idxProtein].ang.y = in[idxProtein][i]._6D.ang.y;
+			out[i].protein[idxProtein].ang.z = in[idxProtein][i]._6D.ang.z;
+			out[i].protein[idxProtein].pos.x = in[idxProtein][i]._6D.pos.x;
+			out[i].protein[idxProtein].pos.y = in[idxProtein][i]._6D.pos.y;
+			out[i].protein[idxProtein].pos.z = in[idxProtein][i]._6D.pos.z;
+
+			for (int mode=0; mode < Common_MB_Modes::numModes[idxProtein]; mode++){
+				if ( in[idxProtein][i].numDofs < Common_MB_Modes::numModes[idxProtein] || std::isnan(in[idxProtein][i].dofs[mode])){
+					out[i].protein[idxProtein].modes[mode] = 0;
+				}
+				else{
+					out[i].protein[idxProtein].modes[mode] =  in[idxProtein][i].dofs[mode];
+				}
+			}
+		}
+	}
+	return out;
 }
 
 }// namespace as

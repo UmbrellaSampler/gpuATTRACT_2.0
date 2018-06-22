@@ -9,7 +9,7 @@ CURDIR = $(realpath $(PWD) )
 OBJDIR = build
 $(shell mkdir -p $(OBJDIR))
 
-NAME = AttractServer
+NAME = AttractServer_mb
 BINARY = $(NAME)
 
 SOURCE_DIR = $(CURDIR)/src

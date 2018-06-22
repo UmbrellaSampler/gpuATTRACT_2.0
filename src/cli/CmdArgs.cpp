@@ -20,6 +20,7 @@ std::ostream& operator<<(std::ostream& s, CmdArgs const& args) {
 	s << "ligName         = "  << args.ligName             << endl;
 	s << "recName         = "  << args.recName             << endl;
 	s << "paramsName      = "  << args.paramsName          << endl;
+	s << "alphabetName    = "  << args.alphabetName        << endl;
 	s << "alphabetRecName = "  << args.alphabetRecName 	   << endl;
 	s << "alphabetLigName = "  << args.alphabetLigName 	   << endl;
 	s << "ligModesName    = " <<args.ligModesName		   << endl;
