@@ -1,0 +1,94 @@
+/*
+ * Types_MB_modes.h
+ *
+ *  Created on: Nov 4, 2017
+ *      Author: glenn
+ */
+
+#ifndef SRC_MODEL_TYPES_MB_MODES_H_
+#define SRC_MODEL_TYPES_MB_MODES_H_
+
+#include "Types_6D_Config.h"
+#include "nativeTypesWrapper.h"
+#include "Vec3.h"
+#include "GenericTypes.h"
+#include <map>
+
+
+namespace as {
+#ifndef __CUDACC__ // ostream is not available in nvcc
+template<typename REAL>
+struct DOF_MB_Modes;
+
+template<typename REAL>
+struct DOF_Modes;
+
+template<typename REAL>
+std::ostream& operator<< (std::ostream& s, DOF_Modes<REAL> const& args);
+
+template<typename REAL>
+std::ostream& operator<< (std::ostream& s, DOF_MB_Modes<REAL> const& args);
+
+template<typename REAL>
+struct Result_MB_Modes;
+
+
+
+template<typename REAL>
+std::ostream& operator<< (std::ostream& s, Result_MB_Modes<REAL> const& args);
+
+#endif
+
+
+template<typename REAL>
+struct DOF_Modes {
+	using real_t = typename TypeWrapper<REAL>::real_t;
+	using vec3_t = Vec3<real_t>;
+	vec3_t pos;
+	vec3_t ang;
+	real_t modes[MODES_MAX_NUMBER];
+};
+
+template<typename REAL>
+struct DOF_MB_Modes {
+	using real_t = typename TypeWrapper<REAL>::real_t;
+	using vec3_t = Vec3<real_t>;
+	DOF_Modes<real_t> protein[NUM_MAX_PROTEIN];
+};
+
+struct ProtConfig{
+	using real_t = double;
+	using vec3_t = Vec3<real_t>;
+	id_t gridId;
+	id_t proteinId;
+	unsigned idxModes;
+	bool centered;
+	vec3_t pivot;
+	ProtConfig( id_t id_grid, id_t id_protein, id_t idx_mode, bool center, vec3_t piv): gridId(id_grid), proteinId(id_protein), idxModes(idx_mode), centered(center), pivot(piv){}
+};
+struct Common_MB_Modes {
+	id_t tableId;
+	id_t paramsId;
+	static unsigned int numModes[NUM_MAX_PROTEIN];
+	double radius_cutoff;
+	std::map<unsigned,ProtConfig> proteins;
+
+};
+
+template<typename REAL>
+struct Result_MB_Modes {
+	using real_t = typename TypeWrapper<REAL>::real_t;
+	DOF_Modes<real_t> protein[NUM_MAX_PROTEIN];
+	real_t E;
+
+};
+
+template<typename REAL>
+using Types_MB_Modes = GenericTypes<DOF_MB_Modes<REAL>, Common_MB_Modes, Result_MB_Modes<REAL>>;
+
+}  // namespace as
+
+
+
+
+#endif /* TYPES_MB_MODES_H_ */
