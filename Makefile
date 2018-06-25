@@ -6,10 +6,17 @@ default: all
 # Find out the base directory
 CURDIR = $(realpath $(PWD) )
 
-OBJDIR = build
-$(shell mkdir -p $(OBJDIR))
 
-NAME = AttractServer
+
+ifeq ($(TARGET), RELEASE)
+	OBJDIR = build
+	NAME = AttractServer
+endif
+ifeq ($(TARGET), DEBUG)
+	OBJDIR = build_DEBUG
+	NAME = AttractServer_DEBUG
+endif
+$(shell mkdir -p $(OBJDIR))
 BINARY = $(NAME)
 
 SOURCE_DIR = $(CURDIR)/src

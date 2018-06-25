@@ -8,24 +8,34 @@
 #ifndef DEBUG_FUNCTIONS_H_
 #define DEBUG_FUNCTIONS_H_
 
-#include <ostream>
+#include <sstream>
 #include "Types_6D_Modes.h"
 #include "Types_6D.h"
 #include <iomanip>
-#include <iostream>
+
 namespace as
 {
+
 
 template <typename REAL,typename DOF_T>
 std::string getDebugPath(bool gpu )
 {
-	std::string path_debug = "/home/glenn/Documents/test_attract";
-	std::string file_out = path_debug;
-	if(gpu){file_out += "/GPU";}
-	else{file_out += "/CPU";}
+	std::string path_debug = "/home/glenn/Documents/test_attract/output";
+	std::string path_out = path_debug;
+	if(gpu){path_out += "/GPU";}
+	else{path_out += "/CPU";}
 
 	if (  (std::is_same<DOF_T, Result_6D_Modes<REAL>>::value || std::is_same<DOF_T, DOF_6D_Modes<REAL>>::value)){
-		file_out += "_Modes";}
+		path_out += "_Modes";}
+
+	return path_out;
+
+}
+
+template <typename REAL,typename DOF_T>
+std::string getDebugFile(bool gpu )
+{
+	std::string file_out = getDebugPath< REAL, DOF_T>(gpu );
 	if (  (std::is_same<DOF_T, Result_6D_Modes<REAL>>::value || std::is_same<DOF_T, Result_6D<REAL>>::value)){
 		file_out += "/result.dat";
 	}
@@ -63,7 +73,7 @@ template< typename REAL , typename DOF_T>
 void print_header( std::stringstream& os,
 		typename std::enable_if<std::is_same< DOF_T, Result_6D_Modes<REAL> >::value, void>::type* dummy = 0 )
 {
-	os <<" "<< "Energy_total";
+	os <<" "<< "energy_total";
 	print_header<REAL, DOF_6D_Modes<REAL>>( os);
 
 }
@@ -72,7 +82,7 @@ template< typename REAL , typename DOF_T>
 void print_header( std::stringstream& os,
 		typename std::enable_if<std::is_same< DOF_T, Result_6D<REAL> >::value, void>::type* dummy = 0 )
 {
-	os <<" "<< "Energy_total";
+	os <<" "<< "energy_total";
 	print_header<REAL, DOF_6D<REAL>>( os);
 }
 

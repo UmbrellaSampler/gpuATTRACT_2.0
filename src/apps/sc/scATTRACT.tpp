@@ -14,7 +14,7 @@
 #include "Request.h"
 #include "Server.h"
 #include <chrono>
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #include <fstream>
 #include <sstream>
@@ -61,7 +61,7 @@ void scATTRACT<GenericTypes>::run() {
 			use_GPU = true;
 			#endif
 
-		std::string file_debug = getDebugPath<real_t, result_t>( use_GPU );
+		std::string file_debug = getDebugFile<real_t, result_t>( use_GPU );
 		std::fstream fs;
 		fs.open (file_debug, std::fstream::in | std::fstream::out | std::fstream::trunc );
 		std::stringstream ss;

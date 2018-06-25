@@ -38,12 +38,19 @@
 #include "reduction_modes.h"
 #include "scoring_kernel.h"
 #include "macros.h"
-#include <iostream>
+
 #include "ThreadSafeQueue.h"
-#include <iostream>
+
 #include <iomanip>
 #include <limits>
 #include <mutex>
+
+//#define DEBUG
+#ifdef DEBUG
+#include <fstream>
+#include <string>
+#include "debug_functions.h"
+#endif
 
 namespace as {
 
@@ -330,41 +337,70 @@ public:
 //									}
 //									std::cout <<std::endl<< std::endl;
 
-//						cudaDeviceSynchronize();
+
 //
-//			std::cout <<"defoRec g"<<std::endl;
-//			size_t bufferSizeDefoRec1 = d_defoRec[id_stream].bufferSize();
-//			WorkerBuffer<REAL> h_DefoRec(3,bufferSizeDefoRec1);
-//			size_t cpySizeDefoRec1 = h_DefoRec.bufferSize()*sizeof(REAL);
+#ifdef DEBUG
+			cudaDeviceSynchronize();
+			std::string file_defo = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
+			file_defo += "/defo_rec.dat";
+			std::fstream fs_defo;
+			fs_defo.open (file_defo, std::fstream::in | std::fstream::out | std::fstream::trunc );
+			size_t bufferSizeDefoRec1 = d_defoRec[id_stream].bufferSize();
+			WorkerBuffer<REAL> h_DefoRec(3,bufferSizeDefoRec1);
+			size_t cpySizeDefoRec1 = h_DefoRec.bufferSize()*sizeof(REAL);
+
+			//std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
+			cudaMemcpy(h_DefoRec.getX(),d_defoRec[id_stream].getX(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_DefoRec.getY(),d_defoRec[id_stream].getY(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_DefoRec.getZ(),d_defoRec[id_stream].getZ(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+			fs_defo << "x y z"<< std::endl;
+			for(size_t i = 0; i < stageResc.rec->numAtoms; ++i) {
+				fs_defo  << std::setprecision(10)<< h_DefoRec.getX()[i] << " " << h_DefoRec.getY()[i] << " " << h_DefoRec.getZ()[i] << std::endl;
+			}
+			fs_defo.close();
+
+
+			std::string file_trafo = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
+			file_trafo += "/trafo_lig.dat";
+			std::fstream fs_trafo;
+			fs_trafo.open (file_trafo, std::fstream::in | std::fstream::out | std::fstream::trunc );
+
+			size_t bufferSizeTrafoLig = d_trafoLig[id_stream].bufferSize();
+
+			WorkerBuffer<REAL> h_trafoLig(3,bufferSizeTrafoLig);
+			size_t cpySizetrafoLig = h_trafoLig.bufferSize()*sizeof(REAL);
 //
-//			//std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
-//			cudaMemcpy(h_DefoRec.getX(),d_defoRec[id_stream].getX(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_DefoRec.getY(),d_defoRec[id_stream].getY(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_DefoRec.getZ(),d_defoRec[id_stream].getZ(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
-//			for(size_t i = 0; i < stageResc.rec->numAtoms; ++i) {
-//				std::cout  << std::setprecision(10)<< h_DefoRec.getX()[i] << " " << h_DefoRec.getY()[i] << " " << h_DefoRec.getZ()[i] << std::endl;
-//			}
-////
-//
-//
-//
-//
-//			std::cout <<"trafo lig "<<std::endl;
-//			size_t bufferSizeTrafoLig = d_trafoLig[id_stream].bufferSize();
-//
-//			WorkerBuffer<REAL> h_trafoLig(3,bufferSizeTrafoLig);
-//			size_t cpySizetrafoLig = h_trafoLig.bufferSize()*sizeof(REAL);
-////
-////			std::cout << "bufferSize: " << bufferSizeDefoLig << " cpySize: " << cpySizeDefoLig << std::endl;
-//			cudaMemcpy(h_trafoLig.getX(),d_trafoLig[id_stream].getX(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_trafoLig.getY(),d_trafoLig[id_stream].getY(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_trafoLig.getZ(),d_trafoLig[id_stream].getZ(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
-//			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
-//				std::cout  << std::setprecision(10)<<h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
-//			}
-//			exit(EXIT_SUCCESS);
-//
+//			std::cout << "bufferSize: " << bufferSizeDefoLig << " cpySize: " << cpySizeDefoLig << std::endl;
+			cudaMemcpy(h_trafoLig.getX(),d_trafoLig[id_stream].getX(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_trafoLig.getY(),d_trafoLig[id_stream].getY(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_trafoLig.getZ(),d_trafoLig[id_stream].getZ(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
+			fs_trafo << "x y z"<< std::endl;
+			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
+				fs_trafo  << std::setprecision(10)<<h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
+			}
+			fs_trafo.close();
+
+
+			std::string file_pot = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
+			file_pot += "/pot_lig.dat";
+			std::fstream fs_pot;
+			fs_pot.open (file_pot, std::fstream::in | std::fstream::out | std::fstream::trunc );
+			WorkerBuffer<REAL> h_potLig(4,stageResc.lig->numAtoms);
+			size_t cpySize = stageResc.lig->numAtoms*sizeof(REAL);
+			//std::cout <<"fx fy fz"<<std::endl;
+			fs_pot << "fx fy fz w"<< std::endl;
+			cudaMemcpy(h_potLig.getX(),d_potLig[id_stream].getX(), cpySize, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_potLig.getY(),d_potLig[id_stream].getY(), cpySize, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_potLig.getZ(),d_potLig[id_stream].getZ(), cpySize, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_potLig.getW(),d_potLig[id_stream].getW(), cpySize, cudaMemcpyDeviceToHost);
+			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
+				//			for(size_t i = 0; i < 20; ++i) {
+				fs_pot << h_potLig.getX()[i] << " " << h_potLig.getY()[i] << " " << h_potLig.getZ()[i] << " " << h_potLig.getW()[i] << std::endl;//
+			}
+			fs_pot.close();
 			/* Perform cuda kernel calls */
+			cudaDeviceSynchronize();
+#endif
 			gridSizeRec = ( numElRec + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 			gridSizeLig = ( numElLig + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 
@@ -479,19 +515,30 @@ public:
 				it->size()
 				);
 //			std::cout <<"after nl"<< std::endl;
-//			cudaDeviceSynchronize();
-//			WorkerBuffer<REAL> h_potLig1(4,stageResc.lig->numAtoms);
-//			size_t cpySize1 = stageResc.lig->numAtoms*sizeof(REAL);
-//			std::cout <<"fx fy fz"<<std::endl;
-//			cudaMemcpy(h_potLig1.getX(),d_potLig[pipeIdx[1]].getX(), cpySize1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig1.getY(),d_potLig[pipeIdx[1]].getY(), cpySize1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig1.getZ(),d_potLig[pipeIdx[1]].getZ(), cpySize1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig1.getW(),d_potLig[pipeIdx[1]].getW(), cpySize1, cudaMemcpyDeviceToHost);
-//			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
-//				//			for(size_t i = 0; i < 20; ++i) {
-//				std::cout << h_potLig1.getX()[i] << " " << h_potLig1.getY()[i] << " " << h_potLig1.getZ()[i]<< std::endl;// << " " << h_potLig1.getW()[i] ;
-//
-//			}
+
+#ifdef DEBUG
+			cudaDeviceSynchronize();
+			std::string file_nl = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
+			file_nl += "/nl_rec.dat";
+			std::fstream fs_nl;
+			fs_nl.open (file_nl, std::fstream::in | std::fstream::out | std::fstream::trunc );
+			cudaDeviceSynchronize();
+			WorkerBuffer<REAL> h_potLig1(4,stageResc.lig->numAtoms);
+			size_t cpySize1 = stageResc.lig->numAtoms*sizeof(REAL);
+			//std::cout <<"fx fy fz"<<std::endl;
+			cudaMemcpy(h_potLig1.getX(),d_potLig[id_stream].getX(), cpySize1, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_potLig1.getY(),d_potLig[id_stream].getY(), cpySize1, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_potLig1.getZ(),d_potLig[id_stream].getZ(), cpySize1, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_potLig1.getW(),d_potLig[id_stream].getW(), cpySize1, cudaMemcpyDeviceToHost);
+			fs_nl << "fx fy fz w"<< std::endl;
+			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
+				//			for(size_t i = 0; i < 20; ++i) {
+				fs_nl << h_potLig1.getX()[i] << " " << h_potLig1.getY()[i] << " " << h_potLig1.getZ()[i]<< std::endl;// << " " << h_potLig1.getW()[i] ;
+
+			}
+			fs_nl.close();
+
+#endif
 //			exit(EXIT_SUCCESS);
 			//IP.d_NLPotForce<false>(it->devLocGridId(), it->devLocRecId(), it->devLocRecId(),it->size(),
  		//	&d_trafoRec, d_potRec[pipeIdx[1]],streams[2]);
