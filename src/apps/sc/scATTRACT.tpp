@@ -14,6 +14,14 @@
 #include "Request.h"
 #include "Server.h"
 #include <chrono>
+#define DEBUG
+#ifdef DEBUG
+#include <fstream>
+#include <sstream>
+#include "debug_functions.h"
+#include <string>
+#include "ServiceFactory.h"
+#endif
 namespace as {
 
 template<typename GenericTypes>
@@ -47,6 +55,28 @@ void scATTRACT<GenericTypes>::run() {
 	auto results = std::vector<result_t>(dofs.size());
 	server->wait(request, results.data());
 	auto end = std::chrono::system_clock::now();
+	#ifdef DEBUG //_config->server()::service_t CPUEnergyService6DModes<real_t>
+		bool  use_GPU = false;
+			#ifdef CUDA
+			use_GPU = true;
+			#endif
+
+		std::string file_debug = getDebugPath<real_t, result_t>( use_GPU );
+		std::fstream fs;
+		fs.open (file_debug, std::fstream::in | std::fstream::out | std::fstream::trunc );
+		std::stringstream ss;
+		print_header<real_t, result_t>( ss);
+		ss << std::endl;
+		for (result_t const res : results)
+		{
+			print_enGrad<real_t, result_t>( ss, res);
+			ss << std::endl;
+
+
+		}
+		fs << ss.str();
+		fs.close();
+	#endif
 
 	std::cout << "time"<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
 	for (result_t const res : results) {
