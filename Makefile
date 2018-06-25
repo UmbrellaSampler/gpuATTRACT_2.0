@@ -9,8 +9,8 @@ CURDIR = $(realpath $(PWD) )
 
 
 ifeq ($(TARGET), RELEASE)
-	OBJDIR = build
-	NAME = AttractServer
+	OBJDIR = build_RELEASE
+	NAME = AttractServer_RELEASE
 endif
 ifeq ($(TARGET), DEBUG)
 	OBJDIR = build_DEBUG
@@ -59,8 +59,8 @@ ifeq ($(TARGET), RELEASE)
 	OFLAGS = -O3 -DNDEBUG
 	FXX_OFLAGS = -O2 
 else ifeq ($(TARGET), DEBUG) 
-	OFLAGS = -O0 -g -Wall -Wextra
-	FXX_OFLAGS = -O0 -g -Wall -Wextra
+	OFLAGS = -O0 -g -Wall -Wextra -DDEBUG
+	FXX_OFLAGS = -O0 -g -Wall -Wextra -DDEBUG
 else
 	OFLAGS =
 	FXX_OFLAGS = 

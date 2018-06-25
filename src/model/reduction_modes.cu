@@ -145,9 +145,9 @@ blockReduceMode(unsigned const numAtoms, unsigned const numModes,  DOF_T* dofs,
 			f[0] = d_fx[base + i + blockSize];
 			f[1] = d_fy[base + i + blockSize];
 			f[2] = d_fz[base + i + blockSize];
-			x = xPos[i + blockSize];
-			y = yPos[i + blockSize];
-			z = zPos[i + blockSize];
+			x = xPos[base +i + blockSize];
+			y = yPos[base +i + blockSize];
+			z = zPos[base +i + blockSize];
 			sum_fx += f[0];
 			sum_fy += f[1];
 			sum_fz += f[2];

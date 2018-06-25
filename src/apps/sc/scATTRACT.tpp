@@ -14,7 +14,7 @@
 #include "Request.h"
 #include "Server.h"
 #include <chrono>
-//#define DEBUG
+
 #ifdef DEBUG
 #include <fstream>
 #include <sstream>
@@ -56,6 +56,7 @@ void scATTRACT<GenericTypes>::run() {
 	server->wait(request, results.data());
 	auto end = std::chrono::system_clock::now();
 	#ifdef DEBUG //_config->server()::service_t CPUEnergyService6DModes<real_t>
+	printf("DEBUGMODE\n");
 		bool  use_GPU = false;
 			#ifdef CUDA
 			use_GPU = true;
@@ -76,9 +77,10 @@ void scATTRACT<GenericTypes>::run() {
 		}
 		fs << ss.str();
 		fs.close();
+		std::cout << "time elapsed "<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
 	#endif
 
-	std::cout << "time"<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+
 	for (result_t const res : results) {
 		std::cout << res << std::endl;
 	}

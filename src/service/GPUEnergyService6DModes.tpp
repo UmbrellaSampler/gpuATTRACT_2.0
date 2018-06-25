@@ -342,7 +342,7 @@ public:
 #ifdef DEBUG
 			cudaDeviceSynchronize();
 			std::string file_defo = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
-			file_defo += "/defo_rec.dat";
+			file_defo += "/rec_defo.dat";
 			std::fstream fs_defo;
 			fs_defo.open (file_defo, std::fstream::in | std::fstream::out | std::fstream::trunc );
 			size_t bufferSizeDefoRec1 = d_defoRec[id_stream].bufferSize();
@@ -361,7 +361,7 @@ public:
 
 
 			std::string file_trafo = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
-			file_trafo += "/trafo_lig.dat";
+			file_trafo += "/lig_trafo.dat";
 			std::fstream fs_trafo;
 			fs_trafo.open (file_trafo, std::fstream::in | std::fstream::out | std::fstream::trunc );
 
@@ -382,7 +382,7 @@ public:
 
 
 			std::string file_pot = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
-			file_pot += "/pot_lig.dat";
+			file_pot += "/lig_pot.dat";
 			std::fstream fs_pot;
 			fs_pot.open (file_pot, std::fstream::in | std::fstream::out | std::fstream::trunc );
 			WorkerBuffer<REAL> h_potLig(4,stageResc.lig->numAtoms);
@@ -519,7 +519,7 @@ public:
 #ifdef DEBUG
 			cudaDeviceSynchronize();
 			std::string file_nl = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
-			file_nl += "/nl_rec.dat";
+			file_nl += "/rec_nl.dat";
 			std::fstream fs_nl;
 			fs_nl.open (file_nl, std::fstream::in | std::fstream::out | std::fstream::trunc );
 			cudaDeviceSynchronize();

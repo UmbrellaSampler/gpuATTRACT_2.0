@@ -36,7 +36,13 @@ class WorkerManager;
 template<typename T>
 class ThreadSafeQueue;
 
+
+#ifdef DEBUG
+constexpr unsigned DEFAULT_ITEM_SIZE = 10;
+#else
 constexpr unsigned DEFAULT_ITEM_SIZE = 1000;
+#endif
+
 constexpr unsigned MAX_WAIT_MILLISECONDS = 200000;
 
 template<typename GenericTypes>
