@@ -31,9 +31,9 @@ public:
 	std::string ligModesName;
 
 	std::string alphabetName;
-	std::string modeNames[NUM_MAX_PROTEIN];
-	std::string proteinNames[NUM_MAX_PROTEIN];
-	std::string gridNames[NUM_MAX_PROTEIN];
+	std::vector<std::string> modeNames;
+	std::vector<std::string> proteinNames;
+	std::vector<std::string> gridNames;
  
 	/* Concurrency */
   int numModes;

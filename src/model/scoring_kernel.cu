@@ -161,6 +161,7 @@ __global__ void deform_kernel(
 		Vec3<REAL> posAtom(	protein.xPos[atomIdx],
 							protein.yPos[atomIdx],
 							protein.zPos[atomIdx]);
+		posAtom += protein.pivot;
 		deform< REAL, DOF_T>(	 dof,posAtom, protein, atomIdx, idx_protein,
 				buffer_defoX[idx], buffer_defoY[idx], buffer_defoZ[idx]);
 	}
@@ -191,9 +192,15 @@ __global__ void transform_kernel(
 		Vec3<REAL> posAtomCenter(	buffer_defoX[idx],
 									buffer_defoY[idx],
 									buffer_defoZ[idx]);
+		posAtomCenter -= pivotCenter;
 
 		device_transform(dof, posAtomCenter,pivotCenter, pivotPartner, idx_proteinCenter, idx_proteinPartner,
 		       		 buffer_trafoX[idx],  buffer_trafoY[idx], buffer_trafoZ[idx]);
+		//DEBUG
+//		buffer_trafoX[idx] += pivotCenter.x;
+//		buffer_trafoY[idx] += pivotCenter.y;
+//		buffer_trafoZ[idx] += pivotCenter.z;
+
 	}
 }
 

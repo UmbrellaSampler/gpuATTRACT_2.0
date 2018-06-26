@@ -25,11 +25,11 @@
 #include "nativeTypesMath.h"
 #include "ServiceFactory.h"
 #include "scoring_kernel.h"
+#include <iostream>
 namespace as {
 
 template<typename SERVICE>
 void Configurator_MB_Modes<SERVICE>::init(CmdArgs const& args) {
-
 	std::shared_ptr<DataManager> dataManager = std::make_shared<DataManager>();
 
 
@@ -53,22 +53,22 @@ void Configurator_MB_Modes<SERVICE>::init(CmdArgs const& args) {
 	TypeMap typeMap = createTypeMapFromVector(mapVec);
 	int numProtein = 2;
 	for( int idxProtein = 0; idxProtein < numProtein; ++idxProtein){
-
-
+		std::cout <<args.proteinNames[idxProtein] << std::endl;
 		auto protein = createProteinFromPDB<real_t>(args.proteinNames[idxProtein]);
 		auto grid = createGridFromGridFile<real_t>(args.gridNames[idxProtein]);
 		protein->setNumModes( args.numModes );
 		protein->auto_pivotize();
 		protein->setNumMappedTypes(1);
-		protein->setNumModes(args.numModes);
-		readHMMode<real_t>(protein, args.recModesName);
+		readHMMode<real_t>(protein, args.modeNames[idxProtein]);
 		protein->getOrCreateMappedPtr();
 		protein-> scaleModeEigenValues( args.modeEVFactor );
 		applyDefaultMapping(protein->numAtoms(), protein->type(), protein->type());
 		applyMapping(typeMap, protein->numAtoms(), protein->type(), protein->mappedType());
 		Common_MB_Modes::numModes[idxProtein] = args.numModes;
-
-		this->_ids.proteins[idxProtein] = ProtConfig( dataManager->add(grid), dataManager->add(protein), idxProtein, false, ProtConfig::vec3_t(protein->pivot().x,protein->pivot().y,protein->pivot().z));
+		auto id_grid = dataManager->add(grid);
+		auto id_protein = dataManager->add(protein);
+		ProtConfig config( id_grid , id_protein, idxProtein, false, protein->pivot());
+		this->_ids.proteins.push_back( config );
 	}
 
 		if(h.auto_pivot) {
@@ -131,7 +131,7 @@ void Configurator_MB_Modes<SERVICE>::init(CmdArgs const& args) {
 		this->_server->createWorkers(args.numCPUs);
 	} else {
 		//this->_server->createWorkers(args.deviceIds.size());
-		this->_server->createWorkers(2);
+		this->_server->createWorkers(1);
 	}
 
 }

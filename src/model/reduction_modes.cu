@@ -604,9 +604,10 @@ void d_reduce(
 	int smemSize;
 	// when there is only one warp per block, we need to allocate two warps
 	// worth of shared memory so that we don't index shared memory out of bounds
-	if(std::is_same<DOF_T,DOF_6D_Modes<T>>::value){
+	if(std::is_same<DOF_T,DOF_6D_Modes<T>>::value ||std::is_same<DOF_T,DOF_MB_Modes<T>>::value ){
 		smemSize = (threads <= 32) ? 2 * (13 + numModes) * threads * sizeof(T) : (13 + numModes) * threads * sizeof(T);
 	}
+
 	else{
 		smemSize = (threads <= 32) ? 2 * 13 * threads * sizeof(T) : 13 * threads * sizeof(T);
 	}

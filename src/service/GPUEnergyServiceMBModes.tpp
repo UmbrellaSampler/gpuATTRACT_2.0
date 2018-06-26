@@ -107,6 +107,10 @@ class GPUEnergyServiceMBModes<REAL>::Private {
 public:
 
 	Private() : numItemsInPipe(0) {
+		for ( unsigned id_protein = 0; id_protein < Common_MB_Modes::numProteins; ++id_protein){
+			dofSize[id_protein] = 13 + Common_MB_Modes::numModes[id_protein];
+		}
+
 			CUDA_CHECK(cudaStreamCreate(&stream));
 	}
 	/**
@@ -199,11 +203,11 @@ public:
 		for ( unsigned id_centerProtein = 0; id_centerProtein< common->numProteins; ++id_centerProtein)
 		{
 			unsigned const numAtomsCenter = it->size()*stageResc.proteins[id_centerProtein]->numAtoms;
-			assert( numAtomsCenter <= d_trafoRec[id_centerProtein].bufferSize() );
+			assert( numAtomsCenter <= d_trafo[id_centerProtein][0].bufferSize() );
 			size_t gridSizeCenter = ( numAtomsCenter + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 
 			//deform_kernel()
-
+			//deform needs unpivotized and transform needs pivotized coordinates
 			 d_deform(
 					 BLSZ_TRAFO,
 					gridSizeCenter,
@@ -216,32 +220,86 @@ public:
 					d_defo[id_centerProtein].getY(),
 					d_defo[id_centerProtein].getZ()
 					);
+		}
+		for ( unsigned id_centerProtein = 0; id_centerProtein< common->numProteins; ++id_centerProtein)
+				{
+					unsigned const numAtomsCenter = it->size()*stageResc.proteins[id_centerProtein]->numAtoms;
+					assert( numAtomsCenter <= d_trafo[id_centerProtein][0].bufferSize() );
+					size_t gridSizeCenter = ( numAtomsCenter + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
+
+			 for ( unsigned id_partnerProtein = 0; id_partnerProtein< common->numProteins; ++id_partnerProtein)
+			{
+				 if(id_partnerProtein != id_centerProtein){
+					 d_transform(
+						BLSZ_TRAFO,
+						gridSizeCenter,
+						stream,
+						d_dof.get(0),
+						it->size(),
+						stageResc.proteins[id_centerProtein]->numAtoms,
+						id_centerProtein,
+						id_partnerProtein,
+						stageResc.proteins[id_centerProtein]->pivot,
+						stageResc.proteins[id_partnerProtein]->pivot,
+						d_defo[id_centerProtein].getX(),
+						d_defo[id_centerProtein].getY(),
+						d_defo[id_centerProtein].getZ(),
+						d_trafo[id_centerProtein][id_partnerProtein].getX(),
+						d_trafo[id_centerProtein][id_partnerProtein].getY(),
+						d_trafo[id_centerProtein][id_partnerProtein].getZ()
+						);
+					 	if(id_centerProtein == 1){
 
 
+					 	}
+				 }
+			 }
+
+		}
+
+
+		cudaDeviceSynchronize();
+								std::cout <<"defoRec g"<<std::endl;
+								size_t bufferSizeDefoRec1 = d_defo[0].bufferSize();
+								WorkerBuffer<REAL> h_DefoRec(3,bufferSizeDefoRec1);
+								size_t cpySizeDefoRec1 = h_DefoRec.bufferSize()*sizeof(REAL);
+
+								//std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
+								cudaMemcpy(h_DefoRec.getX(),d_defo[0].getX(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+								cudaMemcpy(h_DefoRec.getY(),d_defo[0].getY(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+								cudaMemcpy(h_DefoRec.getZ(),d_defo[0].getZ(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+								for(size_t i = 0; i < stageResc.proteins[0]->numAtoms; ++i) {
+								//std::cout  << std::setprecision(10)<< h_DefoRec.getX()[i] << " " << h_DefoRec.getY()[i] << " " << h_DefoRec.getZ()[i] << std::endl;
+								}
+
+
+							std::cout <<"trafoRec g"<<std::endl;
+							size_t bufferSizetrafoRec1 = d_trafo[1][0].bufferSize();
+							WorkerBuffer<REAL> h_trafoRec(3,bufferSizetrafoRec1);
+							size_t cpySizetrafoRec1 = h_trafoRec.bufferSize()*sizeof(REAL);
+
+							//std::cout << "bufferSize: " << bufferSizetrafoRec << " cpySize: " << cpySizetrafoRec << std::endl;
+							cudaMemcpy(h_trafoRec.getX(),d_trafo[1][0].getX(), cpySizetrafoRec1, cudaMemcpyDeviceToHost);
+							cudaMemcpy(h_trafoRec.getY(),d_trafo[1][0].getY(), cpySizetrafoRec1, cudaMemcpyDeviceToHost);
+							cudaMemcpy(h_trafoRec.getZ(),d_trafo[1][0].getZ(), cpySizetrafoRec1, cudaMemcpyDeviceToHost);
+							for(size_t i = 0; i < stageResc.proteins[1]->numAtoms; ++i) {
+								std::cout  << std::setprecision(10)<< h_trafoRec.getX()[i] << " " << h_trafoRec.getY()[i] << " " << h_trafoRec.getZ()[i] << std::endl;
+							}
+		//					exit(EXIT_SUCCESS);
+
+		for ( unsigned id_centerProtein = 0; id_centerProtein< common->numProteins; ++id_centerProtein)
+				{
+					unsigned const numAtomsCenter = it->size()*stageResc.proteins[id_centerProtein]->numAtoms;
+					assert( numAtomsCenter <= d_trafo[id_centerProtein][0].bufferSize() );
+					size_t gridSizeCenter = ( numAtomsCenter + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 			for ( unsigned id_partnerProtein = 0; id_partnerProtein< common->numProteins; ++id_partnerProtein)
 			{
 				//tranform kernel and potforce kernel
 
-				d_transform(
-					BLSZ_TRAFO,
-					gridSizeCenter,
-					stream,
-					d_dof.get(0),
-					it->size(),
-					stageResc.proteins[id_centerProtein]->numAtoms,
-					id_centerProtein,
-					id_partnerProtein,
-					stageResc.proteins[id_centerProtein]->pivot,
-					stageResc.proteins[id_partnerProtein]->pivot,
-					d_defo[id_centerProtein].getX(),
-					d_defo[id_centerProtein].getY(),
-					d_defo[id_centerProtein].getZ(),
-					d_trafo[id_centerProtein][id_partnerProtein].getX(),
-					d_trafo[id_centerProtein][id_partnerProtein].getY(),
-					d_trafo[id_centerProtein][id_partnerProtein].getZ()
-					);
+
 				if (common->radius_cutoff > 10000)
 				{
+					if(id_partnerProtein != id_centerProtein){
 					d_potForce(
 						BLSZ_TRAFO,
 						gridSizeCenter,
@@ -262,16 +320,16 @@ public:
 						BLSZ_INTRPL,
 						gridSizeCenter,
 						stream,
-						stageResc.grids[id_centerProtein].NL,
-						*stageResc.proteins[id_centerProtein],
+						stageResc.grids[id_partnerProtein].NL,
 						*stageResc.proteins[id_partnerProtein],
+						*stageResc.proteins[id_centerProtein],
 						*stageResc.table,
 						common->radius_cutoff,
 						*stageResc.simParam,
 						it->size(),
-						d_defo[id_centerProtein].getX(),
-						d_defo[id_centerProtein].getY(),
-						d_defo[id_centerProtein].getZ(),
+						d_defo[id_partnerProtein].getX(),
+						d_defo[id_partnerProtein].getY(),
+						d_defo[id_partnerProtein].getZ(),
 						d_trafo[id_centerProtein][id_partnerProtein].getX(),
 						d_trafo[id_centerProtein][id_partnerProtein].getY(),
 						d_trafo[id_centerProtein][id_partnerProtein].getZ(),
@@ -297,8 +355,8 @@ public:
 						stageResc.proteins[id_centerProtein]->numAtoms,
 						it->size()
 						);
+				}
 			}
-
 			deviceReduce<REAL, DOF_MB_Modes<REAL>,1>(
 			blockSizeReduceRec,
 			it->size(),

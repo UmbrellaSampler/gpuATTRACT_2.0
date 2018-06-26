@@ -194,27 +194,33 @@ void rotate_forces(
        {
 		RotMat<REAL>  rotMatCenter = euler2rotmat(dof.protein[idx_proteinCenter].ang.x,
 												dof.protein[idx_proteinCenter].ang.y,
-												dof.protein[idx_proteinCenter].ang.z).getInv();
+												dof.protein[idx_proteinCenter].ang.z);
 		RotMat<REAL>  rotMatPartner = euler2rotmat(dof.protein[idx_proteinPartner].ang.x,
 												dof.protein[idx_proteinPartner].ang.y,
-												dof.protein[idx_proteinPartner].ang.z);
+												dof.protein[idx_proteinPartner].ang.z).getInv();
 		RotMat<REAL> rotMat ;//= rotMatPartner * rotMatCenter;
 
 		for(unsigned i = 0; i < 3; ++i) {
 					for(unsigned j = 0; j < 3; ++j) {
 						for(unsigned k = 0; k < 3; ++k) {
-							rotMat[i*3 + j] += rotMatPartner[i*3 + k]*rotMatCenter[k*3 + j];
+							rotMat[i*3 + j] += rotMatCenter[i*3 + k]*rotMatPartner[k*3 + j];
 						}
 					}
 				}
+		//printf("%d %d \n",idx_proteinCenter,idx_proteinPartner);
+		//printf("%f %f %f %f %f %f %f %f %f\n ",rotMat[0],rotMat[1],rotMat[2],rotMat[3],rotMat[4],rotMat[5],rotMat[6],rotMat[7],rotMat[8]);
 		Vec3<REAL> translationCenter = dof.protein[idx_proteinCenter].pos;
 		Vec3<REAL> translationPartner = dof.protein[idx_proteinPartner].pos;
+		//printf("trans s  %f %f %f %f %f %f\n ",translationCenter.x,translationCenter.y,translationCenter.z,translationPartner.x,translationPartner.y,translationPartner.z);
+		//Vec3<REAL> translationTotal = translationCenter - translationPartner;
+		Vec3<REAL> translationTotal = rotMatPartner * (translationCenter - translationPartner);
+//		Vec3<REAL> pivotTotal = pivotCenter - pivotPartner;
+//		pivotTotal = pivotTotal + pivotPartner;
+		Vec3<REAL> pivotTotal = pivotPartner + (rotMatPartner *  (pivotCenter - pivotPartner));
 
-		Vec3<REAL> translationTotal = translationPartner - translationCenter;
-		translationTotal = rotMat * translationTotal;
-		Vec3<REAL> pivotTotal = pivotPartner - pivotCenter;
-		pivotTotal = rotMat * pivotTotal;
-		pivotTotal = pivotTotal + pivotCenter;
+		//printf("piv total   %f %f %f \n ",pivotTotal.x,pivotTotal.y,pivotTotal.z);
+//		printf("piv   %f %f %f %f %f %f\n ",pivotCenter.x,pivotCenter.y,pivotCenter.z,pivotPartner.x,pivotPartner.y,pivotPartner.z);
+		//printf("trans %f %f %f \n ",translationTotal.x,translationTotal.y,translationTotal.z);
 
 
 

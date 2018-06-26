@@ -52,7 +52,6 @@ void scATTRACT<GenericTypes>::run() {
 	for (result_t const res : results) {
 		std::cout << res << std::endl;
 	}
-
 }
 
 }  // namespace as

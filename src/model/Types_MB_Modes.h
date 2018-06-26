@@ -68,13 +68,22 @@ struct DOF_MB_Modes {
 
 struct ProtConfig{
 	using real_t = double;
-	using vec3_t = Vec3<real_t>;
+	using vec3_t = Vec3<double>;
 	id_t gridId;
 	id_t proteinId;
 	unsigned idxModes;
 	bool centered;
 	vec3_t pivot;
-	ProtConfig( id_t id_grid, id_t id_protein, id_t idx_mode, bool center, vec3_t piv): gridId(id_grid), proteinId(id_protein), idxModes(idx_mode), centered(center), pivot(piv){}
+	template< typename REAL>
+	ProtConfig( id_t id_grid, id_t id_protein, id_t idx_mode, bool center, Vec3<REAL> piv): gridId(id_grid), proteinId(id_protein), idxModes(idx_mode), centered(center), pivot(piv.x,piv.y,piv.z){}
+	//template <typename REAL>
+//	ProtConfig( id_t id_grid, id_t id_protein, id_t idx_mode, bool center, Vec3<REAL> piv){
+//		gridId = id_grid;
+//		proteinId = id_protein;
+//		idxModes = idx_mode;
+//		centered = center;
+//		pivot = vec3_t( piv.x,piv.y,piv.z);
+//	}
 };
 struct Common_MB_Modes {
 	id_t tableId;

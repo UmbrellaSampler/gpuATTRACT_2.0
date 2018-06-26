@@ -43,6 +43,7 @@ std::shared_ptr<void> ServiceFactory::create(ServiceType serviceType,
 		case ServiceType::GPUEnergyService6DModes:
 			return std::shared_ptr<void>( new GPUEnergyService6DModes<REAL>(dataMng, args.deviceIds));
 		case ServiceType::GPUEnergyServiceMBModes:
+			printf("in service");
 			return std::shared_ptr<void>( new GPUEnergyServiceMBModes<REAL>(dataMng, args.deviceIds));
 #endif
 		default:

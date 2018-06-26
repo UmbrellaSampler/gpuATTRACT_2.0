@@ -29,7 +29,6 @@ namespace as {
 
 template<typename SERVICE>
 void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
-
 	/* load dataItems */
 	this->_ids.radius_cutoff = args.radius_cutoff;
 	auto receptor = createProteinFromPDB<real_t>(args.recName);

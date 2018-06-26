@@ -15,7 +15,7 @@
 #include "Configurator_MB_Modes.h"
 #include "Types_6D.h"
 #include "Types_6D_Modes.h"
-
+#include "Types_MB_Modes.h"
 namespace as {
 
 template<typename GenericTypes>

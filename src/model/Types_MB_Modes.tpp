@@ -53,7 +53,7 @@ std::ostream& operator<<(std::ostream& outStream, DOF_MB_Modes<REAL> const& dof)
 	int w = 13;
 
 	for ( int i = 0; i < NUM_MAX_PROTEIN; ++i){
-		outStream << dof.protein[i];
+		outStream << dof.protein[i]<< std::endl;
 	}
 
 
@@ -86,7 +86,7 @@ std::ostream& operator<<(std::ostream& s, Result_MB_Modes<REAL> const& enGrad) {
 
 
 	for ( int i = 0; i < NUM_MAX_PROTEIN; ++i){
-			s << enGrad.protein[i];
+			s << enGrad.protein[i]<< std::endl;
 		}
 
 	s.unsetf(ios::scientific);

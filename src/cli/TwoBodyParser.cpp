@@ -144,22 +144,22 @@ void TwoBodyParser::assignArgs(po::variables_map const& vm) noexcept {
 	if(vm.count("alphabet"))
 		_args->alphabetName = vm["alphabet"].as<string>();
 	if(vm.count("modes1"))
-		_args->modeNames[0] = vm["modes1"].as<string>();
+		_args->modeNames.push_back( vm["modes1"].as<string>());
 	if(vm.count("modes2"))
-		_args->modeNames[1] = vm["modes2"].as<string>();
+		_args->modeNames.push_back( vm["modes2"].as<string>());
 
 
 	if(vm.count("numProtein"))
 			_args->numProtein = vm["numProtein"].as<int>();
 	if(vm.count("grid1"))
-			_args->gridNames[0] = vm["grid1"].as<string>();
+			_args->gridNames.push_back( vm["grid1"].as<string>());
 	if(vm.count("grid2"))
-		_args->gridNames[1] = vm["grid2"].as<string>();
+		_args->gridNames.push_back(  vm["grid2"].as<string>());
 
 	if(vm.count("prot-pdb1"))
-			_args->proteinNames[0] = vm["prot-pdb1"].as<string>();
+			_args->proteinNames.push_back( vm["prot-pdb1"].as<string>());
 	if(vm.count("prot-pdb2"))
-		_args->proteinNames[0] = vm["prot-pdb2"].as<string>();
+		_args->proteinNames.push_back( vm["prot-pdb2"].as<string>());
 
 
 }
