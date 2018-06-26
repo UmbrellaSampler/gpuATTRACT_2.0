@@ -48,7 +48,7 @@ void Configurator_MB_Modes<SERVICE>::init(CmdArgs const& args) {
 
 	/* load dataItems */
 	this->_ids.radius_cutoff = args.radius_cutoff;
-
+	this->_ids.numProteins = args.numProtein;
 	auto mapVec = readGridAlphabetFromFile(args.alphabetName); // map: std::vector<unsigned>
 	TypeMap typeMap = createTypeMapFromVector(mapVec);
 	int numProtein = 2;

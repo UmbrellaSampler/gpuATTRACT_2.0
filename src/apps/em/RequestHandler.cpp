@@ -10,6 +10,7 @@
 #include "Server.h"
 #include "Request.h"
 #include "Types_6D.h"
+#include "Types_MB_Modes.h"
 
 
 namespace as {
@@ -25,5 +26,11 @@ class RequestHandler<Types_6D_Modes<float>>;
 
 template
 class RequestHandler<Types_6D_Modes<double>>;
+
+template
+class RequestHandler<Types_MB_Modes<float>>;
+
+template
+class RequestHandler<Types_MB_Modes<double>>;
 }  // namespace as
 

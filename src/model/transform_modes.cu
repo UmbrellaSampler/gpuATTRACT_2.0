@@ -35,7 +35,7 @@ __global__ void d_DOFPos_kernel(
 							protein.yPos[atomIdx],
 							protein.zPos[atomIdx]);
 
-		deform< REAL, DOF_T>( dof, posAtom, protein, atomIdx, type_protein, idx, buffer_defoX[idx], buffer_defoY[idx], buffer_defoZ[idx] );
+		deform< REAL, DOF_T>( dof, posAtom, protein,  type_protein, idx, buffer_defoX[idx], buffer_defoY[idx], buffer_defoZ[idx] );
 		translate_rotate< REAL, DOF_T>( dof, posAtom, type_protein );
 
 		buffer_trafoX[idx] = posAtom.x;
@@ -75,6 +75,43 @@ __global__ void d_rotateForces(
 	}
 }
 
+template<typename REAL>
+__global__ void d_rotateForces(
+		unsigned const idx_protein,
+		REAL* inxForce,
+		REAL* inyForce,
+		REAL* inzForce,
+		REAL* inE,
+		REAL* outxForce,
+		REAL* outyForce,
+		REAL* outzForce,
+		REAL* outE,
+		DOF_MB_Modes<REAL>* dofs,
+		unsigned const numAtoms,
+		unsigned const numDofs
+)
+{
+	/* calculate element index that is to be prcessed */
+	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+
+		if (idx < numAtoms*numDofs) {
+		/* load DOF from global memory */
+		unsigned DOFidx = idx / numAtoms;
+		auto dof = dofs[DOFidx];
+
+
+		Vec3<REAL> ForceAtom( inxForce[idx], inyForce[idx], inzForce[idx] );
+		const RotMat<REAL> rotMat = euler2rotmat( dof.protein[idx_protein].ang.x, dof.protein[idx_protein].ang.y, dof.protein[idx_protein].ang.z );
+
+		ForceAtom = rotMat*ForceAtom;
+
+		outxForce[idx] += ForceAtom.x;
+		outyForce[idx] += ForceAtom.y;
+		outzForce[idx] += ForceAtom.z;
+		outE[idx] += inE[idx];
+	}
+}
+
 
 
 template<typename REAL>
@@ -94,6 +131,41 @@ void d_rotateForces(
 			xForce,
 			yForce,
 			zForce,
+			dofs,
+			numAtoms,
+			numDOFs
+			);
+}
+
+template<typename REAL>
+void d_rotateForces(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		unsigned const idx_protein,
+		REAL* inxForce,
+		REAL* inyForce,
+		REAL* inzForce,
+		REAL* inE,
+		REAL* outxForce,
+		REAL* outyForce,
+		REAL* outzForce,
+		REAL* outE,
+		DOF_MB_Modes<REAL>* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs
+)
+{
+	d_rotateForces<<<gridSize, blockSize, 0, stream>>> (
+			idx_protein,
+			inxForce,
+			inyForce,
+			inzForce,
+			inE,
+			outxForce,
+			outyForce,
+			outzForce,
+			outE,
 			dofs,
 			numAtoms,
 			numDOFs
@@ -207,6 +279,42 @@ void d_rotateForces<double>(
 		double* yForce,
 		double* zForce,
 		DOF_6D_Modes<double>* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs);
+
+template
+void d_rotateForces<float>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		unsigned const idx_protein,
+		float* inxForce,
+		float* inyForce,
+		float* inzForce,
+		float* inE,
+		float* outxForce,
+		float* outyForce,
+		float* outzForce,
+		float* outE,
+		DOF_MB_Modes<float>* dofs,
+		unsigned numAtoms,
+		unsigned numDOFs);
+
+template
+void d_rotateForces<double>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		unsigned const idx_protein,
+		double* inxForce,
+		double* inyForce,
+		double* inzForce,
+		double* inE,
+		double* outxForce,
+		double* outyForce,
+		double* outzForce,
+		double* outE,
+		DOF_MB_Modes<double>* dofs,
 		unsigned numAtoms,
 		unsigned numDOFs);
 

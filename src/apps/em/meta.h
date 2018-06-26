@@ -24,6 +24,7 @@
 #include <Eigen/Core>
 #include "Types_6D.h"
 #include "Types_6D_Modes.h"
+#include "Types_MB_Modes.h"
 
 #define OBJGRAD(dof, energy)	\
 	do { 						\
@@ -247,6 +248,125 @@ public:
 
 	static Result_6D_Modes<REAL> toSecond(ObjGrad const& objGrad) {
 		return TypesConverter<Result_6D_Modes<REAL>, ObjGrad>::toFirst(objGrad);
+	}
+};
+
+
+
+////////////////////////////////MB///////////////////////////////////////////
+
+
+template<typename REAL>
+class TypesConverter<DOF_MB_Modes<REAL>, Vector> {
+public:
+	static DOF_MB_Modes<REAL> toFirst(Vector const& vec) {
+		DOF_MB_Modes<REAL> dof;
+		unsigned idx_count = 0;
+		for ( unsigned idx_protein = 0; idx_protein < Common_MB_Modes::numProteins; ++idx_protein)
+		{
+		dof.protein[idx_protein].ang.x = vec(0 + idx_count);
+		dof.protein[idx_protein].ang.y = vec(1 + idx_count);
+		dof.protein[idx_protein].ang.z = vec(2 + idx_count);
+		dof.protein[idx_protein].pos.x = vec(3 + idx_count);
+		dof.protein[idx_protein].pos.y = vec(4 + idx_count);
+		dof.protein[idx_protein].pos.z = vec(5 + idx_count);
+		for(int mode=0;mode< Common_MB_Modes::numModes[idx_protein]; mode++){
+			dof.protein[idx_protein].modes[mode]=vec(6 + mode + idx_count);
+		}
+		 idx_count += 6 + Common_MB_Modes::numModes[idx_protein];
+		}
+		return dof;
+	}
+
+	static Vector toSecond(DOF_MB_Modes<REAL> const& dof) {
+		//Vector vec(6 + Common_Modes::numModesRec + Common_Modes::numModesLig);
+		Vector vec(DOF_MAX_NUMBER);
+		unsigned idx_count = 0;
+		for ( unsigned idx_protein = 0; idx_protein < Common_MB_Modes::numProteins; ++idx_protein)
+		{
+			vec(0 + idx_count) = dof.protein[idx_protein].ang.x;
+			vec(1 + idx_count) = dof.protein[idx_protein].ang.y;
+			vec(2 + idx_count) = dof.protein[idx_protein].ang.z;
+			vec(3 + idx_count) = dof.protein[idx_protein].pos.x;
+			vec(4 + idx_count) = dof.protein[idx_protein].pos.y;
+			vec(5 + idx_count) = dof.protein[idx_protein].pos.z;
+
+			for(int mode=0;mode< Common_MB_Modes::numModes[idx_protein]; mode++){
+				vec(6 + mode + idx_count) = dof.protein[idx_protein].modes[mode];
+			}
+			idx_count += 6 + Common_MB_Modes::numModes[idx_protein];
+		}
+		return vec;
+	}
+};
+
+template<typename REAL>
+class TypesConverter<Vector, DOF_MB_Modes<REAL>> {
+public:
+	static Vector toFirst(DOF_MB_Modes<REAL> const& dof) {
+		return TypesConverter<DOF_MB_Modes<REAL>, Vector>::toSecond(dof);
+	}
+
+	static DOF_MB_Modes<REAL> toSecond(Vector const& vec) {
+		return TypesConverter<DOF_MB_Modes<REAL>, Vector>::toFirst(vec);
+	}
+};
+
+template<typename REAL>
+class TypesConverter<Result_MB_Modes<REAL>, ObjGrad> {
+public:
+	static Result_MB_Modes<REAL> toFirst(ObjGrad const& objGrad) {
+		Result_MB_Modes<REAL> enGrad;
+		enGrad.E = objGrad.obj;
+		unsigned idx_count = 0;
+		for ( unsigned idx_protein = 0; idx_protein < Common_MB_Modes::numProteins; ++idx_protein)
+			{
+			enGrad.protein[idx_protein].ang.x = objGrad.grad(0 + idx_count);
+			enGrad.protein[idx_protein].ang.y = objGrad.grad(1 + idx_count);
+			enGrad.protein[idx_protein].ang.z = objGrad.grad(2 + idx_count);
+			enGrad.protein[idx_protein].pos.x = objGrad.grad(3 + idx_count);
+			enGrad.protein[idx_protein].pos.y = objGrad.grad(4 + idx_count);
+			enGrad.protein[idx_protein].pos.z = objGrad.grad(5 + idx_count);
+			for(int mode=0;mode< Common_MB_Modes::numModes[idx_protein]; mode++){
+				enGrad.protein[idx_protein].modes[mode]= objGrad.grad(6 + mode + idx_count);
+			}
+			 idx_count += 6 + Common_MB_Modes::numModes[idx_protein];
+		}
+		return enGrad;
+	}
+
+	static ObjGrad toSecond (Result_MB_Modes<REAL> const& enGrad) {
+		ObjGrad objGrad;
+		objGrad.obj = enGrad.E;
+		unsigned idx_count = 0;
+		for ( unsigned idx_protein = 0; idx_protein < Common_MB_Modes::numProteins; ++idx_protein)
+		{
+			objGrad.grad(0 + idx_count) = enGrad.protein[idx_protein].ang.x;
+			objGrad.grad(1 + idx_count) = enGrad.protein[idx_protein].ang.y;
+			objGrad.grad(2 + idx_count) = enGrad.protein[idx_protein].ang.z;
+			objGrad.grad(3 + idx_count) = enGrad.protein[idx_protein].pos.x;
+			objGrad.grad(4 + idx_count) = enGrad.protein[idx_protein].pos.y;
+			objGrad.grad(5 + idx_count) = enGrad.protein[idx_protein].pos.z;
+
+			for(int mode=0;mode< Common_MB_Modes::numModes[idx_protein]; mode++){
+				objGrad.grad(6 + mode + idx_count) = enGrad.protein[idx_protein].modes[mode];
+			}
+			idx_count += 6 + Common_MB_Modes::numModes[idx_protein];
+		}
+		return objGrad;
+	}
+};
+
+template<typename REAL>
+class TypesConverter<ObjGrad, Result_MB_Modes<REAL>> {
+public:
+
+	static ObjGrad toFirst (Result_MB_Modes<REAL> const& enGrad) {
+		return TypesConverter<Result_MB_Modes<REAL>, ObjGrad>::toSecond(enGrad);
+	}
+
+	static Result_MB_Modes<REAL> toSecond(ObjGrad const& objGrad) {
+		return TypesConverter<Result_MB_Modes<REAL>, ObjGrad>::toFirst(objGrad);
 	}
 };
 

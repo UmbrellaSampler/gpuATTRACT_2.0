@@ -13,6 +13,7 @@
 #include "Vec3.h"
 #include "GenericTypes.h"
 #include <map>
+#include <vector>
 
 
 namespace as {
@@ -54,6 +55,15 @@ struct DOF_MB_Modes {
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using vec3_t = Vec3<real_t>;
 	DOF_Modes<real_t> protein[NUM_MAX_PROTEIN];
+	vec3_t get_pos(unsigned idx_protein ){
+		return (protein[idx_protein].pos);
+	}
+	void set_pos(real_t x,real_t y,real_t z, unsigned idx_protein  ){
+		protein[idx_protein].pos.x = x;
+		protein[idx_protein].pos.y = y;
+		protein[idx_protein].pos.z = z;
+	}
+
 };
 
 struct ProtConfig{
@@ -71,15 +81,23 @@ struct Common_MB_Modes {
 	id_t paramsId;
 	static unsigned int numModes[NUM_MAX_PROTEIN];
 	double radius_cutoff;
-	std::map<unsigned,ProtConfig> proteins;
+	//std::map<unsigned,ProtConfig> proteins;
+	std::vector<ProtConfig> proteins;
+	static unsigned int numProteins;
+	Vec3<double> getPivot( unsigned idx_protein)
+	{
+		return proteins[idx_protein].pivot;
+	}
 
 };
 
 template<typename REAL>
 struct Result_MB_Modes {
 	using real_t = typename TypeWrapper<REAL>::real_t;
+	using vec3_t = Vec3<real_t>;
 	DOF_Modes<real_t> protein[NUM_MAX_PROTEIN];
 	real_t E;
+	REAL get_Energy(){ return E;}
 
 };
 

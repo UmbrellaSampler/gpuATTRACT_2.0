@@ -135,6 +135,105 @@ __device__ __forceinline__ void gridForce(
 	}
 }
 
+
+template<typename REAL, typename DOF_T >
+__global__ void deform_kernel(
+		d_Protein<REAL> const  protein,
+		DOF_T const * dofs,
+		unsigned const numDOFs,
+		unsigned const idx_protein,
+		REAL* buffer_defoX,
+		REAL* buffer_defoY,
+		REAL* buffer_defoZ
+		)
+{
+	using real4_t = typename TypeWrapper<REAL>::real4_t;
+	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+	const unsigned numAtoms = protein.numAtoms;
+	if (idx < numAtoms*numDOFs) {
+		unsigned DOFidx = idx / numAtoms;
+		auto dof = dofs[DOFidx];
+		const unsigned int num_atoms = protein.numAtoms;
+
+		/* load DOF from global memory */
+		unsigned atomIdx = idx % num_atoms;
+
+		Vec3<REAL> posAtom(	protein.xPos[atomIdx],
+							protein.yPos[atomIdx],
+							protein.zPos[atomIdx]);
+		deform< REAL, DOF_T>(	 dof,posAtom, protein, atomIdx, idx_protein,
+				buffer_defoX[idx], buffer_defoY[idx], buffer_defoZ[idx]);
+	}
+}
+
+template<typename REAL, typename DOF_T >
+__global__ void transform_kernel(
+		DOF_T const * dofs,
+		unsigned const numDOFs,
+		unsigned const numAtoms,
+		unsigned const idx_proteinCenter,
+		unsigned const idx_proteinPartner,
+		Vec3<REAL> pivotCenter,
+		Vec3<REAL> pivotPartner,
+		REAL* buffer_defoX,
+		REAL* buffer_defoY,
+		REAL* buffer_defoZ,
+		REAL* buffer_trafoX,
+		REAL* buffer_trafoY,
+		REAL* buffer_trafoZ
+		)
+{
+	using real4_t = typename TypeWrapper<REAL>::real4_t;
+	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+	if (idx < numAtoms*numDOFs) {
+		unsigned DOFidx = idx / numAtoms;
+		auto dof = dofs[DOFidx];
+		Vec3<REAL> posAtomCenter(	buffer_defoX[idx],
+									buffer_defoY[idx],
+									buffer_defoZ[idx]);
+
+		device_transform(dof, posAtomCenter,pivotCenter, pivotPartner, idx_proteinCenter, idx_proteinPartner,
+		       		 buffer_trafoX[idx],  buffer_trafoY[idx], buffer_trafoZ[idx]);
+	}
+}
+
+
+
+
+
+template<typename REAL>
+__global__ void potForce_kernel(
+		const d_IntrlpGrid<REAL> inner,
+		const d_IntrlpGrid<REAL> outer,
+		d_Protein<REAL> const  protein,
+		unsigned const numDOFs,
+		REAL* buffer_trafoX,
+		REAL* buffer_trafoY,
+		REAL* buffer_trafoZ,
+		REAL* data_out_x,
+		REAL* data_out_y,
+		REAL* data_out_z,
+		REAL* data_out_E)
+{
+	using real4_t = typename TypeWrapper<REAL>::real4_t;
+	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+	const unsigned numAtoms = protein.numAtoms;
+	if (idx < numAtoms*numDOFs) {
+		unsigned DOFidx = idx / numAtoms;
+
+		float4 potForce{0,0,0,0};
+			PotForce_device( inner, outer, protein, numDOFs, idx, buffer_trafoX[idx], buffer_trafoY[idx], buffer_trafoZ[idx], potForce );
+
+
+
+		data_out_x[idx] = potForce.x;
+		data_out_y[idx] = potForce.y;
+		data_out_z[idx] = potForce.z;
+		data_out_E[idx] = potForce.w;
+	}
+}
+
+
 template<typename REAL, typename DOF_T >
 __global__ void scoring_kernel(
 		const d_IntrlpGrid<REAL> inner,
@@ -322,4 +421,203 @@ template
 		double* data_out_z,
 		double* data_out_E);
 
+
+
+
+
+template<typename REAL, typename DOF_T>
+ void d_deform(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<REAL> const  protein,
+		DOF_T const * dofs,
+		unsigned const numDOFs,
+		unsigned const idx_protein,
+		REAL* buffer_defoX,
+		REAL* buffer_defoY,
+		REAL* buffer_defoZ)
+{
+	cudaVerifyKernel((
+			deform_kernel<<<gridSize, blockSize, 0, stream>>> (
+			protein,
+			dofs,
+			numDOFs,
+			idx_protein,
+			buffer_defoX,
+			buffer_defoY,
+			buffer_defoZ))
+		);
 }
+
+template
+ void d_deform<double, DOF_MB_Modes<double>>(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<double> const  protein,
+		DOF_MB_Modes<double> const * dofs,
+		unsigned const numDOFs,
+		unsigned const idx_protein,
+		double* buffer_defoX,
+		double* buffer_defoY,
+		double* buffer_defoZ);
+
+template
+ void d_deform<float, DOF_MB_Modes<float>>(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<float> const  protein,
+		DOF_MB_Modes<float> const * dofs,
+		unsigned const numDOFs,
+		unsigned const idx_protein,
+		float* buffer_defoX,
+		float* buffer_defoY,
+		float* buffer_defoZ);
+
+template<typename REAL, typename DOF_T>
+void d_transform(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		DOF_T const * dofs,
+		unsigned const numDOFs,
+		unsigned const numAtoms,
+		unsigned const idx_proteinCenter,
+		unsigned const idx_proteinPartner,
+		Vec3<REAL> pivotCenter,
+		Vec3<REAL> pivotPartner,
+		REAL* buffer_defoX,
+		REAL* buffer_defoY,
+		REAL* buffer_defoZ,
+		REAL* buffer_trafoX,
+		REAL* buffer_trafoY,
+		REAL* buffer_trafoZ
+		)
+{
+	cudaVerifyKernel((
+			transform_kernel<<<gridSize, blockSize, 0, stream>>> (
+			dofs,
+			numDOFs,
+			numAtoms,
+			idx_proteinCenter,
+			idx_proteinPartner,
+			pivotCenter,
+			pivotPartner,
+			buffer_defoX,
+			buffer_defoY,
+			buffer_defoZ,
+			buffer_trafoX,
+			buffer_trafoY,
+			buffer_trafoZ
+					))
+		);
+}
+
+template
+void d_transform<float, DOF_MB_Modes<float>>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		DOF_MB_Modes<float> const * dofs,
+		unsigned const numDOFs,
+		unsigned const numAtoms,
+		unsigned const idx_proteinCenter,
+		unsigned const idx_proteinPartner,
+		Vec3<float> pivotCenter,
+		Vec3<float> pivotPartner,
+		float* buffer_defoX,
+		float* buffer_defoY,
+		float* buffer_defoZ,
+		float* buffer_trafoX,
+		float* buffer_trafoY,
+		float* buffer_trafoZ
+		);
+
+template
+void d_transform<double, DOF_MB_Modes<double>>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		DOF_MB_Modes<double> const * dofs,
+		unsigned const numDOFs,
+		unsigned const numAtoms,
+		unsigned const idx_proteinCenter,
+		unsigned const idx_proteinPartner,
+		Vec3<double> pivotCenter,
+		Vec3<double> pivotPartner,
+		double* buffer_defoX,
+		double* buffer_defoY,
+		double* buffer_defoZ,
+		double* buffer_trafoX,
+		double* buffer_trafoY,
+		double* buffer_trafoZ
+		);
+
+template<typename REAL>
+ void d_PotForce(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		const d_IntrlpGrid<REAL> inner,
+		const d_IntrlpGrid<REAL> outer,
+		d_Protein<REAL> const  protein,
+		unsigned const numDOFs,
+		REAL* buffer_trafoX,
+		REAL* buffer_trafoY,
+		REAL* buffer_trafoZ,
+		REAL* data_out_x,
+		REAL* data_out_y,
+		REAL* data_out_z,
+		REAL* data_out_E)
+{
+	cudaVerifyKernel((
+			potForce_kernel<<<gridSize, blockSize, 0, stream>>> (
+				inner,
+				outer,
+				protein,
+				numDOFs,
+				buffer_trafoX,
+				buffer_trafoY,
+				buffer_trafoZ,
+				data_out_x,
+				data_out_y,
+				data_out_z,
+				data_out_E))
+		);
+}
+template
+ void d_PotForce<float>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		const d_IntrlpGrid<float> inner,
+		const d_IntrlpGrid<float> outer,
+		d_Protein<float> const  protein,
+		unsigned const numDOFs,
+		float* buffer_trafoX,
+		float* buffer_trafoY,
+		float* buffer_trafoZ,
+		float* data_out_x,
+		float* data_out_y,
+		float* data_out_z,
+		float* data_out_E);
+template
+ void d_PotForce<double>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		const d_IntrlpGrid<double> inner,
+		const d_IntrlpGrid<double> outer,
+		d_Protein<double> const  protein,
+		unsigned const numDOFs,
+		double* buffer_trafoX,
+		double* buffer_trafoY,
+		double* buffer_trafoZ,
+		double* data_out_x,
+		double* data_out_y,
+		double* data_out_z,
+		double* data_out_E);
+}
+

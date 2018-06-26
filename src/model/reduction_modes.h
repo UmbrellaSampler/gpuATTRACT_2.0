@@ -9,6 +9,7 @@
 #define REDUCTION_MODES_H_
 
 #include "Types_6D_Modes.h"
+#include "Types_MB_Modes.h"
 #include "reduction.h"
 #include "DeviceProtein.h"
 namespace as {
@@ -116,6 +117,7 @@ template<typename REAL,typename DOF_T,int PROTEINTYPE>
 void deviceReduce(
 		const unsigned& blockSize,
 		const unsigned& numDOFs,
+		const unsigned idx_protein,
 		d_Protein<REAL>* protein,
 		DOF_T* dofs,
 		REAL* xPos, REAL* yPos, REAL* zPos,
@@ -222,6 +224,81 @@ void h_finalReduce(
 
 	}
 }
+
+template<typename REAL>
+void h_finalReduce(
+			const unsigned& numDOFs,
+			unsigned const idx_protein,
+			d_Protein<REAL>* protein,
+			DOF_MB_Modes<REAL>* dofs,
+			const REAL* deviceOut,
+			Result_MB_Modes<REAL>* enGrads)
+{
+	unsigned dofSize = 13 ;
+	dofSize += protein->numModes;
+
+
+	for (unsigned i = 0; i < numDOFs; ++i)
+	{
+		auto &enGrad = enGrads[i];
+		const auto &dof = dofs[i];
+			enGrad.protein[idx_protein].pos.x = deviceOut[i*dofSize + 0];
+			enGrad.protein[idx_protein].pos.y = deviceOut[i*dofSize + 1];
+			enGrad.protein[idx_protein].pos.z = deviceOut[i*dofSize + 2];
+
+			for(unsigned j = 0; j < 3; ++j) {
+				REAL magn2 = enGrad.protein[idx_protein].pos.x*enGrad.protein[idx_protein].pos.x
+						+ enGrad.protein[idx_protein].pos.y*enGrad.protein[idx_protein].pos.y
+						+ enGrad.protein[idx_protein].pos.z*enGrad.protein[idx_protein].pos.z;
+
+				if(magn2 > static_cast<REAL>(ForceLim)) {
+					enGrad.protein[idx_protein].pos.x *= 0.01;
+					enGrad.protein[idx_protein].pos.y *= 0.01;
+					enGrad.protein[idx_protein].pos.z *= 0.01;
+				}
+			}
+			enGrad.E = deviceOut[i*dofSize + 3];
+
+			Torque<REAL> torque;
+			torque.mat[0][0] = deviceOut[i*dofSize + 4 ];
+			torque.mat[0][1] = deviceOut[i*dofSize + 5 ];
+			torque.mat[0][2] = deviceOut[i*dofSize + 6 ];
+			torque.mat[1][0] = deviceOut[i*dofSize + 7 ];
+			torque.mat[1][1] = deviceOut[i*dofSize + 8 ];
+			torque.mat[1][2] = deviceOut[i*dofSize + 9 ];
+			torque.mat[2][0] = deviceOut[i*dofSize + 10];
+			torque.mat[2][1] = deviceOut[i*dofSize + 11];
+			torque.mat[2][2] = deviceOut[i*dofSize + 12];
+
+			const TorqueMat<REAL> torqueMat = euler2torquemat(dof.protein[idx_protein].ang.x, dof.protein[idx_protein].ang.y, dof.protein[idx_protein].ang.z);
+			Vec3<REAL> result = torqueMat.rotateReduce(torque);
+
+			enGrad.protein[idx_protein].ang.x = result.x;
+			enGrad.protein[idx_protein].ang.y = result.y;
+			enGrad.protein[idx_protein].ang.z = result.z;
+			//std::cout << enGrad<< std::endl;
+
+
+			for(int mode=0; mode < protein->numModes; mode++){
+				enGrad.protein[idx_protein].modes[mode]=deviceOut[i*dofSize + 13 + mode];
+			}
+			correctModeForce(
+				protein->modeForce,
+				protein->numModes,
+				dof.protein[idx_protein].modes,
+				enGrad.protein[idx_protein].modes
+				);
+
+
+			enGrad.E += getModeEngergy(protein->modeForce,
+				protein->numModes,
+				dof.protein[idx_protein].modes
+				);
+		}
+
+
+	}
+
 #endif // CUDA
 
 

@@ -538,6 +538,7 @@ public:
 			deviceReduce<REAL, DOF_6D_Modes<REAL>,0>(
 				blockSizeReduceRec,
 				it->size(),
+				0,
 				stageResc.rec,
 				d_dof[id_stream].get(0),
 				d_defoRec[id_stream].getX(), d_defoRec[id_stream].getY(), d_defoRec[id_stream].getZ(),
@@ -549,6 +550,7 @@ public:
 			deviceReduce<REAL, DOF_6D_Modes<REAL>, 1>(
 				blockSizeReduceLig,
 				it->size(),
+				1,
 				stageResc.lig,
 				d_dof[id_stream].get(0),
 				d_defoLig[id_stream].getX(), 	d_defoLig[id_stream].getY(), d_defoLig[id_stream].getZ(),

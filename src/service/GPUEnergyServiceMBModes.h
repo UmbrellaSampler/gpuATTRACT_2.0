@@ -1,5 +1,5 @@
 /*
- * GPU_6D_EnergyService.h
+ * GPU_MB_EnergyService.h
  *
  *  Created on: Sep 8, 2016
  *      Author: uwe
@@ -21,18 +21,18 @@ namespace as {
 class DataManager;
 
 template<typename SERVICE>
-class Configurator_6D_Modes;
+class Configurator_MB_Modes;
 
 template<typename REAL>
-class GPUEnergyService6DModes : public GPUEnergyService<Types_6D_Modes<REAL>> {
+class GPUEnergyServiceMBModes : public GPUEnergyService<Types_MB_Modes<REAL>> {
 public:
-	using typename GPUEnergyService<Types_6D_Modes<REAL>>::service_t;
+	using typename GPUEnergyService<Types_MB_Modes<REAL>>::service_t;
 
 	using real_t = typename TypeWrapper<REAL>::real_t;
 	using typename service_t::input_t;
 	using typename service_t::common_t;
 	using typename service_t::result_t;
-	using configurator_t = Configurator_6D_Modes<REAL>;
+	using configurator_t = Configurator_MB_Modes<REAL>;
 
 	/* need public for instantiate the server in configurator */
 	using typename service_t::workItem_t;
@@ -40,8 +40,8 @@ public:
 	using typename service_t::distributor_t;
 
 
-	explicit GPUEnergyService6DModes(std::shared_ptr<DataManager> dataMng, std::vector<int> const& deviceIds);
-	virtual ~GPUEnergyService6DModes() {};
+	explicit GPUEnergyServiceMBModes(std::shared_ptr<DataManager> dataMng, std::vector<int> const& deviceIds);
+	virtual ~GPUEnergyServiceMBModes() {};
 
 	distributor_t createDistributor() override;
 
@@ -65,4 +65,4 @@ private:
 #endif
 
 
-#endif /* SRC_SERVICE_GPUENERGYSERVICE6D_H_ */
+#endif /* SRC_SERVICE_GPUENERGYSERVICEMB_H_ */

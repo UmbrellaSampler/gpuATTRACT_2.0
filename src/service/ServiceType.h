@@ -13,9 +13,11 @@ namespace as {
 enum class ServiceType {
 	CPUEnergyService6D,
 	CPUEnergyService6DModes,
+	CPUEnergyServiceMBModes,
 #ifdef CUDA
 	GPUEnergyService6D,
-	GPUEnergyService6DModes
+	GPUEnergyService6DModes,
+	GPUEnergyServiceMBModes
 #endif
 };
 

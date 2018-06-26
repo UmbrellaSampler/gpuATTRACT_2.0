@@ -109,7 +109,19 @@ c     make an Euler rotation + tranlation of ligand center
        xbb(i)=xaa(i)+c*d(i)
       enddo
 
-      do i=7,jn
+c      do i=7,jn
+c       xbb(i)=xaa(i)-c*d(i)
+c      enddo
+
+c temp multibody
+      do i=7,11
+       xbb(i)=xaa(i)-c*d(i)
+      enddo
+
+      do i=12,17
+       xbb(i)=xaa(i)+c*d(i)
+      enddo
+      do i=18,22
        xbb(i)=xaa(i)-c*d(i)
       enddo
 

@@ -23,6 +23,12 @@ class RequestHandler<Types_6D_Modes<float>>::Chunk;
 template
 class RequestHandler<Types_6D_Modes<double>>::Chunk;
 
+template
+class RequestHandler<Types_MB_Modes<float>>::Chunk;
+
+template
+class RequestHandler<Types_MB_Modes<double>>::Chunk;
+
 }  // namespace as
 
 

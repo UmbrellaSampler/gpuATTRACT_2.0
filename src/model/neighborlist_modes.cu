@@ -15,6 +15,7 @@
 #include "forcefield.h"
 #include "macros.h"
 #include "Types_6D_Modes.h"
+#include "Types_MB_Modes.h"
 
 namespace as {
 
@@ -79,7 +80,7 @@ __global__ void d_NLPotForce(
 					const unsigned nIdx = grid.neighborList[nDesc.y + j];
 
 					REAL xRec, yRec, zRec;
-					if( std::is_same<DOF_T, DOF_6D_Modes<REAL>>::value ){
+					if( std::is_same<DOF_T, DOF_6D_Modes<REAL>>::value || std::is_same<DOF_T, DOF_MB_Modes<REAL>>::value){
 						recBase = rec.numAtoms * (int) (i / LigNumEl);
 						xRec = RecPosX[nIdx + recBase];
 						yRec = RecPosY[nIdx + recBase];
@@ -342,7 +343,53 @@ void d_NLPotForce<double, DOF_6D<double>>(
 		double* outLig_fz,
 		double* outLigand_E
 		);
+template
+void d_NLPotForce<float, DOF_MB_Modes<float>>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		const d_NLGrid<float>& grid,
+		const d_Protein<float>& rec,
+		const d_Protein<float>& lig,
+		const d_ParamTable<float>& table,
+		double radius_cutoff,
+		const SimParam<float>& simParam,
+		const unsigned& numDOFs,
+		const float* RecPosX,
+		const float* RecPosY,
+		const float* RecPosZ,
+		const float* LigPosX,
+		const float* LigPosY,
+		const float* LigPosZ,
+		float* outLig_fx,
+		float* outLig_fy,
+		float* outLig_fz,
+		float* outLigand_E
+		);
 
+template
+void d_NLPotForce<double, DOF_MB_Modes<double>>(
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		const d_NLGrid<double>& grid,
+		const d_Protein<double>& rec,
+		const d_Protein<double>& lig,
+		const d_ParamTable<double>& table,
+		double radius_cutoff,
+		const SimParam<double>& simParam,
+		const unsigned& numDOFs,
+		const double* RecPosX,
+		const double* RecPosY,
+		const double* RecPosZ,
+		const double* LigPosX,
+		const double* LigPosY,
+		const double* LigPosZ,
+		double* outLig_fx,
+		double* outLig_fy,
+		double* outLig_fz,
+		double* outLigand_E
+		);
 
 }  // namespace as
 

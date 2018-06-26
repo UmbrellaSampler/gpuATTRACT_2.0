@@ -11,6 +11,7 @@
 #ifdef CUDA
 #include "DeviceItem.h"
 #include "Types_6D_Config.h"
+#include "Vec3.h"
 /**
  * DeviceProtein represents a Protein on a device.
  */
@@ -33,6 +34,7 @@ public:
 		unsigned* type = nullptr; 	/** atom type */
 		unsigned* mappedType = nullptr;
 		REAL modeForce[MODES_MAX_NUMBER];
+		Vec3<REAL> pivot;
 		unsigned numModes; /** number of modes */
 		unsigned numMappedTypes;
 		bool isOrigin;

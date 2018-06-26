@@ -23,6 +23,12 @@ class emATTRACT<Types_6D_Modes<float>>;
 template
 class emATTRACT<Types_6D_Modes<double>>;
 
+template
+class emATTRACT<Types_MB_Modes<float>>;
+
+template
+class emATTRACT<Types_MB_Modes<double>>;
+
 }  // namespace as
 
 

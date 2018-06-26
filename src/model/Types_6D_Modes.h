@@ -37,10 +37,10 @@ struct DOF_6D_Modes {
 	DOF_6D<real_t> _6D;
 	real_t modesRec[MODES_MAX_NUMBER];
 	real_t modesLig[MODES_MAX_NUMBER];
-	vec3_t get_pos(){
+	vec3_t get_pos(unsigned idx_protein = 0){
 			return (_6D.pos);
 		}
-		void set_pos(real_t x,real_t y,real_t z ){
+		void set_pos(real_t x,real_t y,real_t z, unsigned idx_protein = 0 ){
 			_6D.pos.x = x;
 			_6D.pos.y = y;
 			_6D.pos.z = z;
@@ -62,6 +62,12 @@ struct Common_Modes {
 	bool centeredLig;
 	bool centeredRec;
 	double radius_cutoff;
+	Vec3<double> getPivot( unsigned idx_protein)
+	{
+		if( idx_protein == 0){ return pivotRec;}
+		else if ( idx_protein == 1){return pivotLig;}
+		else{return Vec3<double>(0.0);}
+	}
 };
 
 template<typename REAL>

@@ -18,6 +18,7 @@ template
 std::ostream& operator<< (std::ostream& s, Result_MB_Modes<double> const& enGrad);
 
 unsigned int Common_MB_Modes::numModes[NUM_MAX_PROTEIN]={0};
+unsigned int Common_MB_Modes::numProteins = 2;
 
 
 }  // namespace as
