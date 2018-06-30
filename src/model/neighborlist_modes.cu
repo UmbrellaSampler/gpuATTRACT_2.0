@@ -29,6 +29,7 @@ __global__ void d_NLPotForce(
 		const d_Protein<REAL> rec,
 		const d_Protein<REAL> lig,
 		const d_ParamTable<REAL> table,
+		double radius_cutoff,
 		const SimParam<REAL> simParam,
 		const unsigned numDOFs,
 		const REAL* RecPosX,
@@ -97,7 +98,8 @@ __global__ void d_NLPotForce(
 
 					const REAL dr2 = dx * dx + dy * dy + dz * dz;
 					const REAL dPlateau2 = grid.dPlateau2;
-					if ((dr2) > dPlateau2) {
+					if ((dr2) > dPlateau2 || dr2 > radius_cutoff) {
+
 						continue;
 					}
 
@@ -209,6 +211,7 @@ void d_NLPotForce(
 		const d_Protein<REAL>& rec,
 		const d_Protein<REAL>& lig,
 		const d_ParamTable<REAL>& table,
+		double radius_cutoff,
 		const SimParam<REAL>& simParam,
 		const unsigned& numDOFs,
 		const REAL* RecPosX,
@@ -228,6 +231,7 @@ void d_NLPotForce(
 				rec,
 				lig,
 				table,
+				radius_cutoff,
 				simParam,
 				numDOFs,
 				RecPosX,
@@ -253,6 +257,7 @@ void d_NLPotForce<float, DOF_6D_Modes<float>>(
 		const d_Protein<float>& rec,
 		const d_Protein<float>& lig,
 		const d_ParamTable<float>& table,
+		double radius_cutoff,
 		const SimParam<float>& simParam,
 		const unsigned& numDOFs,
 		const float* RecPosX,
@@ -276,6 +281,7 @@ void d_NLPotForce<double, DOF_6D_Modes<double>>(
 		const d_Protein<double>& rec,
 		const d_Protein<double>& lig,
 		const d_ParamTable<double>& table,
+		double radius_cutoff,
 		const SimParam<double>& simParam,
 		const unsigned& numDOFs,
 		const double* RecPosX,
@@ -299,6 +305,7 @@ void d_NLPotForce<float, DOF_6D<float>>(
 		const d_Protein<float>& rec,
 		const d_Protein<float>& lig,
 		const d_ParamTable<float>& table,
+		double radius_cutoff,
 		const SimParam<float>& simParam,
 		const unsigned& numDOFs,
 		const float* RecPosX,
@@ -322,6 +329,7 @@ void d_NLPotForce<double, DOF_6D<double>>(
 		const d_Protein<double>& rec,
 		const d_Protein<double>& lig,
 		const d_ParamTable<double>& table,
+		double radius_cutoff,
 		const SimParam<double>& simParam,
 		const unsigned& numDOFs,
 		const double* RecPosX,

@@ -54,6 +54,7 @@ struct Common {
 			Vec3<double> pivotLig;
 			bool centeredLig;
 			bool centeredRec;
+			double radius_cutoff;
 };
 
 template<typename REAL>

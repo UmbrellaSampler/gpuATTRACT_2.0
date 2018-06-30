@@ -31,6 +31,7 @@ template<typename SERVICE>
 void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 
 	/* load dataItems */
+	this->_ids.radius_cutoff = args.cutoff;
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
 	auto ligand = createProteinFromPDB<real_t>(args.ligName);
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
@@ -123,6 +124,9 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 
 	readHMMode<real_t>(receptor, args.recModesName);
 	readHMMode<real_t>(ligand, args.ligModesName);
+
+	receptor->scaleModeEV( args.evscale);
+	ligand->scaleModeEV( args.evscale);
 
 	auto mapVecLig = readGridAlphabetFromFile(args.alphabetLigName); // map: std::vector<unsigned>
 	TypeMap typeMapLig = createTypeMapFromVector(mapVecLig);

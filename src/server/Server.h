@@ -38,7 +38,7 @@ class ThreadSafeQueue;
 
 
 #ifdef DEBUG
-constexpr unsigned DEFAULT_ITEM_SIZE = 10;
+constexpr unsigned DEFAULT_ITEM_SIZE = 1000;
 #else
 constexpr unsigned DEFAULT_ITEM_SIZE = 1000;
 #endif

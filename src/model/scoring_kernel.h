@@ -35,6 +35,7 @@ template<typename REAL, typename DOF_T>
 		DOF_T const * dofs,
 		unsigned const numDOFs,
 		unsigned const type_protein,
+		double radius_cutoff,
 		REAL* buffer_defoX,
 		REAL* buffer_defoY,
 		REAL* buffer_defoZ,

@@ -143,6 +143,7 @@ __global__ void scoring_kernel(
 		DOF_T const * dofs,
 		unsigned const numDOFs,
 		unsigned const type_protein,
+		double radius_cutoff,
 		REAL* buffer_defoX,
 		REAL* buffer_defoY,
 		REAL* buffer_defoZ,
@@ -170,8 +171,9 @@ __global__ void scoring_kernel(
 				 y_trafo,
 				 z_trafo
 				);
-		PotForce_device( inner, outer, protein, numDOFs, idx, x_trafo, y_trafo, z_trafo, potForce );
-
+		if (radius_cutoff > 10000){
+			PotForce_device( inner, outer, protein, numDOFs, idx, x_trafo, y_trafo, z_trafo, potForce );
+		}
 		buffer_trafoX[idx] = x_trafo;
 		buffer_trafoY[idx] = y_trafo;
 		buffer_trafoZ[idx] = z_trafo;
@@ -195,6 +197,7 @@ template<typename REAL, typename DOF_T>
 		DOF_T const * dofs,
 		unsigned const numDOFs,
 		unsigned const type_protein,
+		double radius_cutoff,
 		REAL* buffer_defoX,
 		REAL* buffer_defoY,
 		REAL* buffer_defoZ,
@@ -214,6 +217,7 @@ template<typename REAL, typename DOF_T>
 			dofs,
 			numDOFs,
 			type_protein,
+			radius_cutoff,
 			buffer_defoX,
 			buffer_defoY,
 			buffer_defoZ,
@@ -237,6 +241,7 @@ template
 		DOF_6D<float> const * dofs,
 		unsigned const numDOFs,
 		unsigned const type_protein,
+		double radius_cutoff,
 		float* buffer_defoX,
 		float* buffer_defoY,
 		float* buffer_defoZ,
@@ -259,6 +264,7 @@ template
 		DOF_6D<double> const * dofs,
 		unsigned const numDOFs,
 		unsigned const type_protein,
+		double radius_cutoff,
 		double* buffer_defoX,
 		double* buffer_defoY,
 		double* buffer_defoZ,
@@ -281,6 +287,7 @@ template
 		DOF_6D_Modes<float> const * dofs,
 		unsigned const numDOFs,
 		unsigned const type_protein,
+		double radius_cutoff,
 		float* buffer_defoX,
 		float* buffer_defoY,
 		float* buffer_defoZ,
@@ -303,6 +310,7 @@ template
 		DOF_6D_Modes<double> const * dofs,
 		unsigned const numDOFs,
 		unsigned const type_protein,
+		double radius_cutoff,
 		double* buffer_defoX,
 		double* buffer_defoY,
 		double* buffer_defoZ,

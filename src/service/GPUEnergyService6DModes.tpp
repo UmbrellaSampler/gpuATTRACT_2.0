@@ -229,7 +229,7 @@ public:
 
 		assert( numElRec <= d_trafoRec[id_stream].bufferSize() );
 		assert( numElLig <= d_trafoLig[id_stream].bufferSize() );
-
+		double radius_cutoff = it->common()->radius_cutoff;
 		/* Perform cuda kernel calls */
 		size_t gridSizeRec = ( numElRec + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 		size_t gridSizeLig = ( numElLig + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
@@ -277,6 +277,7 @@ public:
 				d_dof[id_stream].get(0),
 				it->size(),
 				0,
+				radius_cutoff,
 				d_defoRec[id_stream].getX(),
 				d_defoRec[id_stream].getY(),
 				d_defoRec[id_stream].getZ(),
@@ -298,6 +299,7 @@ public:
 				d_dof[id_stream].get(0),
 				it->size(),
 				1,
+				radius_cutoff,
 				d_defoLig[id_stream].getX(),
 				d_defoLig[id_stream].getY(),
 				d_defoLig[id_stream].getZ(),
@@ -460,7 +462,7 @@ public:
 				*stageResc.rec,
 				*stageResc.lig,
 				*stageResc.table,
-
+				radius_cutoff,
 				*stageResc.simParam,
 				it->size(),
 				d_defoRec[id_stream].getX(),
@@ -485,7 +487,7 @@ public:
 				*stageResc.lig,
 				*stageResc.rec,
 				*stageResc.table,
-
+				radius_cutoff,
 				*stageResc.simParam,
 				it->size(),
 				d_defoLig[id_stream].getX(),

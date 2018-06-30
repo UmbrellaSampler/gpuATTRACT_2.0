@@ -137,6 +137,12 @@ public:
 		_numMappedTypes = num;
 	}
 
+	void scaleModeEV( double factor){
+		for ( int i = 0; i < _numModes; ++i)
+		{
+			_modeForceConstant[i] *= factor*factor;
+		}
+	}
 	//TODO: refactor the pivotize functions to non-members
 	void pivotize(vec3_t pivot);
 

@@ -24,6 +24,7 @@ void NLPotForce(
 		Protein<REAL> const* lig,
 		SimParam<REAL> const* simParam,
 		ParamTable<REAL> const* table,
+		double radius_cutoff,
 		REAL const* RecPosX,
 		REAL const* RecPosY,
 		REAL const* RecPosZ,
@@ -85,7 +86,8 @@ void NLPotForce(
 
 				const REAL dr2 = dx * dx + dy * dy + dz * dz;
 
-				if (grid->outOfPlateau(dr2)) {
+
+				if (grid->outOfPlateau(dr2) || dr2 > radius_cutoff) {
 					continue;
 				}
 
@@ -211,6 +213,7 @@ void NLPotForce(
 		Protein<REAL> const* lig,
 		SimParam<REAL> const* simParam,
 		ParamTable<REAL> const* table,
+		double radius_cutoff,
 		REAL const* RecPosX,
 		REAL const* RecPosY,
 		REAL const* RecPosZ,
@@ -261,7 +264,7 @@ void NLPotForce(
 
 				//printf("%d %d %f    %f %f %f   %f %f %f    %f %f %f \n",i,nIdx, dr2,dx, dy, dz,posLigX,posLigY,posLigZ, RecPosX[nIdx], RecPosY[nIdx], RecPosZ[nIdx]  );
 
-				if (grid->outOfPlateau(dr2)) {
+				if (grid->outOfPlateau(dr2) || dr2 > radius_cutoff) {
 					continue;
 				}
 
@@ -362,6 +365,7 @@ void d_NLPotForce(
 		const d_Protein<REAL>& rec,
 		const d_Protein<REAL>& lig,
 		const d_ParamTable<REAL>& table,
+		double radius_cutoff,
 		const SimParam<REAL>& simParam,
 		const unsigned& numDOFs,
 		const REAL* RecPosX,

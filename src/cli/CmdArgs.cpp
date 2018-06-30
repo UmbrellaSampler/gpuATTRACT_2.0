@@ -30,6 +30,8 @@ std::ostream& operator<<(std::ostream& s, CmdArgs const& args) {
 	s << "prec            = "  << args.precision		   << endl;
 	s << "dielec          = "  << args.dielec              << endl;
 	s << "numModes        = "  << args.numModes		   	   << endl;
+	s << "cutoff radius   = "  << args.cutoff              << endl;
+	s << "modeEVscale     = "  << args.evscale             << endl;
 	s << "epsilon         = "  << args.epsilon;
 
 	return s;

@@ -40,6 +40,8 @@ public:
 	std::string precision;
 	std::string dielec;
 	double epsilon;
+	double evscale;
+	double cutoff;
 
 	/* Minimization */
 	std::string solver;
