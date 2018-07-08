@@ -14,7 +14,7 @@
 #include "GenericTypes.h"
 #include <map>
 #include <vector>
-
+#include "RotMat.h"
 
 namespace as {
 #ifndef __CUDACC__ // ostream is not available in nvcc
@@ -23,6 +23,9 @@ struct DOF_MB_Modes;
 
 template<typename REAL>
 struct DOF_Modes;
+
+template<typename REAL>
+struct dofMB;
 
 template<typename REAL>
 std::ostream& operator<< (std::ostream& s, DOF_Modes<REAL> const& args);
@@ -109,6 +112,16 @@ struct Result_MB_Modes {
 	REAL get_Energy(){ return E;}
 
 };
+
+template<typename REAL>
+struct dofMB{
+	using real_t = REAL;
+	using vec3_t = Vec3<real_t> ;
+
+	vec3_t translation;
+	RotMat<REAL> rotMat;
+};
+
 
 template<typename REAL>
 using Types_MB_Modes = GenericTypes<DOF_MB_Modes<REAL>, Common_MB_Modes, Result_MB_Modes<REAL>>;

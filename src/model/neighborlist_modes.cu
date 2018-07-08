@@ -99,7 +99,7 @@ __global__ void d_NLPotForce(
 
 					const REAL dr2 = dx * dx + dy * dy + dz * dz;
 					const REAL dPlateau2 = grid.dPlateau2;
-					if ((dr2) > dPlateau2 || dr2 > radius_cutoff) {
+					if ((dr2) > dPlateau2 ) {
 						continue;
 					}
 
@@ -118,7 +118,7 @@ __global__ void d_NLPotForce(
 
 
 					// calculate energy and potential/energy of LJ/VdW potential
-
+					//printf(" type %d ",table.numTypes);
 					auto const params = table.getParams(atomTypeRec-1, atomTypeLig-1);
 					LJPotForce(dr2, dr2_inv, dx, dy, dz,
 							params,
@@ -158,10 +158,7 @@ __global__ void d_NLPotForce(
 
 						// calculate energy and potential/energy of charge potential
 
-						if (false) {
-							printf("%u %f %f %f %u\n" ,
-									i, posLigX, posLigY, posLigZ, atomTypeLig);
-						}
+
 
 						ChargePotForce(dr2_inv, dx, dy, dz,
 								chargeLigRec,
@@ -188,7 +185,7 @@ __global__ void d_NLPotForce(
 
 				/* store results back to global memory */
 				if (nDesc.x > 0) {
-
+					printf("%d ",i);
 					outLig_fx[i] += fAcc.x;
 					outLig_fy[i] += fAcc.y;
 					outLig_fz[i] += fAcc.z;

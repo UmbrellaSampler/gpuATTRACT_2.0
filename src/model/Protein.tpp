@@ -36,6 +36,7 @@ Protein<REAL>::Protein() :
 	_tag(),
 	_numAtoms(0), _pivot(0,0,0),
 	_pos(nullptr),
+	_posOrigin(nullptr),
 	_type(nullptr),
 	_numMappedTypes(0),
 	_mappedTypes(nullptr),
@@ -46,6 +47,7 @@ Protein<REAL>::Protein() :
 template<typename REAL>
 Protein<REAL>::~Protein() {
 	delete[] _pos;
+	delete[] _posOrigin;
 	delete[] _charge;
 	delete[] _type;
 	delete[] _mappedTypes;
@@ -62,6 +64,23 @@ REAL* Protein<REAL>::getOrCreatePosPtr() {
 		_pos = new REAL[3*_numAtoms];
 	}
 	return _pos;
+}
+
+template<typename REAL>
+REAL* Protein<REAL>::getOrCreatePosOriginPtr() {
+	if (_posOrigin == nullptr) {
+		if (_numAtoms == 0) {
+			throw std::runtime_error("getOrCreatePosPtr(): the number of atoms must be set before");
+		}
+		_posOrigin = new REAL[3*_numAtoms];
+	}
+	return _posOrigin;
+}
+
+template<typename REAL>
+void Protein<REAL>::setPosOrigin(REAL* posOrigin, unsigned numAtoms){
+	REAL* posOriginPtr = getOrCreatePosOriginPtr();
+	std::copy( posOrigin, posOrigin + 3*numAtoms , posOriginPtr );
 }
 
 template<typename REAL>
@@ -140,6 +159,21 @@ void Protein<REAL>::pivotize(vec3_t pivot) {
 			zPos()[i] -= _pivot.z;
 		}
 	}
+}
+
+template <typename REAL>
+void Protein<REAL>::setPivotAuto(){
+	if (_pivot != vec3_t(0,0,0)) {
+			undoPivoting();
+		}
+		vec3_t pivot(0,0,0);
+		for (unsigned i = 0; i < _numAtoms; ++i) {
+			pivot.x += xPos()[i];
+			pivot.y += yPos()[i];
+			pivot.z += zPos()[i];
+		}
+		pivot /= static_cast<double>(_numAtoms);
+		_pivot = pivot;
 }
 
 template<typename REAL>

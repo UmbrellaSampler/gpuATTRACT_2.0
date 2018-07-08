@@ -50,17 +50,10 @@ __device__ inline void rotateForce( DOF_T const & dof, REAL* forceAtom_in, REAL*
 		typename std::enable_if< std::is_same<DOF_T,DOF_MB_Modes<REAL>>::value, void>::type* dummy = 0)
 		//typename std::enable_if< std::is_same<DOF_T,DOF_6D_Modes<REAL>>, void>::type* dummy1 = 0)
 		{
-	if(PROTEIN_T == 0){
-				forceAtom_out[0] = forceAtom_in[0];
-				forceAtom_out[1] = forceAtom_in[1];
-				forceAtom_out[2] = forceAtom_in[2];
-			}
-	else{
 		RotMat<REAL> const rotMatInv = euler2rotmat(dof.protein[idx_protein].ang.x, dof.protein[idx_protein].ang.y, dof.protein[idx_protein].ang.z).getInv();
 		forceAtom_out[0] = rotMatInv[0] * forceAtom_in[0] + rotMatInv[1] * forceAtom_in[1] + rotMatInv[2] * forceAtom_in[2];
 		forceAtom_out[1] = rotMatInv[3] * forceAtom_in[0] + rotMatInv[4] * forceAtom_in[1] + rotMatInv[5] * forceAtom_in[2];
 		forceAtom_out[2] = rotMatInv[6] * forceAtom_in[0] + rotMatInv[7] * forceAtom_in[1] + rotMatInv[8] * forceAtom_in[2];
-	}
 }
 
 template <typename REAL, typename DOF_T, int PROTEIN_T>

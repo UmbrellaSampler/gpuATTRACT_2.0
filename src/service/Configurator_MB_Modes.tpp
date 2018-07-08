@@ -56,6 +56,7 @@ void Configurator_MB_Modes<SERVICE>::init(CmdArgs const& args) {
 		std::cout <<args.proteinNames[idxProtein] << std::endl;
 		auto protein = createProteinFromPDB<real_t>(args.proteinNames[idxProtein]);
 		auto grid = createGridFromGridFile<real_t>(args.gridNames[idxProtein]);
+		protein->setPosOrigin( protein->getOrCreatePosPtr(), protein->numAtoms() );
 		protein->setNumModes( args.numModes );
 		protein->auto_pivotize();
 		protein->setNumMappedTypes(1);
@@ -63,14 +64,20 @@ void Configurator_MB_Modes<SERVICE>::init(CmdArgs const& args) {
 		protein->getOrCreateMappedPtr();
 		protein-> scaleModeEigenValues( args.modeEVFactor );
 		applyDefaultMapping(protein->numAtoms(), protein->type(), protein->type());
-		applyMapping(typeMap, protein->numAtoms(), protein->type(), protein->mappedType());
+		applyDefaultMapping(protein->numAtoms(), protein->type(), protein->mappedType());
+		for ( int i = 0; i< protein->numAtoms(); ++i){
+		//	std::cout << protein->type()[i] << std::endl;
+		}
+		//applyMapping(typeMap, protein->numAtoms(), protein->type(), protein->mappedType());
 		Common_MB_Modes::numModes[idxProtein] = args.numModes;
 		auto id_grid = dataManager->add(grid);
 		auto id_protein = dataManager->add(protein);
+		grid->translate(-make_real3(protein->pivot().x,protein->pivot().y,protein->pivot().z));
 		ProtConfig config( id_grid , id_protein, idxProtein, false, protein->pivot());
 		this->_ids.proteins.push_back( config );
 	}
-
+	this->_ids.proteins[0].centered = false;
+	this->_ids.proteins[1].centered = false;
 		if(h.auto_pivot) {
 			if (!h.pivots.empty()) {
 				throw std::logic_error("Auto pivot specified, but explicitly defined pivots available. (File " + args.dofName + ")" );

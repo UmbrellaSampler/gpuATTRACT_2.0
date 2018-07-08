@@ -64,6 +64,18 @@ public:
 		return _pos + 2*_numAtoms;
 	}
 
+	REAL* xPosOrigin() const{
+			return _posOrigin;
+	}
+
+	REAL* yPosOrigin() const{
+		return _posOrigin + _numAtoms;
+	}
+
+	REAL* zPosOrigin() const{
+		return _posOrigin + 2*_numAtoms;
+	}
+
 	REAL* charge() const{
 		return _charge;
 	}
@@ -75,6 +87,7 @@ public:
 	size_t numMappedTypes() {
 		return _numMappedTypes;
 	}
+	void setPivotAuto();
 
 	type_t* mappedType(unsigned gridId = 0) const {
 		assert(gridId < _numMappedTypes);
@@ -108,8 +121,9 @@ public:
 	vec3_t pivot() {
 		return _pivot;
 	}
-
+    void setPosOrigin(REAL* posOrigin, unsigned numAtoms);
 	REAL* getOrCreatePosPtr();
+	REAL* getOrCreatePosOriginPtr();
 
 	type_t* getOrCreateTypePtr();
 
@@ -169,6 +183,7 @@ protected:
 
 
 	vec3_t _pivot;	/** rotation pivot */
+	REAL *_posOrigin;	/** Cartesian coordinates in cm-frame (pivotized) */
 	REAL *_pos;	/** Cartesian coordinates in cm-frame (pivotized) */
 
 	type_t* _type; 	/** atom type */

@@ -142,6 +142,10 @@ __global__ void deform_kernel(
 		DOF_T const * dofs,
 		unsigned const numDOFs,
 		unsigned const idx_protein,
+		REAL* posX,
+		REAL* posY,
+		REAL* posZ,
+
 		REAL* buffer_defoX,
 		REAL* buffer_defoY,
 		REAL* buffer_defoZ
@@ -158,24 +162,27 @@ __global__ void deform_kernel(
 		/* load DOF from global memory */
 		unsigned atomIdx = idx % num_atoms;
 
-		Vec3<REAL> posAtom(	protein.xPos[atomIdx],
-							protein.yPos[atomIdx],
-							protein.zPos[atomIdx]);
-		posAtom += protein.pivot;
+		Vec3<REAL> posAtom(	posX[atomIdx],
+							posY[atomIdx],
+							posZ[atomIdx]);
 		deform< REAL, DOF_T>(	 dof,posAtom, protein, atomIdx, idx_protein,
 				buffer_defoX[idx], buffer_defoY[idx], buffer_defoZ[idx]);
 	}
 }
+
+
 
 template<typename REAL, typename DOF_T >
 __global__ void transform_kernel(
 		DOF_T const * dofs,
 		unsigned const numDOFs,
 		unsigned const numAtoms,
+		d_Protein<REAL> proteinCenter,
+		d_Protein<REAL> proteinPartner,
 		unsigned const idx_proteinCenter,
 		unsigned const idx_proteinPartner,
-		Vec3<REAL> pivotCenter,
-		Vec3<REAL> pivotPartner,
+//		Vec3<REAL> pivotCenter,
+//		Vec3<REAL> pivotPartner,
 		REAL* buffer_defoX,
 		REAL* buffer_defoY,
 		REAL* buffer_defoZ,
@@ -189,13 +196,19 @@ __global__ void transform_kernel(
 	if (idx < numAtoms*numDOFs) {
 		unsigned DOFidx = idx / numAtoms;
 		auto dof = dofs[DOFidx];
+		unsigned atomIdx = idx % numAtoms;
 		Vec3<REAL> posAtomCenter(	buffer_defoX[idx],
 									buffer_defoY[idx],
 									buffer_defoZ[idx]);
-		posAtomCenter -= pivotCenter;
+		//Vec3<REAL> deformVec(0.0f);
 
-		device_transform(dof, posAtomCenter,pivotCenter, pivotPartner, idx_proteinCenter, idx_proteinPartner,
+//		deform< REAL, DOF_T>(	 dof,posAtomCenter, proteinCenter, atomIdx, idx_proteinCenter,
+//				deformVec.x, deformVec.y, deformVec.z);
+
+
+		device_transform(dof, posAtomCenter,proteinCenter.pivot, proteinPartner.pivot, idx_proteinCenter, idx_proteinPartner,
 		       		 buffer_trafoX[idx],  buffer_trafoY[idx], buffer_trafoZ[idx]);
+
 		//DEBUG
 //		buffer_trafoX[idx] += pivotCenter.x;
 //		buffer_trafoY[idx] += pivotCenter.y;
@@ -203,6 +216,94 @@ __global__ void transform_kernel(
 
 	}
 }
+
+template<typename REAL>
+__global__ void transform_kernel_new(
+		dofMB<REAL>* dofSupport,
+		unsigned const numDOFs,
+		unsigned const numAtoms,
+		unsigned const numProtein,
+		unsigned const idx_proteinCenter,
+		unsigned const idx_proteinPartner,
+		REAL* buffer_defoX,
+		REAL* buffer_defoY,
+		REAL* buffer_defoZ,
+		REAL* buffer_trafoX,
+		REAL* buffer_trafoY,
+		REAL* buffer_trafoZ
+		)
+{
+	using real4_t = typename TypeWrapper<REAL>::real4_t;
+	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+	if (idx < numAtoms*numDOFs) {
+		unsigned DOFidx = idx / numAtoms;
+		//auto dof = dofs[DOFidx];
+		unsigned atomIdx = idx % numAtoms;
+		Vec3<REAL> posAtomCenter(	buffer_defoX[idx],
+									buffer_defoY[idx],
+									buffer_defoZ[idx]);
+		//Vec3<REAL> deformVec(0.0f);
+
+//		deform< REAL, DOF_T>(	 dof,posAtomCenter, proteinCenter, atomIdx, idx_proteinCenter,
+//				deformVec.x, deformVec.y, deformVec.z);
+
+		dofMB<REAL> dof = dofSupport[numDOFs * numProtein * idx_proteinCenter + numProtein *DOFidx + idx_proteinPartner ];
+
+		posAtomCenter = dof.rotMat * posAtomCenter;
+		posAtomCenter += dof.translation;
+//		device_transform(dof, posAtomCenter,proteinCenter.pivot, proteinPartner.pivot, idx_proteinCenter, idx_proteinPartner,
+//		       		 buffer_trafoX[idx],  buffer_trafoY[idx], buffer_trafoZ[idx]);
+
+		//DEBUG
+		buffer_trafoX[idx] = posAtomCenter.x;
+		buffer_trafoY[idx] = posAtomCenter.y;
+		buffer_trafoZ[idx] = posAtomCenter.z;
+
+	}
+}
+
+//template<typename REAL, typename DOF_T >
+//__global__ void transform_kernel(
+//		DOF_T const * dofs,
+//		unsigned const numDOFs,
+//		unsigned const numAtoms,
+//		d_Protein<REAL> proteinCenter,
+//		d_Protein<REAL> proteinPartner,
+//		unsigned const idx_proteinCenter,
+//		unsigned const idx_proteinPartner,
+//		REAL* buffer_defoX,
+//		REAL* buffer_defoY,
+//		REAL* buffer_defoZ,
+//		REAL* buffer_trafoX,
+//		REAL* buffer_trafoY,
+//		REAL* buffer_trafoZ
+//		)
+//{
+//	//using real4_t = typename TypeWrapper<REAL>::real4_t;
+//	const unsigned idx = blockDim.x * blockIdx.x + threadIdx.x;
+//	if (idx < numAtoms*numDOFs) {
+//		unsigned DOFidx = idx / numAtoms;
+//		auto dof = dofs[DOFidx];
+//		unsigned atomIdx = idx % numAtoms;
+//		Vec3<REAL> posAtomCenter(	buffer_defoX[idx],
+//									buffer_defoY[idx],
+//									buffer_defoZ[idx]);
+//		//Vec3<REAL> deformVec(0.0f);
+//
+////		deform< REAL, DOF_T>(	 dof,posAtomCenter, proteinCenter, atomIdx, idx_proteinCenter,
+////				deformVec.x, deformVec.y, deformVec.z);
+//
+//
+//		device_transform(dof, posAtomCenter,proteinCenter.pivot, proteinPartner.pivot, idx_proteinCenter, idx_proteinPartner,
+//		       		 buffer_trafoX[idx],  buffer_trafoY[idx], buffer_trafoZ[idx]);
+//
+//		//DEBUG
+////		buffer_trafoX[idx] += pivotCenter.x;
+////		buffer_trafoY[idx] += pivotCenter.y;
+////		buffer_trafoZ[idx] += pivotCenter.z;
+//
+//	}
+//}
 
 
 
@@ -230,7 +331,6 @@ __global__ void potForce_kernel(
 
 		float4 potForce{0,0,0,0};
 			PotForce_device( inner, outer, protein, numDOFs, idx, buffer_trafoX[idx], buffer_trafoY[idx], buffer_trafoZ[idx], potForce );
-
 
 
 		data_out_x[idx] = potForce.x;
@@ -441,6 +541,9 @@ template<typename REAL, typename DOF_T>
 		DOF_T const * dofs,
 		unsigned const numDOFs,
 		unsigned const idx_protein,
+		REAL* posX,
+		REAL* posY,
+		REAL* posZ,
 		REAL* buffer_defoX,
 		REAL* buffer_defoY,
 		REAL* buffer_defoZ)
@@ -451,6 +554,9 @@ template<typename REAL, typename DOF_T>
 			dofs,
 			numDOFs,
 			idx_protein,
+			posX,
+			posY,
+			posZ,
 			buffer_defoX,
 			buffer_defoY,
 			buffer_defoZ))
@@ -466,6 +572,9 @@ template
 		DOF_MB_Modes<double> const * dofs,
 		unsigned const numDOFs,
 		unsigned const idx_protein,
+		double* posX,
+		double* posY,
+		double* posZ,
 		double* buffer_defoX,
 		double* buffer_defoY,
 		double* buffer_defoZ);
@@ -479,6 +588,9 @@ template
 		DOF_MB_Modes<float> const * dofs,
 		unsigned const numDOFs,
 		unsigned const idx_protein,
+		float* posX,
+		float* posY,
+		float* posZ,
 		float* buffer_defoX,
 		float* buffer_defoY,
 		float* buffer_defoZ);
@@ -491,10 +603,12 @@ void d_transform(
 		DOF_T const * dofs,
 		unsigned const numDOFs,
 		unsigned const numAtoms,
+		d_Protein<REAL> const  proteinCenter,
+		d_Protein<REAL> const  proteinPartner,
 		unsigned const idx_proteinCenter,
 		unsigned const idx_proteinPartner,
-		Vec3<REAL> pivotCenter,
-		Vec3<REAL> pivotPartner,
+//		Vec3<REAL> pivotCenter,
+//		Vec3<REAL> pivotPartner,
 		REAL* buffer_defoX,
 		REAL* buffer_defoY,
 		REAL* buffer_defoZ,
@@ -508,10 +622,12 @@ void d_transform(
 			dofs,
 			numDOFs,
 			numAtoms,
+			proteinCenter,
+			proteinPartner,
 			idx_proteinCenter,
 			idx_proteinPartner,
-			pivotCenter,
-			pivotPartner,
+//			pivotCenter,
+//			pivotPartner,
 			buffer_defoX,
 			buffer_defoY,
 			buffer_defoZ,
@@ -530,10 +646,13 @@ void d_transform<float, DOF_MB_Modes<float>>(
 		DOF_MB_Modes<float> const * dofs,
 		unsigned const numDOFs,
 		unsigned const numAtoms,
-		unsigned const idx_proteinCenter,
-		unsigned const idx_proteinPartner,
-		Vec3<float> pivotCenter,
-		Vec3<float> pivotPartner,
+
+//		Vec3<float> pivotCenter,
+//		Vec3<float> pivotPartner,
+		d_Protein<float> proteinCenter,
+		d_Protein<float> proteinParnter,
+				unsigned const idx_proteinCenter,
+				unsigned const idx_proteinPartner,
 		float* buffer_defoX,
 		float* buffer_defoY,
 		float* buffer_defoZ,
@@ -550,10 +669,14 @@ void d_transform<double, DOF_MB_Modes<double>>(
 		DOF_MB_Modes<double> const * dofs,
 		unsigned const numDOFs,
 		unsigned const numAtoms,
+//		unsigned const idx_proteinCenter,
+//		unsigned const idx_proteinPartner,
+//		Vec3<double> pivotCenter,
+//		Vec3<double> pivotPartner,
+		d_Protein<double> proteinCenter,
+		d_Protein<double> proteinParnter,
 		unsigned const idx_proteinCenter,
 		unsigned const idx_proteinPartner,
-		Vec3<double> pivotCenter,
-		Vec3<double> pivotPartner,
 		double* buffer_defoX,
 		double* buffer_defoY,
 		double* buffer_defoZ,
@@ -626,5 +749,82 @@ template
 		double* data_out_y,
 		double* data_out_z,
 		double* data_out_E);
+
+
+
+template<typename REAL>
+void d_transform_new(
+		 unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		dofMB<REAL>* dofSupport,
+		unsigned const numDOFs,
+		unsigned const numAtoms,
+		unsigned const numProtein,
+		unsigned const idx_proteinCenter,
+		unsigned const idx_proteinPartner,
+		REAL* buffer_defoX,
+		REAL* buffer_defoY,
+		REAL* buffer_defoZ,
+		REAL* buffer_trafoX,
+		REAL* buffer_trafoY,
+		REAL* buffer_trafoZ
+		)
+{
+	cudaVerifyKernel((
+			transform_kernel_new<<<gridSize, blockSize, 0, stream>>> (
+					dofSupport,
+						numDOFs,
+						numAtoms,
+						numProtein,
+						idx_proteinCenter,
+						idx_proteinPartner,
+						buffer_defoX,
+						buffer_defoY,
+						buffer_defoZ,
+						buffer_trafoX,
+						buffer_trafoY,
+						buffer_trafoZ
+					))
+		);
 }
 
+template
+void d_transform_new<float>(
+		 unsigned blockSize,
+				unsigned gridSize,
+				const cudaStream_t &stream,
+		dofMB<float>* dofSupport,
+			unsigned const numDOFs,
+			unsigned const numAtoms,
+			unsigned const numProtein,
+			unsigned const idx_proteinCenter,
+			unsigned const idx_proteinPartner,
+			float* buffer_defoX,
+			float* buffer_defoY,
+			float* buffer_defoZ,
+			float* buffer_trafoX,
+			float* buffer_trafoY,
+			float* buffer_trafoZ
+			);
+
+template
+void d_transform_new<double>(
+		 unsigned blockSize,
+				unsigned gridSize,
+				const cudaStream_t &stream,
+		dofMB<double>* dofSupport,
+			unsigned const numDOFs,
+			unsigned const numAtoms,
+			unsigned const numProtein,
+			unsigned const idx_proteinCenter,
+			unsigned const idx_proteinPartner,
+			double* buffer_defoX,
+			double* buffer_defoY,
+			double* buffer_defoZ,
+			double* buffer_trafoX,
+			double* buffer_trafoY,
+			double* buffer_trafoZ
+			);
+
+}

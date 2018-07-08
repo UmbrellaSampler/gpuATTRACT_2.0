@@ -127,7 +127,7 @@ __global__ void d_innerPotForce (
 			REAL x = data_in_x[idx];
 			REAL y = data_in_y[idx];
 			REAL z = data_in_z[idx];
-			bool test =false;
+			bool test =true;
 
 			if ((x >= grid.minDim.x && x <= grid.maxDim.x)
 					&& (y >= grid.minDim.y && y <= grid.maxDim.y)
@@ -165,10 +165,14 @@ __global__ void d_innerPotForce (
 			}
 		}
 
-		data_out_x[idx] = static_cast<REAL>(pot.x);
-		data_out_y[idx] = static_cast<REAL>(pot.y);
-		data_out_z[idx] = static_cast<REAL>(pot.z);
-		data_out_E[idx] = static_cast<REAL>(pot.w);
+//		data_out_x[idx] = static_cast<REAL>(pot.x);
+//		data_out_y[idx] = static_cast<REAL>(pot.y);
+//		data_out_z[idx] = static_cast<REAL>(pot.z);
+//		data_out_E[idx] = static_cast<REAL>(pot.w);
+		data_out_x[idx] += pot.x;
+		data_out_y[idx] += pot.y;
+		data_out_z[idx] += pot.z;
+		data_out_E[idx] += pot.w;
 	}
 }
 
@@ -222,7 +226,7 @@ __global__ void d_outerPotForce(
 					&& (y >= outer.minDim.y && y <= outer.maxDim.y)
 					&& (z >= outer.minDim.z && z <= outer.maxDim.z)))
 			{
-				bool test =false;
+				bool test =true;
 				float4 pot{0,0,0,0};
 				if(test){
 				x = (x - outer.minDim.x) * outer.dVox_inv + 0.5f;
@@ -257,10 +261,14 @@ __global__ void d_outerPotForce(
 					}
 				}
 
-				data_out_x[idx] = static_cast<REAL>(pot.x);
-				data_out_y[idx] = static_cast<REAL>(pot.y);
-				data_out_z[idx] = static_cast<REAL>(pot.z);
-				data_out_E[idx] = static_cast<REAL>(pot.w);
+//				data_out_x[idx] = static_cast<REAL>(pot.x);
+//				data_out_y[idx] = static_cast<REAL>(pot.y);
+//				data_out_z[idx] = static_cast<REAL>(pot.z);
+//				data_out_E[idx] = static_cast<REAL>(pot.w);
+				data_out_x[idx] += pot.x;
+				data_out_y[idx] += pot.y;
+				data_out_z[idx] += pot.z;
+				data_out_E[idx] += pot.w;
 			}
 		}
 	}

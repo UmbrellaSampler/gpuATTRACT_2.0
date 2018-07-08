@@ -66,6 +66,13 @@ public:
 		std::fill_n(mat, 9, value);
 	}
 
+	__host__ __device__
+	RotMat(T matrix[9]) {
+		for(int i = 0; i < 9 ; ++i){
+			mat[i] = matrix[i];
+		}
+	}
+
 	T mat[9];
 
 	__host__ __device__

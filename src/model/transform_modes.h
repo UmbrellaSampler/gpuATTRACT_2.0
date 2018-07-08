@@ -16,7 +16,7 @@
 #include "Protein.h"
 #include <type_traits>
 
-
+#include <iostream>
  namespace as{
 
 
@@ -96,6 +96,7 @@ __inline__ void h_rotate_translate( DOF_T const&dof,  Vec3<REAL> & posAtom, unsi
 {
 	RotMat<REAL> rotMat = euler2rotmat(dof._6D.ang.x, dof._6D.ang.y, dof._6D.ang.z);
 	Vec3<REAL> translation = dof._6D.pos;
+
 	if ( type_protein == 0)
 	{
 		rotMat = rotMat.getInv();
@@ -104,6 +105,7 @@ __inline__ void h_rotate_translate( DOF_T const&dof,  Vec3<REAL> & posAtom, unsi
 
 	posAtom = rotMat*posAtom;
 	posAtom += translation;
+	std::cout << type_protein << translation<< rotMat<<std::endl;
 	}
 
 template<typename REAL, typename DOF_T>
@@ -138,11 +140,12 @@ void h_DOFPos(
 	REAL const* z = protein->zPos();
 	for ( unsigned idx_atom = 0; idx_atom < protein->numAtoms(); ++idx_atom ){
 		Vec3<REAL> posAtom(x[idx_atom], y[idx_atom], z[idx_atom]);
+
+
 		h_deform( dof, protein, type_protein,  idx_atom, posAtom, buffer_defoX,
 				buffer_defoY,
 				buffer_defoZ);
 		h_rotate_translate( dof,  posAtom, type_protein);
-
 		buffer_trafoX[idx_atom] = posAtom.x;
 		buffer_trafoY[idx_atom] = posAtom.y;
 		buffer_trafoZ[idx_atom] = posAtom.z;
@@ -198,17 +201,23 @@ void rotate_forces(
 		RotMat<REAL>  rotMatPartner = euler2rotmat(dof.protein[idx_proteinPartner].ang.x,
 												dof.protein[idx_proteinPartner].ang.y,
 												dof.protein[idx_proteinPartner].ang.z).getInv();
-		RotMat<REAL> rotMat ;//= rotMatPartner * rotMatCenter;
-
+		RotMat<REAL> rotMat(0.0f) ;//= rotMatPartner * rotMatCenter;
+		for(unsigned i = 0; i < 9; ++i) {rotMat[i] = 0;}
 		for(unsigned i = 0; i < 3; ++i) {
 					for(unsigned j = 0; j < 3; ++j) {
 						for(unsigned k = 0; k < 3; ++k) {
 							rotMat[i*3 + j] += rotMatCenter[i*3 + k]*rotMatPartner[k*3 + j];
+							//printf("i %d j  %d val %f %f", i,j, rotMatCenter[i*3 + k],rotMatPartner[k*3 + j]);
 						}
 					}
 				}
-		//printf("%d %d \n",idx_proteinCenter,idx_proteinPartner);
-		//printf("%f %f %f %f %f %f %f %f %f\n ",rotMat[0],rotMat[1],rotMat[2],rotMat[3],rotMat[4],rotMat[5],rotMat[6],rotMat[7],rotMat[8]);
+		//printf("posatom %f %f %f \n ",posAtomCenter.x,posAtomCenter.y,posAtomCenter.z);
+//		printf("%d %d \n",idx_proteinCenter,idx_proteinPartner);
+//		printf("ang center %f %f %f \n", dof.protein[idx_proteinCenter].ang.x,dof.protein[idx_proteinCenter].ang.y,dof.protein[idx_proteinCenter].ang.z);
+//		printf("ang partner %f %f %f \n", dof.protein[idx_proteinPartner].ang.x,dof.protein[idx_proteinPartner].ang.y,dof.protein[idx_proteinPartner].ang.z);
+//		printf("rotmat center%f %f %f %f %f %f %f %f %f\n ",rotMatCenter[0],rotMatCenter[1],rotMatCenter[2],rotMatCenter[3],rotMatCenter[4],rotMatCenter[5],rotMatCenter[6],rotMatCenter[7],rotMatCenter[8]);
+//		printf("rotmat partner%f %f %f %f %f %f %f %f %f\n ",rotMatPartner[0],rotMatPartner[1],rotMatPartner[2],rotMatPartner[3],rotMatPartner[4],rotMatPartner[5],rotMatPartner[6],rotMatPartner[7],rotMatPartner[8]);
+	//	printf("rotmat %f %f %f %f %f %f %f %f %f\n ",rotMat[0],rotMat[1],rotMat[2],rotMat[3],rotMat[4],rotMat[5],rotMat[6],rotMat[7],rotMat[8]);
 		Vec3<REAL> translationCenter = dof.protein[idx_proteinCenter].pos;
 		Vec3<REAL> translationPartner = dof.protein[idx_proteinPartner].pos;
 		//printf("trans s  %f %f %f %f %f %f\n ",translationCenter.x,translationCenter.y,translationCenter.z,translationPartner.x,translationPartner.y,translationPartner.z);
@@ -218,9 +227,9 @@ void rotate_forces(
 //		pivotTotal = pivotTotal + pivotPartner;
 		Vec3<REAL> pivotTotal = pivotPartner + (rotMatPartner *  (pivotCenter - pivotPartner));
 
-		//printf("piv total   %f %f %f \n ",pivotTotal.x,pivotTotal.y,pivotTotal.z);
+//		printf("piv total   %f %f %f \n ",pivotTotal.x,pivotTotal.y,pivotTotal.z);
 //		printf("piv   %f %f %f %f %f %f\n ",pivotCenter.x,pivotCenter.y,pivotCenter.z,pivotPartner.x,pivotPartner.y,pivotPartner.z);
-		//printf("trans %f %f %f \n ",translationTotal.x,translationTotal.y,translationTotal.z);
+//		printf("trans %f %f %f \n ",translationTotal.x,translationTotal.y,translationTotal.z);
 
 
 

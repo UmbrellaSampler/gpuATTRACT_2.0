@@ -42,6 +42,17 @@ std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::s
 	CUDA_CHECK(cudaMalloc((void**) &d_zPos, numAtoms * sizeof(REAL)));
 	CUDA_CHECK(cudaMemcpy(d_zPos, protein->zPos(), numAtoms * sizeof(REAL), cudaMemcpyHostToDevice));
 
+	REAL *d_xPosOrigin;
+	CUDA_CHECK(cudaMalloc((void**) &d_xPosOrigin, numAtoms * sizeof(REAL)));
+	CUDA_CHECK(cudaMemcpy(d_xPosOrigin, protein->xPosOrigin(), numAtoms * sizeof(REAL), cudaMemcpyHostToDevice));
+	REAL *d_yPosOrigin;
+	CUDA_CHECK(cudaMalloc((void**) &d_yPosOrigin, numAtoms * sizeof(REAL)));
+	CUDA_CHECK(cudaMemcpy(d_yPosOrigin, protein->yPosOrigin(), numAtoms * sizeof(REAL), cudaMemcpyHostToDevice));
+	REAL *d_zPosOrigin;
+	CUDA_CHECK(cudaMalloc((void**) &d_zPosOrigin, numAtoms * sizeof(REAL)));
+	CUDA_CHECK(cudaMemcpy(d_zPosOrigin, protein->zPosOrigin(), numAtoms * sizeof(REAL), cudaMemcpyHostToDevice));
+
+
 	unsigned* d_type;
 	CUDA_CHECK(cudaMalloc((void**) &d_type, numAtoms * sizeof(unsigned)));
 	CUDA_CHECK(cudaMemcpy(d_type, protein->type(), numAtoms * sizeof(unsigned), cudaMemcpyHostToDevice));
@@ -77,6 +88,9 @@ std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::s
 	deviceDesc.xPos = d_xPos;
 	deviceDesc.yPos = d_yPos;
 	deviceDesc.zPos = d_zPos;
+	deviceDesc.xPosOrigin = d_xPosOrigin;
+	deviceDesc.yPosOrigin = d_yPosOrigin;
+	deviceDesc.zPosOrigin = d_zPosOrigin;
 	deviceDesc.type = d_type;
 	deviceDesc.mappedType = d_mappedType;
 	deviceDesc.charge = d_charge;

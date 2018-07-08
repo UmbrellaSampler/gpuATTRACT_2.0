@@ -44,7 +44,7 @@
 #include <iomanip>
 #include <limits>
 #include <mutex>
-
+#include "Types_MB_Modes.h"
 namespace as {
 
 template<typename REAL>
@@ -89,7 +89,7 @@ auto GPUEnergyServiceMBModes<REAL>::createStageResource(workItem_t* item, unsign
 
 	auto table = std::dynamic_pointer_cast<DeviceParamTable<REAL>>(this->_dataMng->get(common->tableId, deviceId)).get();
 	assert(table != nullptr);
-
+	stageResource.table 	= &table->desc;
 	auto simParam = std::dynamic_pointer_cast<SimParam<REAL>>(this->_dataMng->get(common->paramsId)).get();
 	assert(simParam != nullptr);
 
@@ -120,13 +120,14 @@ public:
 		const size_t atomBufferSize = numDOFs*numAtoms;
 
 		d_defo[id_protein] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSize));
-		for ( int i = 0; i< 2; ++i)
-		{
-			d_pot[i][id_protein] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(4,atomBufferSize));
-		}
+
+		d_pot[0][id_protein] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(4,atomBufferSize));
+		d_pot[1][id_protein] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(4,atomBufferSize));
 		d_res[id_protein] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(1, dofSize*numDOFs));
 		h_res[id_protein] = std::move(WorkerBuffer<REAL, HostPinnedAllocator<REAL>>(1, dofSize*numDOFs));
 		d_dof    = std::move(WorkerBuffer<dof_t,DeviceAllocator<dof_t>>(1,numDOFs));
+		h_dofSupport = std::move(WorkerBuffer<dofMB<REAL>,HostPinnedAllocator<dofMB<REAL>>>(1,numDOFs*Common_MB_Modes::numProteins*Common_MB_Modes::numProteins));
+		d_dofSupport = std::move(WorkerBuffer<dofMB<REAL>,DeviceAllocator<dofMB<REAL>>>(1,numDOFs*Common_MB_Modes::numProteins*Common_MB_Modes::numProteins));
 		for ( int i = 0; i< Common_MB_Modes::numProteins; ++i)
 		{
 			d_trafo[id_protein][i] = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSize));
@@ -196,9 +197,38 @@ public:
 		auto const& stageResc = _resource;
 		auto* const it = stageResc.item;
 		const auto common = it->common();
-		cudaVerify(cudaMemcpyAsync(d_dof.get(0), it->inputBuffer(),
-				it->size()*sizeof(dof_t), cudaMemcpyHostToDevice, stream));
+		std::vector<Vec3<REAL>> pivots;
+		for( int i = 0; i< common->numProteins; ++i){
 
+			if ( !common->proteins[i].centered ){
+				//std::cout<< "sdgasgasg" << common->proteins[i].pivot << std::endl;
+				pivots.push_back(Vec3<REAL>(
+						common->proteins[i].pivot.x,
+						common->proteins[i].pivot.y,
+						common->proteins[i].pivot.z
+						));
+
+			}
+			else{
+				pivots.push_back(Vec3<REAL>(0.0f));
+			}
+		}
+		cudaVerify(cudaMemcpyAsync(d_dof.get(0), it->inputBuffer(),
+						it->size()*sizeof(dof_t), cudaMemcpyHostToDevice, stream));
+		getNewDof<REAL>( it->size(), common->numProteins,  it->inputBuffer(),pivots, h_dofSupport.get(0));
+		cudaVerify(cudaMemcpyAsync(d_dofSupport.get(0), h_dofSupport.get(0),
+						it->size()*common->numProteins*common->numProteins*sizeof(dofMB<REAL>), cudaMemcpyHostToDevice, stream));
+
+		for( int id_centerProtein = 0; id_centerProtein < common->numProteins ; ++id_centerProtein){
+			cudaMemsetAsync(d_pot[0][id_centerProtein].getX(), 0, it->size()*stageResc.proteins[id_centerProtein]->numAtoms* sizeof(REAL), stream);
+			cudaMemsetAsync(d_pot[0][id_centerProtein].getY(), 0, it->size()*stageResc.proteins[id_centerProtein]->numAtoms* sizeof(REAL), stream);
+			cudaMemsetAsync(d_pot[0][id_centerProtein].getZ(), 0, it->size()*stageResc.proteins[id_centerProtein]->numAtoms* sizeof(REAL), stream);
+			cudaMemsetAsync(d_pot[0][id_centerProtein].getW(), 0, it->size()*stageResc.proteins[id_centerProtein]->numAtoms* sizeof(REAL), stream);
+			cudaMemsetAsync(d_pot[1][id_centerProtein].getX(), 0, it->size()*stageResc.proteins[id_centerProtein]->numAtoms* sizeof(REAL), stream);
+			cudaMemsetAsync(d_pot[1][id_centerProtein].getY(), 0, it->size()*stageResc.proteins[id_centerProtein]->numAtoms* sizeof(REAL), stream);
+			cudaMemsetAsync(d_pot[1][id_centerProtein].getZ(), 0, it->size()*stageResc.proteins[id_centerProtein]->numAtoms* sizeof(REAL), stream);
+			cudaMemsetAsync(d_pot[1][id_centerProtein].getW(), 0, it->size()*stageResc.proteins[id_centerProtein]->numAtoms* sizeof(REAL), stream);
+		}
 
 		for ( unsigned id_centerProtein = 0; id_centerProtein< common->numProteins; ++id_centerProtein)
 		{
@@ -206,7 +236,6 @@ public:
 			assert( numAtomsCenter <= d_trafo[id_centerProtein][0].bufferSize() );
 			size_t gridSizeCenter = ( numAtomsCenter + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 
-			//deform_kernel()
 			//deform needs unpivotized and transform needs pivotized coordinates
 			 d_deform(
 					 BLSZ_TRAFO,
@@ -216,10 +245,14 @@ public:
 					d_dof.get(0),
 					it->size(),
 					id_centerProtein,
+					stageResc.proteins[id_centerProtein]->xPos,
+					stageResc.proteins[id_centerProtein]->yPos,
+					stageResc.proteins[id_centerProtein]->zPos,
 					d_defo[id_centerProtein].getX(),
 					d_defo[id_centerProtein].getY(),
 					d_defo[id_centerProtein].getZ()
 					);
+
 		}
 		for ( unsigned id_centerProtein = 0; id_centerProtein< common->numProteins; ++id_centerProtein)
 				{
@@ -230,73 +263,36 @@ public:
 			 for ( unsigned id_partnerProtein = 0; id_partnerProtein< common->numProteins; ++id_partnerProtein)
 			{
 				 if(id_partnerProtein != id_centerProtein){
-					 d_transform(
+
+					 d_transform_new(
 						BLSZ_TRAFO,
 						gridSizeCenter,
 						stream,
-						d_dof.get(0),
+						d_dofSupport.get(0),
 						it->size(),
 						stageResc.proteins[id_centerProtein]->numAtoms,
+						common->numProteins,
 						id_centerProtein,
 						id_partnerProtein,
-						stageResc.proteins[id_centerProtein]->pivot,
-						stageResc.proteins[id_partnerProtein]->pivot,
 						d_defo[id_centerProtein].getX(),
 						d_defo[id_centerProtein].getY(),
 						d_defo[id_centerProtein].getZ(),
 						d_trafo[id_centerProtein][id_partnerProtein].getX(),
 						d_trafo[id_centerProtein][id_partnerProtein].getY(),
 						d_trafo[id_centerProtein][id_partnerProtein].getZ()
-						);
-					 	if(id_centerProtein == 1){
-
-
-					 	}
-				 }
+							);				 }
 			 }
 
 		}
 
 
-		cudaDeviceSynchronize();
-								std::cout <<"defoRec g"<<std::endl;
-								size_t bufferSizeDefoRec1 = d_defo[0].bufferSize();
-								WorkerBuffer<REAL> h_DefoRec(3,bufferSizeDefoRec1);
-								size_t cpySizeDefoRec1 = h_DefoRec.bufferSize()*sizeof(REAL);
-
-								//std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
-								cudaMemcpy(h_DefoRec.getX(),d_defo[0].getX(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
-								cudaMemcpy(h_DefoRec.getY(),d_defo[0].getY(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
-								cudaMemcpy(h_DefoRec.getZ(),d_defo[0].getZ(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
-								for(size_t i = 0; i < stageResc.proteins[0]->numAtoms; ++i) {
-								//std::cout  << std::setprecision(10)<< h_DefoRec.getX()[i] << " " << h_DefoRec.getY()[i] << " " << h_DefoRec.getZ()[i] << std::endl;
-								}
-
-
-							std::cout <<"trafoRec g"<<std::endl;
-							size_t bufferSizetrafoRec1 = d_trafo[1][0].bufferSize();
-							WorkerBuffer<REAL> h_trafoRec(3,bufferSizetrafoRec1);
-							size_t cpySizetrafoRec1 = h_trafoRec.bufferSize()*sizeof(REAL);
-
-							//std::cout << "bufferSize: " << bufferSizetrafoRec << " cpySize: " << cpySizetrafoRec << std::endl;
-							cudaMemcpy(h_trafoRec.getX(),d_trafo[1][0].getX(), cpySizetrafoRec1, cudaMemcpyDeviceToHost);
-							cudaMemcpy(h_trafoRec.getY(),d_trafo[1][0].getY(), cpySizetrafoRec1, cudaMemcpyDeviceToHost);
-							cudaMemcpy(h_trafoRec.getZ(),d_trafo[1][0].getZ(), cpySizetrafoRec1, cudaMemcpyDeviceToHost);
-							for(size_t i = 0; i < stageResc.proteins[1]->numAtoms; ++i) {
-								std::cout  << std::setprecision(10)<< h_trafoRec.getX()[i] << " " << h_trafoRec.getY()[i] << " " << h_trafoRec.getZ()[i] << std::endl;
-							}
-		//					exit(EXIT_SUCCESS);
-
 		for ( unsigned id_centerProtein = 0; id_centerProtein< common->numProteins; ++id_centerProtein)
-				{
-					unsigned const numAtomsCenter = it->size()*stageResc.proteins[id_centerProtein]->numAtoms;
-					assert( numAtomsCenter <= d_trafo[id_centerProtein][0].bufferSize() );
-					size_t gridSizeCenter = ( numAtomsCenter + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
+		{
+			unsigned const numAtomsCenter = it->size()*stageResc.proteins[id_centerProtein]->numAtoms;
+			assert( numAtomsCenter <= d_trafo[id_centerProtein][0].bufferSize() );
+			size_t gridSizeCenter = ( numAtomsCenter + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 			for ( unsigned id_partnerProtein = 0; id_partnerProtein< common->numProteins; ++id_partnerProtein)
 			{
-				//tranform kernel and potforce kernel
-
-
 				if (common->radius_cutoff > 10000)
 				{
 					if(id_partnerProtein != id_centerProtein){
@@ -315,7 +311,8 @@ public:
 						d_pot[0][id_centerProtein].getY(),
 						d_pot[0][id_centerProtein].getZ(),
 						d_pot[0][id_centerProtein].getW());
-				}
+
+
 				d_NLPotForce<REAL, dof_t>(
 						BLSZ_INTRPL,
 						gridSizeCenter,
@@ -336,13 +333,13 @@ public:
 						d_pot[0][id_centerProtein].getX(),
 						d_pot[0][id_centerProtein].getY(),
 						d_pot[0][id_centerProtein].getZ(),
-						d_pot[0][id_centerProtein].getW());
-
+						d_pot[0][id_centerProtein].getW()
+						);
 				d_rotateForces(
 						BLSZ_INTRPL,
 						gridSizeCenter,
 						stream,
-						id_centerProtein,
+						id_partnerProtein,
 						d_pot[0][id_centerProtein].getX(),
 						d_pot[0][id_centerProtein].getY(),
 						d_pot[0][id_centerProtein].getZ(),
@@ -355,8 +352,56 @@ public:
 						stageResc.proteins[id_centerProtein]->numAtoms,
 						it->size()
 						);
+
+//				cudaDeviceSynchronize();
+//				WorkerBuffer<REAL> h_potLig(4,stageResc.proteins[id_centerProtein]->numAtoms);
+//				size_t cpySize = stageResc.proteins[id_centerProtein]->numAtoms*sizeof(REAL);
+//				//std::cout <<"fx fy fz"<<std::endl;
+//				std::cout << "nl Force " << std::endl;
+//				cudaMemcpy(h_potLig.getX(),d_pot[id_centerProtein].getX(), cpySize, cudaMemcpyDeviceToHost);
+//				cudaMemcpy(h_potLig.getY(),d_pot[id_centerProtein].getY(), cpySize, cudaMemcpyDeviceToHost);
+//				cudaMemcpy(h_potLig.getZ(),d_pot[id_centerProtein].getZ(), cpySize, cudaMemcpyDeviceToHost);
+//				cudaMemcpy(h_potLig.getW(),d_pot[id_centerProtein].getW(), cpySize, cudaMemcpyDeviceToHost);
+//				for(size_t i = 0; i < stageResc.proteins[id_centerProtein]->numAtoms; ++i) {
+//					//			for(size_t i = 0; i < 20; ++i) {
+//					std::cout << h_potLig.getX()[i] << " " << h_potLig.getY()[i] << " " << h_potLig.getZ()[i]<< std::endl;// << " " << h_potLig.getW()[i] ;
+//
+//				}
+//				exit(EXIT_SUCCESS);
+					}
 				}
-			}
+			}}
+
+//	cudaDeviceSynchronize();
+//	std::cout <<"defoRec g"<<std::endl;
+//	size_t bufferSizeDefoRec1 = d_defo[id_partnerProtein].bufferSize();
+//	WorkerBuffer<REAL> h_DefoRec(3,bufferSizeDefoRec1);
+//	size_t cpySizeDefoRec1 = h_DefoRec.bufferSize()*sizeof(REAL);
+//
+//	//std::cout << "bufferSize: " << bufferSizeDefoRec << " cpySize: " << cpySizeDefoRec << std::endl;
+//	cudaMemcpy(h_DefoRec.getX(),d_defo[id_partnerProtein].getX(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+//	cudaMemcpy(h_DefoRec.getY(),d_defo[id_partnerProtein].getY(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+//	cudaMemcpy(h_DefoRec.getZ(),d_defo[id_partnerProtein].getZ(), cpySizeDefoRec1, cudaMemcpyDeviceToHost);
+//	for(size_t i = 0; i < stageResc.proteins[0]->numAtoms; ++i) {
+//	std::cout  << std::setprecision(10)<< h_DefoRec.getX()[i] << " " << h_DefoRec.getY()[i] << " " << h_DefoRec.getZ()[i] << std::endl;
+//	}
+//	std::cout <<"trafoRec g"<<std::endl;
+//	size_t bufferSizetrafoRec1 = d_trafo[id_centerProtein][id_partnerProtein].bufferSize();
+//	WorkerBuffer<REAL> h_trafoRec(3,bufferSizetrafoRec1);
+//	size_t cpySizetrafoRec1 = h_trafoRec.bufferSize()*sizeof(REAL);
+//
+//	cudaMemcpy(h_trafoRec.getX(),d_trafo[id_centerProtein][id_partnerProtein].getX(), cpySizetrafoRec1, cudaMemcpyDeviceToHost);
+//	cudaMemcpy(h_trafoRec.getY(),d_trafo[id_centerProtein][id_partnerProtein].getY(), cpySizetrafoRec1, cudaMemcpyDeviceToHost);
+//	cudaMemcpy(h_trafoRec.getZ(),d_trafo[id_centerProtein][id_partnerProtein].getZ(), cpySizetrafoRec1, cudaMemcpyDeviceToHost);
+//	for(size_t i = 0; i < stageResc.proteins[1]->numAtoms; ++i) {
+//	std::cout  << std::setprecision(10)<< h_trafoRec.getX()[i] << " " << h_trafoRec.getY()[i] << " " << h_trafoRec.getZ()[i] << std::endl;
+//	}
+
+	for ( unsigned id_centerProtein = 0; id_centerProtein< common->numProteins; ++id_centerProtein)
+				{
+			unsigned const numAtomsCenter = it->size()*stageResc.proteins[id_centerProtein]->numAtoms;//
+			assert( numAtomsCenter <= d_trafo[id_centerProtein][0].bufferSize() );
+			size_t gridSizeCenter = ( numAtomsCenter + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 			deviceReduce<REAL, DOF_MB_Modes<REAL>,1>(
 			blockSizeReduceRec,
 			it->size(),
@@ -372,8 +417,6 @@ public:
 
 			cudaVerify(cudaMemcpyAsync( h_res[id_centerProtein].get(0), d_res[id_centerProtein].get(0), dofSize[id_centerProtein]*it->size()*sizeof(REAL),
 					cudaMemcpyDeviceToHost, stream));
-			cudaVerify(cudaMemcpyAsync( h_res[id_centerProtein].get(0), d_res[id_centerProtein].get(0), dofSize[id_centerProtein]*it->size()*sizeof(REAL),
-					cudaMemcpyDeviceToHost, stream));
 			cudaVerify(cudaStreamSynchronize(stream));
 			nvtxRangePushA("Host");
 
@@ -384,60 +427,12 @@ public:
 				it->inputBuffer(),
 				h_res[id_centerProtein].get(0),
 				it->resultBuffer());
-				nvtxRangePop();
 
 			nvtxRangePop();
 		}
-
-
-
-
-
-
-//			d_DOFPos(
-//				BLSZ_INTRPL,
-//				gridSizeRec,
-//				streams[id_stream],
-//				*stageResc.rec,
-//				d_dof[id_stream].get(0),
-//				it->size(), 0,
-//				d_defoRec[id_stream].getX(),
-//				d_defoRec[id_stream].getY(),
-//				d_defoRec[id_stream].getZ(),
-//				d_trafoRec[id_stream].getX(),
-//				d_trafoRec[id_stream].getY(),
-//				d_trafoRec[id_stream].getZ()
-//				);
-
-
-
-
-//			 DEBUG
-//			cudaDeviceSynchronize();
-			//cudaDeviceSynchronize();
-//									size_t bufferSize = d_dof[pipeIdxDof[1]].bufferSize();
-//									WorkerBuffer<dof_t> h_dof(4,bufferSize);
-//									size_t cpySize = h_dof.bufferSize()*sizeof(dof_t);
-//
-//									std::cout << "bufferSize: " << bufferSize << " cpySize: " << cpySize << std::endl;
-//									cudaMemcpy(h_dof.get(0),d_dof[pipeIdxDof[0]].get(0), cpySize, cudaMemcpyDeviceToHost);
-//									cudaMemcpy(h_dof.get(1),d_dof[pipeIdxDof[1]].get(0), cpySize, cudaMemcpyDeviceToHost);
-//									cudaMemcpy(h_dof.get(2),d_dof[pipeIdxDof[2]].get(0), cpySize, cudaMemcpyDeviceToHost);
-//									cudaMemcpy(h_dof.get(3),d_dof[pipeIdxDof[3]].get(0), cpySize, cudaMemcpyDeviceToHost);
-//									std::cout << " stage one " <<std::endl;
-//									for(size_t i = 0; i < bufferSize; ++i) {
-//										std::cout << 0<< " " <<h_dof.get(0)[i]  << std::endl<< std::endl;
-//									}
-//									for(size_t i = 0; i < bufferSize; ++i) {
-//										std::cout << 1<< " " <<h_dof.get(1)[i]  << std::endl<< std::endl;
-//									}
-//									for(size_t i = 0; i < bufferSize; ++i) {
-//										std::cout << 2<< " " <<h_dof.get(2)[i]  << std::endl<< std::endl;
-//									}
-//									for(size_t i = 0; i < bufferSize; ++i) {
-//										std::cout << 3<< " " <<h_dof.get(3)[i]  << std::endl<< std::endl ;
-//									}
-//									std::cout <<std::endl<< std::endl;
+		for ( int i = 0; i < it->size(); ++i){
+			it->resultBuffer()[i].E = it->resultBuffer()[i].E / (float)common->numProteins;
+		}
 
 //						cudaDeviceSynchronize();
 //
@@ -476,22 +471,6 @@ public:
 			/* Perform cuda kernel calls */
 //			gridSizeRec = ( numElRec + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 //			gridSizeLig = ( numElLig + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
-//
-//			d_potForce (
-//				BLSZ_INTRPL,
-//				gridSizeRec,
-//				streams[id_stream],
-//				stageResc.gridLig.inner,
-//				stageResc.gridLig.outer,
-//				*stageResc.rec,
-//				it->size(),
-//				d_trafoRec[id_stream].getX(),
-//				d_trafoRec[id_stream].getY(),
-//				d_trafoRec[id_stream].getZ(),
-//				d_potRec[id_stream].getX(),
-//				d_potRec[id_stream].getY(),
-//				d_potRec[id_stream].getZ(),
-//				d_potRec[id_stream].getW()); // OK
 
 			//std::cout <<"before nl gpu" <<std::endl;
 //			cudaDeviceSynchronize();
@@ -510,32 +489,6 @@ public:
 
 
 
-//
-//			//get nl forces on receptor
-//			d_NLPotForce<REAL, dof_t>(
-//				BLSZ_INTRPL,
-//				gridSizeRec,
-//				streams[id_stream],
-//				stageResc.gridLig.NL,
-//				*stageResc.lig,
-//				*stageResc.rec,
-//				*stageResc.table,
-//				common->radius_cutoff,
-//				*stageResc.simParam,
-//				it->size(),
-//				d_defoLig[id_stream].getX(),
-//				d_defoLig[id_stream].getY(),
-//				d_defoLig[id_stream].getZ(),
-//				d_trafoRec[id_stream].getX(),
-//				d_trafoRec[id_stream].getY(),
-//				d_trafoRec[id_stream].getZ(),
-//				d_potRec[id_stream].getX(),
-//				d_potRec[id_stream].getY(),
-//				d_potRec[id_stream].getZ(),
-//				d_potRec[id_stream].getW()
-//				); // OK
-//
-//
 
 
 
@@ -645,6 +598,8 @@ public:
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_pot[2][num_proteins];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_res[num_proteins];
 	WorkerBuffer<REAL, HostPinnedAllocator<REAL>> h_res[num_proteins];
+	WorkerBuffer<dofMB<REAL>, HostPinnedAllocator<dofMB<REAL>>> h_dofSupport;
+	WorkerBuffer<dofMB<REAL>, DeviceAllocator<dofMB<REAL>>> d_dofSupport;
 
 
 	static constexpr size_t BLSZ_TRAFO = 128;
@@ -731,3 +686,116 @@ auto GPUEnergyServiceMBModes<REAL>::createItemProcessor() -> itemProcessor_t {
 #endif
 
 #endif /* SRC_SERVICE_GPUENERGYSERVICEMB_TPP_ */
+
+//			 d_deform(
+//					BLSZ_TRAFO,
+//					gridSizeCenter,
+//					stream,
+//					*stageResc.proteins[id_centerProtein],
+//					d_dof.get(0),
+//					it->size(),
+//					id_centerProtein,
+//					stageResc.proteins[id_centerProtein]->xPosOrigin,
+//					stageResc.proteins[id_centerProtein]->yPosOrigin,
+//					stageResc.proteins[id_centerProtein]->zPosOrigin,
+//					d_defo[0][id_centerProtein].getX(),
+//					d_defo[0][id_centerProtein].getY(),
+//					d_defo[0][id_centerProtein].getZ()
+//					);
+
+//					 d_transform(
+//						BLSZ_TRAFO,
+//						gridSizeCenter,
+//						stream,
+//						d_dof.get(0),
+//						it->size(),
+//						stageResc.proteins[id_centerProtein]->numAtoms,
+//						*stageResc.proteins[id_centerProtein],
+//						*stageResc.proteins[id_partnerProtein],
+//						id_centerProtein,
+//						id_partnerProtein,
+////						stageResc.proteins[id_centerProtein]->pivot,
+////						stageResc.proteins[id_partnerProtein]->pivot,
+//						d_defo[id_centerProtein].getX(),
+//						d_defo[id_centerProtein].getY(),
+//						d_defo[id_centerProtein].getZ(),
+//						d_trafo[id_centerProtein][id_partnerProtein].getX(),
+//						d_trafo[id_centerProtein][id_partnerProtein].getY(),
+//						d_trafo[id_centerProtein][id_partnerProtein].getZ()
+//						);
+
+//			 DEBUG
+//			cudaDeviceSynchronize();
+			//cudaDeviceSynchronize();
+//									size_t bufferSize = d_dof[pipeIdxDof[1]].bufferSize();
+//									WorkerBuffer<dof_t> h_dof(4,bufferSize);
+//									size_t cpySize = h_dof.bufferSize()*sizeof(dof_t);
+//
+//									std::cout << "bufferSize: " << bufferSize << " cpySize: " << cpySize << std::endl;
+//									cudaMemcpy(h_dof.get(0),d_dof[pipeIdxDof[0]].get(0), cpySize, cudaMemcpyDeviceToHost);
+//									cudaMemcpy(h_dof.get(1),d_dof[pipeIdxDof[1]].get(0), cpySize, cudaMemcpyDeviceToHost);
+//									cudaMemcpy(h_dof.get(2),d_dof[pipeIdxDof[2]].get(0), cpySize, cudaMemcpyDeviceToHost);
+//									cudaMemcpy(h_dof.get(3),d_dof[pipeIdxDof[3]].get(0), cpySize, cudaMemcpyDeviceToHost);
+//									std::cout << " stage one " <<std::endl;
+//									for(size_t i = 0; i < bufferSize; ++i) {
+//										std::cout << 0<< " " <<h_dof.get(0)[i]  << std::endl<< std::endl;
+//									}
+//									for(size_t i = 0; i < bufferSize; ++i) {
+//										std::cout << 1<< " " <<h_dof.get(1)[i]  << std::endl<< std::endl;
+//									}
+//									for(size_t i = 0; i < bufferSize; ++i) {
+//										std::cout << 2<< " " <<h_dof.get(2)[i]  << std::endl<< std::endl;
+//									}
+//									for(size_t i = 0; i < bufferSize; ++i) {
+//										std::cout << 3<< " " <<h_dof.get(3)[i]  << std::endl<< std::endl ;
+//									}
+//									std::cout <<std::endl<< std::endl;
+//				d_rotateForces(
+//						BLSZ_INTRPL,
+//						gridSizeCenter,
+//						stream,
+//						id_centerProtein,
+//						d_pot[0][id_centerProtein].getX(),
+//						d_pot[0][id_centerProtein].getY(),
+//						d_pot[0][id_centerProtein].getZ(),
+//						d_pot[0][id_centerProtein].getW(),
+//						d_pot[1][id_centerProtein].getX(),
+//						d_pot[1][id_centerProtein].getY(),
+//						d_pot[1][id_centerProtein].getZ(),
+//						d_pot[1][id_centerProtein].getW(),
+//						d_dof.get(0),
+//						stageResc.proteins[id_centerProtein]->numAtoms,
+//						it->size()
+
+
+//			d_DOFPos(
+//				BLSZ_INTRPL,
+//				gridSizeRec,
+//				streams[id_stream],
+//				*stageResc.rec,
+//				d_dof[id_stream].get(0),
+//				it->size(), 0,
+//				d_defoRec[id_stream].getX(),
+//				d_defoRec[id_stream].getY(),
+//				d_defoRec[id_stream].getZ(),
+//				d_trafoRec[id_stream].getX(),
+//				d_trafoRec[id_stream].getY(),
+//				d_trafoRec[id_stream].getZ()
+//				);
+
+//d_rotateForces(
+					//						BLSZ_INTRPL,
+					//						gridSizeCenter,
+					//						stream,
+					//						id_centerProtein,
+					//						d_pot[0][id_centerProtein].getX(),
+					//						d_pot[0][id_centerProtein].getY(),
+					//						d_pot[0][id_centerProtein].getZ(),
+					//						d_pot[0][id_centerProtein].getW(),
+					//						d_pot[1][id_centerProtein].getX(),
+					//						d_pot[1][id_centerProtein].getY(),
+					//						d_pot[1][id_centerProtein].getZ(),
+					//						d_pot[1][id_centerProtein].getW(),
+					//						d_dof.get(0),
+					//						stageResc.proteins[id_centerProtein]->numAtoms,
+					//						it->size()eins[id_centerProtein]->numAtoms;

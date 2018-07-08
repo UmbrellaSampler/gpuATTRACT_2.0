@@ -332,7 +332,7 @@ public:
 //									}
 //									std::cout <<std::endl<< std::endl;
 
-//						cudaDeviceSynchronize();
+						cudaDeviceSynchronize();
 //
 //			std::cout <<"defoRec g"<<std::endl;
 //			size_t bufferSizeDefoRec1 = d_defoRec[id_stream].bufferSize();
@@ -365,8 +365,8 @@ public:
 //				std::cout  << std::setprecision(10)<<h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
 //			}
 //			exit(EXIT_SUCCESS);
-//
-			/* Perform cuda kernel calls */
+////
+//			/* Perform cuda kernel calls */
 			gridSizeRec = ( numElRec + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 			gridSizeLig = ( numElLig + BLSZ_INTRPL - 1) / BLSZ_INTRPL;
 
@@ -405,18 +405,19 @@ public:
 
 			//std::cout <<"before nl gpu" <<std::endl;
 //			cudaDeviceSynchronize();
-//			WorkerBuffer<REAL> h_potLig(4,stageResc.lig->numAtoms);
-//			size_t cpySize = stageResc.lig->numAtoms*sizeof(REAL);
-//			//std::cout <<"fx fy fz"<<std::endl;
-//			cudaMemcpy(h_potLig.getX(),d_potLig[pipeIdx[1]].getX(), cpySize, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig.getY(),d_potLig[pipeIdx[1]].getY(), cpySize, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig.getZ(),d_potLig[pipeIdx[1]].getZ(), cpySize, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig.getW(),d_potLig[pipeIdx[1]].getW(), cpySize, cudaMemcpyDeviceToHost);
-//			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
-//				//			for(size_t i = 0; i < 20; ++i) {
-//				std::cout << h_potLig.getX()[i] << " " << h_potLig.getY()[i] << " " << h_potLig.getZ()[i]<< std::endl;// << " " << h_potLig.getW()[i] ;
+//					WorkerBuffer<REAL> h_potLig(4,stageResc.lig->numAtoms);
+//					size_t cpySize = stageResc.lig->numAtoms*sizeof(REAL);
+//					//std::cout <<"fx fy fz"<<std::endl;
+//					cudaMemcpy(h_potLig.getX(),d_potLig[id_stream].getX(), cpySize, cudaMemcpyDeviceToHost);
+//					cudaMemcpy(h_potLig.getY(),d_potLig[id_stream].getY(), cpySize, cudaMemcpyDeviceToHost);
+//					cudaMemcpy(h_potLig.getZ(),d_potLig[id_stream].getZ(), cpySize, cudaMemcpyDeviceToHost);
+//					cudaMemcpy(h_potLig.getW(),d_potLig[id_stream].getW(), cpySize, cudaMemcpyDeviceToHost);
+//					for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
+//						//			for(size_t i = 0; i < 20; ++i) {
+//						std::cout << h_potLig.getX()[i] << " " << h_potLig.getY()[i] << " " << h_potLig.getZ()[i]<< std::endl;// << " " << h_potLig.getW()[i] ;
 //
-//			}
+//					}
+//
 //			exit(EXIT_SUCCESS);
 			d_NLPotForce<REAL, dof_t>(
 				BLSZ_INTRPL,
@@ -465,10 +466,22 @@ public:
 				d_potRec[id_stream].getZ(),
 				d_potRec[id_stream].getW()
 				); // OK
-//
-//
 
 
+		cudaDeviceSynchronize();
+		WorkerBuffer<REAL> h_potRec1(4,stageResc.rec->numAtoms);
+		size_t cpySize1 = stageResc.rec->numAtoms*sizeof(REAL);
+		std::cout <<"fx fy fz"<<std::endl;
+		cudaMemcpy(h_potRec1.getX(),d_potRec[id_stream].getX(), cpySize1, cudaMemcpyDeviceToHost);
+		cudaMemcpy(h_potRec1.getY(),d_potRec[id_stream].getY(), cpySize1, cudaMemcpyDeviceToHost);
+		cudaMemcpy(h_potRec1.getZ(),d_potRec[id_stream].getZ(), cpySize1, cudaMemcpyDeviceToHost);
+		cudaMemcpy(h_potRec1.getW(),d_potRec[id_stream].getW(), cpySize1, cudaMemcpyDeviceToHost);
+		for(size_t i = 0; i < stageResc.rec->numAtoms; ++i) {
+			//			for(size_t i = 0; i < 20; ++i) {
+			std::cout << h_potRec1.getX()[i] << " " << h_potRec1.getY()[i] << " " << h_potRec1.getZ()[i]<< std::endl;// << " " << h_potRec1.getW()[i] ;
+
+		}
+		exit(EXIT_SUCCESS);
 			d_rotateForces(
 				BLSZ_INTRPL,
 				gridSizeRec,
@@ -485,16 +498,17 @@ public:
 //			WorkerBuffer<REAL> h_potLig1(4,stageResc.lig->numAtoms);
 //			size_t cpySize1 = stageResc.lig->numAtoms*sizeof(REAL);
 //			std::cout <<"fx fy fz"<<std::endl;
-//			cudaMemcpy(h_potLig1.getX(),d_potLig[pipeIdx[1]].getX(), cpySize1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig1.getY(),d_potLig[pipeIdx[1]].getY(), cpySize1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig1.getZ(),d_potLig[pipeIdx[1]].getZ(), cpySize1, cudaMemcpyDeviceToHost);
-//			cudaMemcpy(h_potLig1.getW(),d_potLig[pipeIdx[1]].getW(), cpySize1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig1.getX(),d_potLig[id_stream].getX(), cpySize1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig1.getY(),d_potLig[id_stream].getY(), cpySize1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig1.getZ(),d_potLig[id_stream].getZ(), cpySize1, cudaMemcpyDeviceToHost);
+//			cudaMemcpy(h_potLig1.getW(),d_potLig[id_stream].getW(), cpySize1, cudaMemcpyDeviceToHost);
 //			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
 //				//			for(size_t i = 0; i < 20; ++i) {
 //				std::cout << h_potLig1.getX()[i] << " " << h_potLig1.getY()[i] << " " << h_potLig1.getZ()[i]<< std::endl;// << " " << h_potLig1.getW()[i] ;
 //
 //			}
 //			exit(EXIT_SUCCESS);
+
 			//IP.d_NLPotForce<false>(it->devLocGridId(), it->devLocRecId(), it->devLocRecId(),it->size(),
  		//	&d_trafoRec, d_potRec[pipeIdx[1]],streams[2]);
 

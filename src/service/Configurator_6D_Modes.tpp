@@ -36,6 +36,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	auto paramTable = createParamTableFromFile<real_t>(args.paramsName);
 	auto gridRec = createGridFromGridFile<real_t>(args.gridRecName);
 	receptor->setNumModes( Common_Modes::numModesRec );
+	receptor->setPosOrigin(receptor->getOrCreatePosPtr(), receptor->numAtoms());
+	ligand->setPosOrigin(ligand->getOrCreatePosPtr(), ligand->numAtoms());
 	ligand->setNumModes( Common_Modes::numModesLig );
 	auto simParam = std::make_shared<SimParam<real_t>>();
 	if (args.dielec == "variable") {
@@ -53,7 +55,8 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	ligand->setNumMappedTypes(1);
 	ligand->getOrCreateMappedPtr();
 	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->type());
-	applyMapping(typeMapRec, ligand->numAtoms(), ligand->type(), ligand->mappedType());
+	applyDefaultMapping(ligand->numAtoms(), ligand->type(), ligand->mappedType());
+	//applyMapping(typeMapRec, ligand->numAtoms(), ligand->type(), ligand->mappedType());
 
 
 	/* read dof file */

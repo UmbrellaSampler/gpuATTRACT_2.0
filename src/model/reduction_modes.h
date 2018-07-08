@@ -237,7 +237,6 @@ void h_finalReduce(
 	unsigned dofSize = 13 ;
 	dofSize += protein->numModes;
 
-
 	for (unsigned i = 0; i < numDOFs; ++i)
 	{
 		auto &enGrad = enGrads[i];
@@ -257,7 +256,9 @@ void h_finalReduce(
 					enGrad.protein[idx_protein].pos.z *= 0.01;
 				}
 			}
-			enGrad.E = deviceOut[i*dofSize + 3];
+
+			enGrad.E += deviceOut[i*dofSize + 3];
+
 
 			Torque<REAL> torque;
 			torque.mat[0][0] = deviceOut[i*dofSize + 4 ];

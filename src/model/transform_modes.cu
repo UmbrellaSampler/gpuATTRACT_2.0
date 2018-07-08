@@ -104,7 +104,10 @@ __global__ void d_rotateForces(
 		const RotMat<REAL> rotMat = euler2rotmat( dof.protein[idx_protein].ang.x, dof.protein[idx_protein].ang.y, dof.protein[idx_protein].ang.z );
 
 		ForceAtom = rotMat*ForceAtom;
-
+		inxForce[idx] = 0;
+		inyForce[idx] = 0;
+		inzForce[idx] = 0;
+		inE[idx] = 0;
 		outxForce[idx] += ForceAtom.x;
 		outyForce[idx] += ForceAtom.y;
 		outzForce[idx] += ForceAtom.z;

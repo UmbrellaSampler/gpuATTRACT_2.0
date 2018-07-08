@@ -161,7 +161,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 ////			for(size_t i = 0; i < 20; ++i) {
 //				std::cout << std::setprecision(10) << buffers->h_defoRec.getX()[i] << " " << buffers->h_defoRec.getY()[i] << " " << buffers->h_defoRec.getZ()[i] << std::endl;
 //			}
-//
+////
 //			std::cout <<"trafo lig"<<std::endl;
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
 //	//			for(size_t i = 0; i < 20; ++i) {
@@ -201,10 +201,10 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			); // OK
 			}
 //			exit(EXIT_SUCCESS);
-//			std::cout <<"before nl" <<std::endl;
-//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-//				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
-//			}
+			//std::cout <<"before nl" <<std::endl;
+			for(size_t i = 0; i < lig->numAtoms(); ++i) {
+				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
+			}
 	//		exit(EXIT_SUCCESS);
 
 			// calculate the forces acting on the receptor and the ligand in the receptor system via the neighborlist
@@ -253,10 +253,10 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getY(),
 				buffers->h_potRec.getZ()
 				);
-//			std::cout <<"before nl" <<std::endl;
-//			for(size_t i = 0; i < lig->numAtoms(); ++i) {
-//				std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
-//			}
+			std::cout <<"after nl" <<std::endl;
+			for(size_t i = 0; i < lig->numAtoms(); ++i) {
+				//std::cout << buffers->h_potLig.getX()[i] << " " << buffers->h_potLig.getY()[i] << " " << buffers->h_potLig.getZ()[i] << " " << buffers->h_potLig.getW()[i] << std::endl;
+			}
 //			exit(EXIT_SUCCESS);
 
 //			////			// Debug
