@@ -11,6 +11,7 @@
 #include "AppFactory.h"
 #include "scATTRACT.h"
 #include "emATTRACT.h"
+#include "mcATTRACT.h"
 #include "CmdArgs.h"
 
 
@@ -60,8 +61,10 @@ std::unique_ptr<App> AppFactory::create(AppType appType) {
 	case AppType::EM:
 		app = std::unique_ptr<App> (new emATTRACT<GenericTypes>());
 		break;
-
-	default:
+	case AppType::MC:
+		app = std::unique_ptr<App> (new mcATTRACT<GenericTypes>());
+		break;
+ 	default:
 		throw std::invalid_argument("unknown AppType: " + static_cast<int>(appType));
 	}
 

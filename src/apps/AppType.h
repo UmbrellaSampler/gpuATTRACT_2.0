@@ -11,7 +11,7 @@
 namespace as {
 
 enum class AppType {
-	SCORE,EM
+	SCORE,EM, MC
 };
 
 }  // namespace as

@@ -35,7 +35,8 @@ private:
 		VA13,
 		BFGS,
 		LBFGS_B,
-		unspecified
+		unspecified,
+		MC
 	};
 	static std::map<std::string, SolverType> _solverTypeMap;
 };

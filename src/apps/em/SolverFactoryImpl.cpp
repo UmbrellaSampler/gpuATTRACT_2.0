@@ -25,6 +25,7 @@
 #include "VA13Solver.h"
 #include "BFGSSolver.h"
 #include "LBFGS_B_Solver.h"
+#include "monteCarlo.h"
 
 
 namespace as {
@@ -54,6 +55,9 @@ auto SolverFactoryImpl::createSolverByNameImpl(const std::string& name) -> std::
 		break;
 	case LBFGS_B:
 		return make_unique<LBFGS_B_Solver>();
+		break;
+	case MC:
+		return make_unique<MCSolver>();
 		break;
 	default:
 		cerr << "Error: " << "Unknown solver specification." << endl;
