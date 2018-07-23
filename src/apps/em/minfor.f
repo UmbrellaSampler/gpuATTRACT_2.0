@@ -13,7 +13,7 @@ c     Parameters
       type(c_ptr) smug
       integer ivmax
       real*8 x
-      dimension x(26)
+      dimension x(46)
       integer numModesRec, numModesLig
 c     Local variables
       real*8  gesa
@@ -22,9 +22,9 @@ c     Local variables
       real*8 fb
       
       real*8 h,g,ga,gb,xaa,xbb,d,step,stepbd,steplb,stmin
-      dimension h(26*26)
-      dimension g(26),ga(26),gb(26),w(26)
-      dimension xaa(26), xbb(26), d(26)
+      dimension h(46*46)
+      dimension g(46),ga(46),gb(46),w(46)
+      dimension xaa(46), xbb(46), d(46)
 
       integer, parameter:: ERROR_UNIT = 0
 

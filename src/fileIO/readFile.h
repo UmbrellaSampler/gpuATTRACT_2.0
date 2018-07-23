@@ -105,7 +105,7 @@ public:
 	bool centered_ligands;
 };
 
-constexpr unsigned DOF_MAX_NUMBER = 16;
+constexpr unsigned DOF_MAX_NUMBER = 26;
 
 class DOF {
 public:

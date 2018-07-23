@@ -160,7 +160,7 @@ public:
 
 	static Vector toSecond(DOF_6D_Modes<REAL> const& dof) {
 		//Vector vec(6 + Common_Modes::numModesRec + Common_Modes::numModesLig);
-		Vector vec(26);
+		Vector vec(DOF_MAX_NUMBER);
 		vec(0) = dof._6D.ang.x;
 		vec(1) = dof._6D.ang.y;
 		vec(2) = dof._6D.ang.z;

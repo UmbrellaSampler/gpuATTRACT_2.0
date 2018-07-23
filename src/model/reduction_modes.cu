@@ -6,7 +6,7 @@
  */
 
 #include "reduction_modes.h"
-
+#include "Types_6D_Config.h"
 namespace as {
 
 // Utility class used to avoid linker errors with extern
@@ -105,7 +105,7 @@ blockReduceMode(unsigned const numAtoms, unsigned const numModes,  DOF_T* dofs,
     T sum_fz = 0;
     T sum_E = 0;
     T sum_torque[9] = {0};
-    T sum_mode[5] = {0};
+    T sum_mode[MODES_MAX_NUMBER] = {0};
 
 
     while (i < numAtoms)

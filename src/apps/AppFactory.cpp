@@ -61,7 +61,7 @@ std::unique_ptr<App> AppFactory::create(AppType appType) {
 		app = std::unique_ptr<App> (new emATTRACT<GenericTypes>());
 		break;
 
-	default:
+ 	default:
 		throw std::invalid_argument("unknown AppType: " + static_cast<int>(appType));
 	}
 
