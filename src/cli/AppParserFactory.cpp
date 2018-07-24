@@ -9,6 +9,7 @@
 #include "AppParserFactory.h"
 #include "ScoreParser.h"
 #include "EmParser.h"
+#include "McParser.h"
 
 using namespace as;
 
@@ -21,6 +22,9 @@ std::unique_ptr<AppCmdParser> AppParserFactory::create(AppType app, std::shared_
 		break;
 	case AppType::EM:
 		parser = std::unique_ptr<EmParser>(new EmParser(args));
+		break;
+	case AppType::MC:
+		parser = std::unique_ptr<McParser>(new McParser(args));
 		break;
 	default:
 		throw std::invalid_argument("unknown app to create: " + static_cast<int>(app));

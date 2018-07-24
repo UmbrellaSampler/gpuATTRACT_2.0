@@ -15,6 +15,7 @@
  */
 constexpr auto APP_SHORT_NAME_SC = "sc";
 constexpr auto APP_SHORT_NAME_EM = "em";
+constexpr auto APP_SHORT_NAME_MC = "mc";
 
 /**
  * Two body docking context

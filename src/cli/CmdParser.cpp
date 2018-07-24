@@ -123,6 +123,8 @@ void CmdParser::assignApp(string app) {
 		_args->app = AppType::SCORE;
 	} else if (app.compare(APP_SHORT_NAME_EM) == 0	) {
 		_args->app = AppType::EM;
+	} else if (app.compare(APP_SHORT_NAME_MC) == 0	) {
+		_args->app = AppType::MC;
 	} else {
 		throw po::error("unknown app: " + app);
 	}

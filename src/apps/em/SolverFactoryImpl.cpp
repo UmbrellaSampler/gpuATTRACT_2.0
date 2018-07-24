@@ -34,7 +34,8 @@ std::map<std::string, SolverFactoryImpl::SolverType> SolverFactoryImpl::_solverT
 	{
 			{"VA13", SolverType::VA13},
 			{"BFGS", SolverType::BFGS},
-			{"LBFGS-B", SolverType::LBFGS_B}
+			{"LBFGS-B", SolverType::LBFGS_B},
+			{"MC", SolverType::MC}
 	};
 
 template<typename T, typename... Args>
