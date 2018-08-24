@@ -23,6 +23,7 @@
 
 #include <cassert>
 #include <algorithm>
+#include <cmath>
 
 #include "Grid.h"
 #include "VoxelOctet.h"
