@@ -31,7 +31,6 @@ c     Local variables
       xnull=0.0d0
       dga=xnull
       jn = 6 + numModesRec + numModesLig
-
       do i=1,jn
        ga(i)=xnull
        d(i)=xnull
@@ -108,13 +107,13 @@ c     make an Euler rotation + tranlation of ligand center
       do i=1,6
        xbb(i)=xaa(i)+c*d(i)
       enddo
-
       do i=7,jn
        xbb(i)=xaa(i)-c*d(i)
       enddo
 
+
       call energy_for_fortran_to_call(smug, xbb, fb, gb)
-c     store this function value if it is the smallest so far      
+c     store this function value if it is the smallest so far
       isfv=min(2,isfv)
       if (fb.gt.gesa) go to 220
       if (fb.lt.gesa) go to 200

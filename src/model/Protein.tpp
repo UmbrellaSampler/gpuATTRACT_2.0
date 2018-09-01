@@ -106,9 +106,6 @@ REAL* Protein<REAL>::getOrCreateModePtr() {
 			throw std::runtime_error("getOrCreateModePtr(): the number of atoms must be set before");
 		}
 
-		if (_numModes == 0) {
-			throw std::runtime_error("getOrCreateModePtr(): the number of modes must be set before");
-		}
 		_modes = new REAL[3*_numAtoms*_numModes];
 	}
 	return _modes;
@@ -117,9 +114,6 @@ REAL* Protein<REAL>::getOrCreateModePtr() {
 template<typename REAL>
 REAL* Protein<REAL>::getOrCreateModeForcePtr() {
 	if (_modeForceConstant== nullptr) {
-		if (_numModes == 0) {
-			throw std::runtime_error("getOrCreateModeForcePtr(): the number of Modes must be set before");
-		}
 
 		_modeForceConstant = new REAL[_numModes];
 	}

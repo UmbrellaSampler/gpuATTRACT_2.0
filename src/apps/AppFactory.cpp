@@ -19,19 +19,19 @@ namespace as {
 std::unique_ptr<App> AppFactory::create(const CmdArgs& args) {
 
 	std::unique_ptr<App> app;
-	const bool useModes = args.numModes > 0;
+	const bool useModes = args.numModesRec > 0 || args.numModesLig > 0;
 	if (args.precision == "single") {
 		if (useModes) {
-			Common_Modes::numModesRec = args.numModes;
-			Common_Modes::numModesLig = args.numModes;
+			Common_Modes::numModesRec = args.numModesRec;
+			Common_Modes::numModesLig = args.numModesLig;
 			app = create<Types_6D_Modes<float>>(args.app);
 		} else {
 			app = create<Types_6D<float>>(args.app);
 		}
 	} else if (args.precision == "double") {
 		if (useModes) {
-			Common_Modes::numModesRec = args.numModes;
-			Common_Modes::numModesLig = args.numModes;
+			Common_Modes::numModesRec = args.numModesRec;
+			Common_Modes::numModesLig = args.numModesLig;
 			app = create<Types_6D_Modes<double>>(args.app);
 
 		} else {

@@ -31,7 +31,8 @@ public:
 	std::string ligModesName;
  
 	/* Concurrency */
-  int numModes;
+  int numModesRec;
+  int numModesLig;
 	int numCPUs;
 	std::vector<int> deviceIds;
 	int chunkSize;
