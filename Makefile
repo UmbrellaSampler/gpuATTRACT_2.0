@@ -48,6 +48,7 @@ OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))
 
 # AttractServer 
 CXX = g++
+CXX_LIB_DIR = $(shell $(CXX) --print-search-dirs | grep install | awk '{print $$2}')
 ifeq ($(TARGET), RELEASE)
 	OFLAGS = -O3 -DNDEBUG
 	FXX_OFLAGS = -O2 
@@ -74,10 +75,10 @@ endif
 
 ifeq ($(CUDA), ON)
 	OFLAGS += -DCUDA
-	LDFLAGS += -L$(CUDADIR)/lib64 -Wno-deprecated-gpu-targets
+	LDFLAGS += -L$(CUDADIR)/lib64 -L$(CXX_LIB_DIR) -Wno-deprecated-gpu-targets 
 	LIBS += -lcudart -lnvToolsExt
 	INCLUDES += -I$(CUDADIR)/include 
-	LXX = /usr/local/cuda/bin/nvcc
+	LXX = $(CUDADIR)/bin/nvcc
 else
 	LXX = ${CXX}
 endif
@@ -85,7 +86,7 @@ endif
 
 
 # prepare nvcc settings
-CUDA_CXX = /usr/local/cuda/bin/nvcc
+CUDA_CXX = $(CUDADIR)/bin/nvcc
 ARCHFLAGS = -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35 -gencode arch=compute_50,code=sm_50
 ARCHFLAGS2 = -gencode arch=compute_30,code=compute_30 -gencode arch=compute_35,code=compute_35 -gencode arch=compute_50,code=compute_50
 SOURCES_CU = $(shell find $(SOURCE_DIR) -name "*.cu")
