@@ -57,7 +57,13 @@ namespace as {
 template<typename REAL>
 GPUEnergyService6DModes<REAL>::GPUEnergyService6DModes(std::shared_ptr<DataManager> dataMng,
 		std::vector<int> const& deviceIds) :
-	GPUEnergyService<Types_6D_Modes<REAL>>::GPUEnergyService(dataMng), _workerId(0), _deviceIds(deviceIds)
+	GPUEnergyService<Types_6D_Modes<REAL>>::GPUEnergyService(dataMng), _workerId(0), _deviceIds(deviceIds), _threadsPerDevice(1)
+{}
+
+template<typename REAL>
+GPUEnergyService6DModes<REAL>::GPUEnergyService6DModes(std::shared_ptr<DataManager> dataMng,
+		std::vector<int> const& deviceIds, uint threadsPerDevice) :
+	GPUEnergyService<Types_6D_Modes<REAL>>::GPUEnergyService(dataMng), _workerId(0), _deviceIds(deviceIds), _threadsPerDevice(threadsPerDevice)
 {}
 
 template<typename REAL>
@@ -80,7 +86,6 @@ auto GPUEnergyService6DModes<REAL>::createStageResource(workItem_t* item, unsign
 //			const auto dofs = item->inputBuffer();
 	const auto common = item->common();
 //			auto results = item->resultBuffer();
-
 	/* get DataItem pointers */
 	auto gridRec = std::dynamic_pointer_cast<DeviceGridUnion<REAL>>(this->_dataMng->get(common->gridIdRec, deviceId)).get(); // _dataMng->get() returns shared_ptr<DataItem>
 	assert(gridRec != nullptr);
@@ -119,8 +124,11 @@ class GPUEnergyService6DModes<REAL>::Private {
 
 public:
 
-	Private() : numItemsInPipe(0) {
+	Private(int deviceId) : numItemsInPipe(0) {
 		for (unsigned i = 0; i<num_streams; ++i) {
+			int i1d;
+			cudaSetDevice(deviceId);
+			cudaGetDevice(&i1d);
 			CUDA_CHECK(cudaStreamCreate(&streams[i]));
 			unsigned id_stream = i;
 						stream_queue.push( id_stream );
@@ -724,8 +732,7 @@ auto GPUEnergyService6DModes<REAL>::createDistributor() -> distributor_t {
 		std::vector<id_t> ids = {common->gridIdRec, common->gridIdLig, common->ligId, common->recId, common->tableId};
 		auto id = this->_dataMng->getCommonDeviceIds(ids);
 		std::vector<as::workerId_t> vec(numWorkers);
-
-		std::iota(vec.begin(), vec.end(), id[0]);
+		std::iota(vec.begin(), vec.end(), 0);
 		return vec;
 	};
 	return fncObj;
@@ -734,9 +741,10 @@ auto GPUEnergyService6DModes<REAL>::createDistributor() -> distributor_t {
 template<typename REAL>
 auto GPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
-	std::shared_ptr<Private> p = std::make_shared<Private>();
-	//deviceId_t deviceId = _workerId++;
-	deviceId_t deviceId = 0;
+
+	deviceId_t deviceId = _deviceIds[_workerId/_threadsPerDevice];
+	std::shared_ptr<Private> p = std::make_shared<Private>(deviceId);
+	 _workerId++;
 	itemProcessor_t fncObj = [this, deviceId, p] (workItem_t* item) -> bool {
 
 		/* Set the device to work with */

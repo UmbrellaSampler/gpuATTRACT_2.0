@@ -24,7 +24,7 @@ namespace as {
 //template<typename REAL, template <typename REAL> class GenericTypes>
 template<typename REAL>
 std::shared_ptr<void> ServiceFactory::create(ServiceType serviceType,
-		std::shared_ptr<DataManager> dataMng, CmdArgs const& args)
+		std::shared_ptr<DataManager> dataMng, CmdArgs const& args, int threadsPerDevice)
 {
 #ifndef CUDA
 	(void) args;
@@ -38,7 +38,7 @@ std::shared_ptr<void> ServiceFactory::create(ServiceType serviceType,
 		case ServiceType::GPUEnergyService6D:
 			return std::shared_ptr<void>( new GPUEnergyService6D<REAL>(dataMng, args.deviceIds));
 		case ServiceType::GPUEnergyService6DModes:
-			return std::shared_ptr<void>( new GPUEnergyService6DModes<REAL>(dataMng, args.deviceIds));
+			return std::shared_ptr<void>( new GPUEnergyService6DModes<REAL>(dataMng, args.deviceIds, threadsPerDevice));
 #endif
 		default:
 			throw std::invalid_argument("unknown app to create: " + static_cast<int>(serviceType));

@@ -140,10 +140,12 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 		this->_ids.pivotLig.x =  ligand->pivot().x;
 		this->_ids.pivotLig.y =  ligand->pivot().y;
 		this->_ids.pivotLig.z =  ligand->pivot().z;
-
 #ifdef CUDA
+		int devcount = 0;
+		cudaGetDeviceCount 	( 	&devcount 	 )  	;
 	if (args.deviceIds.size() > 0) {
 		for (auto id : args.deviceIds) {
+
 			dataManager->attachAllDataToDevice(id);
 		}
 	}
@@ -161,14 +163,14 @@ void Configurator_6D_Modes<SERVICE>::init(CmdArgs const& args) {
 	}
 #endif
 
-	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args)));
+	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args,2)));
 
 	this->_server = std::unique_ptr<server_t>(new server_t(service));
 	if (args.numCPUs > 0) {
 		this->_server->createWorkers(args.numCPUs);
 	} else {
-		//this->_server->createWorkers(args.deviceIds.size());
-		this->_server->createWorkers(2);
+		this->_server->createWorkers(2*args.deviceIds.size());
+		//this->_server->createWorkers(2);
 	}
 
 }

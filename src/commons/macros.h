@@ -33,9 +33,11 @@
 #define cudaVerify(x) do { 																				\
 		cudaError_t __cu_result = x; 																	\
 		if (__cu_result!=cudaSuccess) { 																\
+			int device = 0;																				\
+			cudaGetDevice(&device);																		\
 			fprintf(stderr, "%s:%i: Error: cuda function call failed:\n" 								\
-					"%s;\nmessage: %s\n", 																\
-					__FILE__, __LINE__, #x, cudaGetErrorString(__cu_result));							\
+					"%s;\nmessage: %s \n in device %d \n", 																\
+					__FILE__, __LINE__, #x, cudaGetErrorString(__cu_result), device);							\
 			exit(1);																					\
 		} 																								\
 	} while(0)
@@ -43,10 +45,12 @@
 		x;																								\
 		cudaDeviceSynchronize();																		\
 		cudaError_t __cu_result = cudaGetLastError();													\
-		if (__cu_result!=cudaSuccess) { 																\
+		if (__cu_result!=cudaSuccess) { 		\
+int device = 0;																				\
+			cudaGetDevice(&device);													\
 			fprintf(stderr, "%s:%i: Error: cuda function call failed:\n" 								\
-					"%s;\nmessage: %s\n", 																\
-					__FILE__, __LINE__, #x, cudaGetErrorString(__cu_result));							\
+					"%s;\nmessage: %s \n in device %d \n", 																\
+					__FILE__, __LINE__, #x, cudaGetErrorString(__cu_result), device);							\
 			exit(1);																					\
 		} 																								\
 	} while(0)

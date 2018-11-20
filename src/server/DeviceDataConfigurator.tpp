@@ -28,10 +28,8 @@ template <typename REAL>
 std::shared_ptr<DeviceProtein<REAL>> DeviceDataConfigurator::attach(const std::shared_ptr<Protein<REAL>> protein, deviceId_t deviceId) {
 	ASSERT(deviceId >= 0);
 	checkDeviceIdAndSetCurrent(deviceId);
-
 	unsigned numAtoms = protein->numAtoms();
 	unsigned numMappedTypes = protein->numMappedTypes();
-
 	REAL *d_xPos;
 	CUDA_CHECK(cudaMalloc((void**) &d_xPos, numAtoms * sizeof(REAL)));
 	CUDA_CHECK(cudaMemcpy(d_xPos, protein->xPos(), numAtoms * sizeof(REAL), cudaMemcpyHostToDevice));

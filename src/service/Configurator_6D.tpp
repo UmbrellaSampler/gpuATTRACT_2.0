@@ -137,7 +137,7 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 	}
 #endif
 
-	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args)));
+	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args,1)));
 
 	this->_server = std::unique_ptr<server_t>(new server_t(service));
 	if (args.numCPUs > 0) {

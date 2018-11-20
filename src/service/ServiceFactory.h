@@ -28,7 +28,7 @@ public:
 //	static std::unique_ptr<Service<GenericTypes<REAL>>> create(ServiceType, std::shared_ptr<DataManager>, CmdArgs const&);
 
 	template<typename REAL>
-	static std::shared_ptr<void> create(ServiceType, std::shared_ptr<DataManager>, CmdArgs const&);
+	static std::shared_ptr<void> create(ServiceType, std::shared_ptr<DataManager>, CmdArgs const&, int threadsPerDevice);
 
 };
 
