@@ -230,6 +230,7 @@ __device__ __forceinline__ void translate_rotate( DOF_T const& dof, Vec3<REAL> &
 		translation = rotMat * translation.inv();
 	}
 
+
 	posAtom = rotMat*posAtom;
 	posAtom += translation;
 }

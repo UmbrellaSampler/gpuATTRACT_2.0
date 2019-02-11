@@ -45,7 +45,12 @@ namespace as {
 template<typename REAL>
 GPUEnergyService6D<REAL>::GPUEnergyService6D(std::shared_ptr<DataManager> dataMng,
 		std::vector<int> const& deviceIds) :
-	GPUEnergyService<Types_6D<REAL>>::GPUEnergyService(dataMng), _workerId(0), _deviceIds(deviceIds)
+	GPUEnergyService<Types_6D<REAL>>::GPUEnergyService(dataMng), _workerId(0), _deviceIds(deviceIds), _threadsPerDevice(1)
+{}
+template<typename REAL>
+GPUEnergyService6D<REAL>::GPUEnergyService6D(std::shared_ptr<DataManager> dataMng,
+		std::vector<int> const& deviceIds, uint threadsPerDevice) :
+	GPUEnergyService<Types_6D<REAL>>::GPUEnergyService(dataMng), _workerId(0), _deviceIds(deviceIds), _threadsPerDevice(threadsPerDevice)
 {}
 
 template<typename REAL>
@@ -101,10 +106,10 @@ class GPUEnergyService6D<REAL>::Private {
 	using workItem_t = typename GPUEnergyService6D<REAL>::workItem_t;
 
 public:
-
-	Private() :   numItemsInPipe(0) {
+	Private(int deviceId) :   numItemsInPipe(0) {
 		for(unsigned i = 0; i< num_streams; ++i){
 			unsigned id_stream = i;
+			cudaSetDevice(deviceId);
 			stream_queue.push( id_stream );
 			CUDA_CHECK(cudaStreamCreate( &streams[i]) );
 			CUDA_CHECK(cudaEventCreate( &events[i], cudaEventDisableTiming) );
@@ -424,7 +429,7 @@ auto GPUEnergyService6D<REAL>::createDistributor() -> distributor_t {
 		auto id = this->_dataMng->getCommonDeviceIds(ids);
 		std::vector<as::workerId_t> vec(numWorkers);
 
-		std::iota(vec.begin(), vec.end(), id[0]);
+		std::iota(vec.begin(), vec.end(), 0);
 		return vec;
 	};
 	return fncObj;
@@ -432,10 +437,12 @@ auto GPUEnergyService6D<REAL>::createDistributor() -> distributor_t {
 
 template<typename REAL>
 auto GPUEnergyService6D<REAL>::createItemProcessor() -> itemProcessor_t {
-
-	std::shared_ptr<Private> p = std::make_shared<Private>();
+	deviceId_t deviceId = _deviceIds[_workerId/_threadsPerDevice];
+	std::shared_ptr<Private> p = std::make_shared<Private>(deviceId);
 	//deviceId_t deviceId = _workerId++;
-	deviceId_t deviceId = 0;
+	//deviceId_t deviceId = 0;
+
+	_workerId++;
 	itemProcessor_t fncObj = [this, deviceId, p] (workItem_t* item) -> bool {
 
 		/* Set the device to work with */

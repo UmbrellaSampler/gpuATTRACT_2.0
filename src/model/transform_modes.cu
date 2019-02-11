@@ -37,7 +37,6 @@ __global__ void d_DOFPos_kernel(
 
 		deform< REAL, DOF_T>( dof, posAtom, protein, atomIdx, type_protein, idx, buffer_defoX[idx], buffer_defoY[idx], buffer_defoZ[idx] );
 		translate_rotate< REAL, DOF_T>( dof, posAtom, type_protein );
-
 		buffer_trafoX[idx] = posAtom.x;
 		buffer_trafoY[idx] = posAtom.y;
 		buffer_trafoZ[idx] = posAtom.z;

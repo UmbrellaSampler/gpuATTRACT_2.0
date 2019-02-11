@@ -41,6 +41,9 @@ public:
 
 
 	explicit GPUEnergyService6D(std::shared_ptr<DataManager> dataMng, std::vector<int> const& deviceIds);
+	explicit GPUEnergyService6D(std::shared_ptr<DataManager> dataMng, std::vector<int> const& deviceIds, uint threadsPerDevice);
+
+
 	virtual ~GPUEnergyService6D() {};
 
 	distributor_t createDistributor() override;
@@ -49,7 +52,7 @@ public:
 
 private:
 	class Private;
-
+	uint _threadsPerDevice;
 	size_t _workerId; // serves as counter for
 	std::vector<int> _deviceIds;
 

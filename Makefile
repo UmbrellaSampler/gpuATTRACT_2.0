@@ -10,11 +10,15 @@ CURDIR = $(realpath $(PWD) )
 
 ifeq ($(TARGET), RELEASE)
 	OBJDIR = build_RELEASE
-	NAME = AttractServer_RELEASE
+	NAME = AttractServer_RELEASE1
 endif
 ifeq ($(TARGET), DEBUG)
 	OBJDIR = build_DEBUG
-	NAME = AttractServer_DEBUG
+	NAME = AttractServer_DEBUG1
+endif
+ifeq ($(TEST), ON)
+	OBJDIR = build_TEST
+	NAME = AttractServer_TEST
 endif
 $(shell mkdir -p $(OBJDIR))
 BINARY = $(NAME)
@@ -47,6 +51,7 @@ else ifeq ($(TEST), ON)
 	LIBS_TEST = -lgtest -lgmock
 	VPATH = $(foreach d, $(SOURCE_TEST_FOLDERS), $d:):$(foreach d, $(SOURCE_FOLDERS), $d:)
 	INCLUDES += $(foreach d, $(SOURCE_TEST_FOLDERS), -I$d) 
+	INCLUDES +=  -I/usr/local/include
 endif
 
 OBJECTS_CPP = $(addprefix $(OBJDIR)/, $(notdir $(SOURCES_CPP:.cpp=.o)))

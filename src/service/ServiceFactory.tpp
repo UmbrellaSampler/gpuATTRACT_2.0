@@ -36,7 +36,7 @@ std::shared_ptr<void> ServiceFactory::create(ServiceType serviceType,
 			return std::shared_ptr<void>( new CPUEnergyService6DModes<REAL>(dataMng));
 #ifdef CUDA
 		case ServiceType::GPUEnergyService6D:
-			return std::shared_ptr<void>( new GPUEnergyService6D<REAL>(dataMng, args.deviceIds));
+			return std::shared_ptr<void>( new GPUEnergyService6D<REAL>(dataMng, args.deviceIds, threadsPerDevice));
 		case ServiceType::GPUEnergyService6DModes:
 			return std::shared_ptr<void>( new GPUEnergyService6DModes<REAL>(dataMng, args.deviceIds, threadsPerDevice));
 #endif

@@ -29,7 +29,6 @@ namespace as {
 
 template<typename SERVICE>
 void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
-
 	/* load dataItems */
 	this->_ids.radius_cutoff = args.cutoff;
 	auto receptor = createProteinFromPDB<real_t>(args.recName);
@@ -137,14 +136,15 @@ void Configurator_6D<SERVICE>::init(CmdArgs const& args) {
 	}
 #endif
 
-	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args,1)));
+	std::shared_ptr<service_t> service = std::move(std::static_pointer_cast<service_t>(ServiceFactory::create<real_t>(serviceType, dataManager, args,2)));
 
 	this->_server = std::unique_ptr<server_t>(new server_t(service));
 	if (args.numCPUs > 0) {
 		this->_server->createWorkers(args.numCPUs);
 	} else {
 		//this->_server->createWorkers(args.deviceIds.size());
-		this->_server->createWorkers( 2 );
+
+		this->_server->createWorkers( 2*args.deviceIds.size() );
 	}
 
 }

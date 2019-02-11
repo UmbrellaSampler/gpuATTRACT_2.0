@@ -250,6 +250,7 @@ void readHMMode(std::shared_ptr<Protein<REAL>> prot, std::string modeFileName) {
 			protModes[numAtoms*numModes+numModes*i+mode]		/=sqrt(eigVal[mode]);
 			protModes[2*numAtoms*numModes+numModes*i+mode]	/=sqrt(eigVal[mode]);
 		}
+		//std::cout << protModes[numModes*i]<<" "<<protModes[numAtoms*numModes+numModes*i] << " "<<protModes[2*numAtoms*numModes+numModes*i] <<std::endl;
 	}
 	REAL* protBufMode = prot->getOrCreateModePtr();
 	std::copy(protModes, protModes+ 3*numModes*numAtoms, protBufMode);

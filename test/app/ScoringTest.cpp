@@ -22,7 +22,7 @@
 #include "Request.h"
 #include "Server.h"
 #include "readFile.h"
-
+#include "memory"
 
 using namespace as;
 using namespace std;
@@ -75,7 +75,7 @@ TEST(Scoring, CPU) {
 	auto server = serverConfigurator.server();
 	auto& common = serverConfigurator.common();
 	size_t numDofs = dofs.size();
-	Request<input_t, common_t> request(dofs.data(), numDofs, common);
+	auto request = make_shared<Request<input_t, common_t>>(dofs.data(), numDofs, common);
 	server->submit(request);
 
 	auto results = std::vector<result_t>(dofs.size());

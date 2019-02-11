@@ -163,6 +163,7 @@ __global__ void scoring_kernel(
 		auto dof = dofs[DOFidx];
 		REAL x_trafo,y_trafo,z_trafo;
 		float4 potForce{0,0,0,0};
+
 		d_DOFPos_device< REAL, DOF_T>( protein, dof, idx, type_protein,
 				 buffer_defoX[idx],
 				 buffer_defoY[idx],

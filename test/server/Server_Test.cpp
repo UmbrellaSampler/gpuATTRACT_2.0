@@ -16,7 +16,7 @@
 #include "Service_TimeOut.h"
 
 #include "HostAllocator.tpp"
-
+#include <memory>
 //#include <iostream>
 //using std::cout;
 //using std::endl;
@@ -89,7 +89,7 @@ TEST(Server, Interface_submit) {
 		.Times(AtLeast(0));
 	server.createWorkers(1);
 
-	request_t request;
+	auto request = std::make_shared<request_t>();
 	try {
 		server.submit(request);
 		FAIL();
@@ -101,10 +101,10 @@ TEST(Server, Interface_submit) {
 	int size = 100000;
 	int input[size];
 	int result[size];
-	request.setDataAndSize(input, size);
+	request->setDataAndSize(input, size);
 	try {
 		server.submit(request);
-		request.setDataAndSize(input, size);
+		request->setDataAndSize(input, size);
 		server.submit(request);
 		FAIL();
 	} catch (std::exception& e) {
@@ -115,7 +115,7 @@ TEST(Server, Interface_submit) {
 	request.reset();
 	try {
 		for (int i = 0; i < 10; ++i) {
-			request.setDataAndSize(input, 0);
+			request->setDataAndSize(input, 0);
 			server.submit(request);
 			EXPECT_TRUE(true);
 			server.wait(request, result);
@@ -135,17 +135,16 @@ TEST(Server, Interface_wait) {
 	EXPECT_CALL(*serviceMock, createItemProcessor())
 		.Times(AtLeast(0));
 	server.createWorkers(1);
-
-	request_t request;
-	request.reset();
+	auto request = std::make_shared<request_t>();
+	request->reset();
 	int size = 1;
 	int input[size];
 	int result[size];
 
-	request.setDataAndSize(input, size);
+	request->setDataAndSize(input, size);
 	try {
 		server.submit(request);
-		request_t otherRequest;
+		auto otherRequest = std::make_shared<request_t>();
 		server.wait(otherRequest, result);
 		FAIL();
 	} catch (std::exception& e) {
@@ -153,7 +152,7 @@ TEST(Server, Interface_wait) {
 		server.wait(request, result); // to ensure that buffer return to buffer manager
 	}
 
-	request.setDataAndSize(input, size);
+	request->setDataAndSize(input, size);
 	try {
 		server.submit(request);
 		server.wait(request, nullptr);
@@ -169,8 +168,8 @@ TEST(Server, Interface_wait) {
 	server_to.createWorkers(1);
 	server_to.setWaitTime(10);
 
-	request_t request_to;
-	request_to.setDataAndSize(input, size);
+	auto request_to = std::make_shared<request_t>();
+	request_to->setDataAndSize(input, size);
 	try {
 		server_to.submit(request_to);
 		server_to.wait(request_to, result);
@@ -263,7 +262,7 @@ TEST_F(ServerIntegration, WithServiceMock)
 
 		for (unsigned inputSize : inputSizes) {
 			for (unsigned itemSize : itemSizes) {
-				request_t request = createRequest(inputSize);
+				auto request  = std::make_shared<request_t>(createRequest(inputSize));
 				server.setItemSize(itemSize);
 				server.submit(request);
 				server.wait(request, result);

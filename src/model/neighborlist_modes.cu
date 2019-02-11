@@ -98,6 +98,7 @@ __global__ void d_NLPotForce(
 
 					const REAL dr2 = dx * dx + dy * dy + dz * dz;
 					const REAL dPlateau2 = grid.dPlateau2;
+
 					if ((dr2) > dPlateau2 || dr2 > radius_cutoff) {
 
 						continue;
@@ -158,10 +159,7 @@ __global__ void d_NLPotForce(
 
 						// calculate energy and potential/energy of charge potential
 
-						if (false) {
-							printf("%u %f %f %f %u\n" ,
-									i, posLigX, posLigY, posLigZ, atomTypeLig);
-						}
+
 
 						ChargePotForce(dr2_inv, dx, dy, dz,
 								chargeLigRec,

@@ -8,7 +8,7 @@
 #ifndef TEST_REDUCTION_H_
 #define TEST_REDUCTION_H_
 
-#include <gmock/gmock.h>
+//#include <gmock/gmock.h>
 #include "test_HMMread.h"
 #include "transform.h"
 #include "test_ReferenceData.h"
