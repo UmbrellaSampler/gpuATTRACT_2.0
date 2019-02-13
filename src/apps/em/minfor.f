@@ -17,28 +17,71 @@ c     Parameters
       integer numModesRec, numModesLig
 c     Local variables
       real*8  gesa
-      integer i,k,ir,isfv,itr,nfun,np,jn
+      integer i,k,ir,isfv,itr,nfun,np,jn,j6,offset
       real*8 c,acc,dff,dgb,fa,fmin,gl1,gl2,gmin,dga,xnull,w
       real*8 fb
       
+      real*8 xtmp,gtmp,gbtmp
+      dimension xtmp(46),gtmp(46),gbtmp(46)
+
       real*8 h,g,ga,gb,xaa,xbb,d,step,stepbd,steplb,stmin
       dimension h(46*46)
       dimension g(46),ga(46),gb(46),w(46)
       dimension xaa(46), xbb(46), d(46)
 
+
+c chagne
+      integer minTrans, minRot, minMode
+      real*8 numDofModes, numDofTrans, numDofRot
+
       integer, parameter:: ERROR_UNIT = 0
+
+
+
+c change
+c choose what dofs to minimze
+      offset = 0
+      minTrans = 0
+      minRot = 0
+      minMode = 1
+
+      numDofModes = 0
+      numDofTrans = 0
+      numDofRot = 0
+      j6 =0
+      if(minTrans.eq.1) then
+        numDofTrans = 3
+      endif
+      if(minTrans.eq.0) then
+        offset = offset + 3
+      endif
+      if(minRot.eq.1) then
+        numDofRot = 3
+      endif
+      if(minRot.eq.0) then
+        offset = offset + 3
+      endif
+
+      if(minMode.eq.1) then
+        numDofModes = numModesRec + numModesLig
+      endif
 
       xnull=0.0d0
       dga=xnull
-      jn = 6 + numModesRec + numModesLig
+      j6 = numDofRot + numDofTrans
+      jn = numDofModes + j6
+      do i=1, 6 + numDofModes
+       xtmp(i) = x(i)
+      enddo
+
       do i=1,jn
        ga(i)=xnull
        d(i)=xnull
-       xaa(i)=x(i)
+       xaa(i)=x(i + offset)
 c       write(ERROR_UNIT,*)'xaa',i,xaa(i)
       enddo
 
-
+      write(*,*), j6, jn, offset
 
       nfun=0
       itr=0
@@ -57,7 +100,12 @@ c     set the hessian to a diagonal matrix
       enddo
 c     set some variables for the first iteration
       dff=xnull
-      call energy_for_fortran_to_call(smug, xaa, gesa, g)
+      call energy_for_fortran_to_call(smug, xtmp, gesa, gtmp)
+
+      do i=1,jn
+       g(i)=gtmp(offset + i)
+      enddo
+
 
 110   fa=gesa
       isfv=1
@@ -104,15 +152,23 @@ c     test whether func has been called ivmax times
 c     calculate another function value and gradient
       
 c     make an Euler rotation + tranlation of ligand center
-      do i=1,6
+      do i=1,j6
        xbb(i)=xaa(i)+c*d(i)
       enddo
-      do i=7,jn
+      do i=j6+1,jn
        xbb(i)=xaa(i)-c*d(i)
       enddo
+      do i = 1, jn
+      xtmp(i+offset) = xbb(i)
+      enddo
+
+      call energy_for_fortran_to_call(smug, xtmp, fb, gbtmp)
 
 
-      call energy_for_fortran_to_call(smug, xbb, fb, gb)
+      do i=1,jn
+       gb(i)=gbtmp(offset + i)
+      enddo
+
 c     store this function value if it is the smallest so far
       isfv=min(2,isfv)
       if (fb.gt.gesa) go to 220
