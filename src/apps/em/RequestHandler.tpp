@@ -252,6 +252,25 @@ auto RequestHandler<GenericTypes>::getResultEnGrads() noexcept -> std::vector<ex
 }
 
 template<typename GenericTypes>
+auto RequestHandler<GenericTypes>::getResultEnGradTracker() noexcept -> std::vector<std::shared_ptr<std::vector<std::vector<float>>>> {
+	std::vector<std::shared_ptr<std::vector<std::vector<float>>>> enGradVec(_finishedObjects.size());
+	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
+		enGradVec[i] = _finishedObjects[i]->getObjectiveTracker();
+	}
+	return enGradVec;
+}
+
+template<typename GenericTypes>
+auto RequestHandler<GenericTypes>::getResultStateTracker() noexcept -> std::vector<std::shared_ptr<std::vector<std::vector<float>>>> {
+	std::vector<std::shared_ptr<std::vector<std::vector<float>>>> enGradVec(_finishedObjects.size());
+	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {
+		enGradVec[i] = _finishedObjects[i]->getStateTracker();
+		std::cout << "size in req handler " <<  _finishedObjects[i]->getStateTracker()->size()<< std::endl;
+	}
+	return enGradVec;
+}
+
+template<typename GenericTypes>
 auto RequestHandler<GenericTypes>::getStatistics() noexcept -> std::vector<std::unique_ptr<Statistic>> {
 	std::vector<std::unique_ptr<Statistic>> statisticVec(_finishedObjects.size());
 	for (unsigned i = 0; i < _finishedObjects.size(); ++i) {

@@ -75,6 +75,30 @@ void emATTRACT<GenericTypes>::run() {
 
 
 	}
+	std::vector<std::shared_ptr<std::vector<std::vector<float>>>> ts = requestHandler.getResultStateTracker();
+	for (int i = 0; i < ts.size(); i++){
+	for (int k = 0; k < ts[i]->size(); k++){
+		auto ref = *ts[i];
+		for (int l = 0; l < ref[k].size(); l++){
+		std::cout << ref[k][l] <<" ";
+	}
+	std::cout<< std::endl;
+	}
+		std::cout<< std::endl;
+	}
+
+
+	std::vector<std::shared_ptr<std::vector<std::vector<float>>>> ts2 = requestHandler.getResultEnGradTracker();
+		for (int i = 0; i < ts2.size(); i++){
+		for (int k = 0; k < ts2[i]->size(); k++){
+			auto ref = *ts2[i];
+			for (int l = 0; l < ref[k].size(); l++){
+			std::cout << ref[k][l] <<" ";
+		}
+		std::cout<< std::endl;
+		}
+			std::cout<< std::endl;
+		}
 
 
 		//std::cout << "time"<< std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;

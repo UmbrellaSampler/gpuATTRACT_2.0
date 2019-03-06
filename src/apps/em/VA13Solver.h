@@ -64,29 +64,43 @@ public:
 	struct Options {
 		/* Solver Options */
 		unsigned maxFunEval = 500;
+		unsigned minimizeRotation = 1;  //switch on(1)/off(!1) minimization of rotational degrees of freedom
+		unsigned minimizeTranslation = 1; //switch on(1)/off(!1) minimization of translational degrees of freedom
+		unsigned minimizeModes = 1; //switch on(1)/off(!1) minimization of mode degrees of freedom
+		bool trackStates = true; //switch on/off tracking of states. which are appended to trackedStates
+		bool trackGradients = true; //switch on/off tracking of gradients. which are appended to trackedGrads
 	};
 
 	static void setOptions(Options opt) {settings = opt;}
 
-
 	class FortranSmuggler {
 	public:
-		FortranSmuggler (push_type& _coro, Vector& _state, ObjGrad& _objective):
+		FortranSmuggler (push_type& _coro, Vector& _state, ObjGrad& _objective,std::shared_ptr<std::vector<std::vector<float>>> _trackedStates,
+				std::shared_ptr<std::vector<std::vector<float>>> _trackedGrads,Options opt ):
 			coro(_coro),
 			state(_state),
-			objective(_objective)
+			objective(_objective),
+			trackedStates(_trackedStates),
+			trackedGrads(_trackedGrads),
+			options(opt)
 		{}
 
 		Vector& state_ref() { return state; }
 		ObjGrad& objective_ref() { return objective; }
+		void push_state(std::vector<float> state) { trackedStates->push_back(state);}
+		void push_grad(std::vector<float> grad) { trackedGrads->push_back(grad); }
 		void call_coro() {
 			coro();
 		};
+		Options getOptions(){return options;}
 
 	private:
 		push_type& coro;
 		Vector& state;
 		ObjGrad& objective;
+		Options options;
+		std::shared_ptr<std::vector<std::vector<float>>> trackedStates;
+		std::shared_ptr<std::vector<std::vector<float>>> trackedGrads;
 	};
 
 

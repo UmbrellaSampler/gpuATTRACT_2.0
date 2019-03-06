@@ -348,8 +348,8 @@ public:
 //									std::cout <<std::endl<< std::endl;
 
 
-//
-#ifdef DEBUG
+#define DEBUG
+#ifdef DEBUG1
 			cudaDeviceSynchronize();
 			std::string file_defo = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
 			file_defo += "/rec_defo.dat";
@@ -382,9 +382,9 @@ public:
 			cudaMemcpy(h_TrafoRec.getX(),d_trafoRec[id_stream].getX(), cpySizeTrafoRec1, cudaMemcpyDeviceToHost);
 			cudaMemcpy(h_TrafoRec.getY(),d_trafoRec[id_stream].getY(), cpySizeTrafoRec1, cudaMemcpyDeviceToHost);
 			cudaMemcpy(h_TrafoRec.getZ(),d_trafoRec[id_stream].getZ(), cpySizeTrafoRec1, cudaMemcpyDeviceToHost);
-			fs_defo << "x y z"<< std::endl;
+			fs_trafor << "x y z"<< std::endl;
 			for(size_t i = 0; i < stageResc.rec->numAtoms; ++i) {
-				fs_trafor  << std::setprecision(10)<< h_TrafoRec.getX()[i] << " " << h_TrafoRec.getY()[i] << " " << h_TrafoRec.getZ()[i] << std::endl;
+				fs_trafor << std::setprecision(10) << std::setprecision(10)<< h_TrafoRec.getX()[i] << " " << h_TrafoRec.getY()[i] << " " << h_TrafoRec.getZ()[i] << std::endl;
 			}
 			fs_trafor.close();
 
@@ -404,9 +404,33 @@ public:
 			cudaMemcpy(h_trafoLig.getZ(),d_trafoLig[id_stream].getZ(), cpySizetrafoLig, cudaMemcpyDeviceToHost);
 			fs_trafo << "x y z"<< std::endl;
 			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
-				fs_trafo  << std::setprecision(10)<<h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
+				fs_trafo << std::setprecision(10) << std::setprecision(10)<<h_trafoLig.getX()[i] << " " << h_trafoLig.getY()[i] << " " << h_trafoLig.getZ()[i] << std::endl;
 			}
 			fs_trafo.close();
+
+
+
+			std::string fn_l_defo = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
+			fn_l_defo += "/lig_defo.dat";
+			std::fstream f_l_defo;
+			f_l_defo.open (fn_l_defo, std::fstream::in | std::fstream::out | std::fstream::trunc );
+
+			size_t bufferSizeDefoLig = d_defoLig[id_stream].bufferSize();
+
+			WorkerBuffer<REAL> h_defoLig(3,bufferSizeDefoLig);
+			size_t cpySizedefoLig = h_defoLig.bufferSize()*sizeof(REAL);
+//
+//			std::cout << "bufferSize: " << bufferSizeDefoLig << " cpySize: " << cpySizeDefoLig << std::endl;
+			cudaMemcpy(h_defoLig.getX(),d_defoLig[id_stream].getX(), cpySizedefoLig, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_defoLig.getY(),d_defoLig[id_stream].getY(), cpySizedefoLig, cudaMemcpyDeviceToHost);
+			cudaMemcpy(h_defoLig.getZ(),d_defoLig[id_stream].getZ(), cpySizedefoLig, cudaMemcpyDeviceToHost);
+			f_l_defo << "x y z"<< std::endl;
+			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
+				f_l_defo << std::setprecision(10) <<h_defoLig.getX()[i] << " " << h_defoLig.getY()[i] << " " << h_defoLig.getZ()[i] << std::endl;
+			}
+			f_l_defo.close();
+
+
 
 
 			std::string file_pot = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
@@ -423,7 +447,7 @@ public:
 			cudaMemcpy(h_potLig.getW(),d_potLig[id_stream].getW(), cpySize, cudaMemcpyDeviceToHost);
 			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
 				//			for(size_t i = 0; i < 20; ++i) {
-				fs_pot << h_potLig.getX()[i] << " " << h_potLig.getY()[i] << " " << h_potLig.getZ()[i] << " " << h_potLig.getW()[i] << std::endl;//
+				fs_pot<< std::setprecision(10) << h_potLig.getX()[i] << " " << h_potLig.getY()[i] << " " << h_potLig.getZ()[i] << " " << h_potLig.getW()[i] << std::endl;//
 			}
 			fs_pot.close();
 
@@ -442,7 +466,7 @@ public:
 			cudaMemcpy(h_potRec.getW(),d_potRec[id_stream].getW(), cpySizerec, cudaMemcpyDeviceToHost);
 			for(size_t i = 0; i < stageResc.rec->numAtoms; ++i) {
 				//			for(size_t i = 0; i < 20; ++i) {
-				fs_potr << h_potRec.getX()[i] << " " << h_potRec.getY()[i] << " " << h_potRec.getZ()[i] << " " << h_potRec.getW()[i] << std::endl;//
+				fs_potr<< std::setprecision(10) << h_potRec.getX()[i] << " " << h_potRec.getY()[i] << " " << h_potRec.getZ()[i] << " " << h_potRec.getW()[i] << std::endl;//
 			}
 			fs_potr.close();
 			/* Perform cuda kernel calls */
@@ -562,8 +586,7 @@ public:
 				it->size()
 				);
 //			std::cout <<"after nl"<< std::endl;
-
-#ifdef DEBUG
+#ifdef DEBUG1
 			cudaDeviceSynchronize();
 			std::string file_nl = getDebugPath<REAL, DOF_6D_Modes<REAL>>(true);
 			file_nl += "/rec_nl.dat";
@@ -580,7 +603,7 @@ public:
 			fs_nl << "fx fy fz w"<< std::endl;
 			for(size_t i = 0; i < stageResc.rec->numAtoms; ++i) {
 				//			for(size_t i = 0; i < 20; ++i) {
-				fs_nl << h_potRecnl.getX()[i] << " " << h_potRecnl.getY()[i] << " " << h_potRecnl.getZ()[i]<< std::endl;// << " " << h_potLig1.getW()[i] ;
+				fs_nl << std::setprecision(10)<< h_potRecnl.getX()[i] << " " << h_potRecnl.getY()[i] << " " << h_potRecnl.getZ()[i] << " " << h_potRecnl.getW()[i] << std::endl;
 
 			}
 			fs_nl.close();
@@ -599,14 +622,13 @@ public:
 			cudaMemcpy(h_potLignl.getY(),d_potLig[id_stream].getY(), cpySizenllig, cudaMemcpyDeviceToHost);
 			cudaMemcpy(h_potLignl.getZ(),d_potLig[id_stream].getZ(), cpySizenllig, cudaMemcpyDeviceToHost);
 			cudaMemcpy(h_potLignl.getW(),d_potLig[id_stream].getW(), cpySizenllig, cudaMemcpyDeviceToHost);
-			fs_nl << "fx fy fz w"<< std::endl;
+			fs_nllig << "fx fy fz w"<< std::endl;
 			for(size_t i = 0; i < stageResc.lig->numAtoms; ++i) {
 				//			for(size_t i = 0; i < 20; ++i) {
-				fs_nllig << h_potLignl.getX()[i] << " " << h_potLignl.getY()[i] << " " << h_potLignl.getZ()[i]<< std::endl;// << " " << h_potLig1.getW()[i] ;
+				fs_nllig << std::setprecision(10)<< h_potLignl.getX()[i] << " " << h_potLignl.getY()[i] << " " << h_potLignl.getZ()[i] << " " << h_potLignl.getW()[i] << std::endl;
 
 			}
 			fs_nllig.close();
-
 #endif
 //			exit(EXIT_SUCCESS);
 			//IP.d_NLPotForce<false>(it->devLocGridId(), it->devLocRecId(), it->devLocRecId(),it->size(),

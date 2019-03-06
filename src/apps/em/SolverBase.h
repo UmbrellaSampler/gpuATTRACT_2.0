@@ -25,7 +25,7 @@
 #include <boost/version.hpp>
 #include <Eigen/Core>
 #include <cassert>
-
+#include<Eigen/StdVector>
 #include <meta.h>
 
 namespace as {
@@ -62,7 +62,7 @@ private:
 
 class SolverBase {
 public:
-	SolverBase() : coro(nullptr){}
+	SolverBase() : coro(nullptr),trackedStates(std::make_shared<std::vector<std::vector<float>>>()) ,trackedGrads(std::make_shared<std::vector<std::vector<float>>>()){}
 	virtual ~SolverBase() { delete coro;}
 
 	/* make object not copyable, but movealble only */
@@ -74,6 +74,8 @@ public:
 		objective = std::move(rhs.objective);
 		coro = std::move(rhs.coro);
 		rhs.coro = nullptr;
+		trackedStates= std::make_shared<std::vector<std::vector<float>>>();
+		trackedGrads= std::make_shared<std::vector<std::vector<float>>>();
 	}
 
 	SolverBase& operator= (SolverBase&& rhs) {
@@ -81,6 +83,9 @@ public:
 		objective = std::move(rhs.objective);
 		coro = std::move(rhs.coro);
 		rhs.coro = nullptr;
+		trackedStates= std::make_shared<std::vector<std::vector<float>>>();
+		trackedGrads= std::make_shared<std::vector<std::vector<float>>>();
+
 		return *this;
 	}
 
@@ -99,6 +104,9 @@ public:
 
 	ObjGrad getObjective() {return objective;}
 
+	std::shared_ptr<std::vector<std::vector<float>>> getObjectiveTracker() {return trackedGrads;}
+	std::shared_ptr<std::vector<std::vector<float>>> getStateTracker() {return trackedStates;}
+
 	void start();
 
 	void step();
@@ -116,7 +124,8 @@ protected:
 
 	virtual Statistic* internal_getStats() = 0;
 
-
+	std::shared_ptr<std::vector<std::vector<float>>> trackedStates;
+	std::shared_ptr<std::vector<std::vector<float>>> trackedGrads;
 	Vector state; // dof
 	ObjGrad objective; // energy
 

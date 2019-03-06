@@ -88,6 +88,9 @@ public:
 
 	std::vector<extDOF> getResultStates() noexcept;
 	std::vector<extEnGrad> getResultEnGrads() noexcept;
+	std::vector<std::shared_ptr<std::vector<std::vector<float>>>>  getResultEnGradTracker() noexcept;
+	std::vector<std::shared_ptr<std::vector<std::vector<float>>>> getResultStateTracker() noexcept;
+
 	std::vector<std::unique_ptr<Statistic>> getStatistics() noexcept;
 
 	static Builder newBuilder() {

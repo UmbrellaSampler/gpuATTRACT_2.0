@@ -44,7 +44,7 @@ void scATTRACT<GenericTypes>::run() {
 	auto server = _config->server();
 	auto& common = _config->common();
 	size_t numDofs = dofs.size();
-	auto request = std::make_shared<Request<input_t, common_t>>( Request<input_t, common_t>(dofs.data(), numDofs, common) );
+	auto request = std::make_shared<Request<input_t, common_t>>( dofs.data(), numDofs, common);
 	auto start = std::chrono::system_clock::now();
 
 	/* do some work */

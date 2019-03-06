@@ -1,5 +1,5 @@
       subroutine minfor(
-     1 smug, ivmax, numModesRec, numModesLig, x
+     1 smug, ivmax,minTrans,minRot,minMode, numModesRec, numModesLig, x
      2 )
 c
 c  variable metric minimizer (Harwell subroutine lib.  as in Jumna with modifications)
@@ -41,10 +41,10 @@ c chagne
 c change
 c choose what dofs to minimze
       offset = 0
-      minTrans = 0
-      minRot = 0
-      minMode = 1
-
+c      minTrans = 1
+c      minRot = 1
+c      minMode = 1
+      write(*,*),minTrans,minRot,minMode, numModesRec, numModesLig
       numDofModes = 0
       numDofTrans = 0
       numDofRot = 0
@@ -229,6 +229,7 @@ c     revise the second derivative matrix
        d(i)=gb(i)-ga(i)
        ga(i)=gb(i)
       enddo
+      call state_tracker(smug, xaa, fmin, ga,jn)
       call mc11a(h,jn,xbb,1.0d0/dga,w,ir,1,xnull)
       ir=-ir
       call mc11a (h,jn,d,1.0d0/(stmin*(dgb-dga)),d,ir,0,xnull)
