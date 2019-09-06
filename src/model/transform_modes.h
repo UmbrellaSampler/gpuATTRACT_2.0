@@ -169,41 +169,21 @@ void rotate_forces(
 
 #ifdef CUDA
 
-template<typename REAL>
+template<typename REAL, int PROTEINTYPE, bool MODES>
 void d_DOFPos(
-	unsigned blockSize,
-	unsigned gridSize,
-	const cudaStream_t &stream,
-	REAL const* xRec,
-	REAL const* yRec,
-	REAL const* zRec,
-	REAL const* xLig,
-	REAL const* yLig,
-	REAL const* zLig,
-	REAL const* xModesRec,
-	REAL const* yModesRec,
-	REAL const* zModesRec,
-	REAL const* xModesLig,
-	REAL const* yModesLig,
-	REAL const* zModesLig,
-	DOF_6D_Modes<REAL>* dofs,
-	unsigned numAtomsRec,
-	unsigned numAtomsLig,
-	unsigned numModesRec,
-	unsigned numModesLig,
-	unsigned numDOFsLig,
-	REAL* xRecDefo,
-	REAL* yRecDefo,
-	REAL* zRecDefo,
-	REAL* xRecTrafo,
-	REAL* yRecTrafo,
-	REAL* zRecTrafo,
-	REAL* xLigDefo,
-	REAL* yLigDefo,
-	REAL* zLigDefo,
-	REAL* xLigTrafo,
-	REAL* yLigTrafo,
-	REAL* zLigTrafo);
+		unsigned blockSize,
+		unsigned gridSize,
+		const cudaStream_t &stream,
+		d_Protein<REAL>* protein,
+		DOF_6D_Modes<REAL>* dofs,
+		unsigned numDOFs,
+		REAL* xDefo,
+		REAL* yDefo,
+		REAL* zDefo,
+		REAL* xTrafo,
+		REAL* yTrafo,
+		REAL* zTrafo
+		);
 
 template<typename REAL>
 void d_rotateForces(
