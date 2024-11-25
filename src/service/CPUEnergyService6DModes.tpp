@@ -26,8 +26,7 @@
 #include "matrixFunctions.h"
 #include "RotMat.h"
 
-// ToDo: remove
-#include <iostream>
+
 
 #include "CPUEnergyService6DModes.h"
 
@@ -45,12 +44,12 @@ public:
 	/**
 	 * Allocate new Buffers with size. Old buffers are automatically deallocated;
 	 */
-	void allocateBufferRec(size_t size) {
+	void allocateBufferLig(size_t size) {
 		h_trafoLig = std::move(WorkerBuffer<REAL>(3,size));
 		h_potLig = std::move(WorkerBuffer<REAL>(4,size));
 	}
 
-	void allocateBufferLig(size_t size) {
+	void allocateBufferRec(size_t size) {
 		h_trafoRec = std::move(WorkerBuffer<REAL>(3,size));
 		h_defoRec = std::move(WorkerBuffer<REAL>(3,size));
 		h_potRec = std::move(WorkerBuffer<REAL>(4,size));
@@ -186,12 +185,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 			);
 
 			//rotate forces back into the receptor frame
-			rotate_forces(invertedRecDOF._6D.ang.inv(),
-				rec-> numAtoms(),
-				buffers->h_potRec.getX(),
-				buffers->h_potRec.getY(),
-				buffers->h_potRec.getZ()
-			);
+
 
 			// calculate the forces acting on the ligand via the receptor grid in the receptor/global system
 			potForce(
@@ -236,6 +230,12 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				buffers->h_potRec.getZ()
 			); // OK
 
+			rotate_forces(invertedRecDOF._6D.ang.inv(),
+				rec-> numAtoms(),
+				buffers->h_potRec.getX(),
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ()
+			);
 ////			// Debug
 //			for(size_t i = 0; i < lig->numAtoms(); ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
@@ -255,6 +255,13 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				lig->numAtoms()
 			); // OK
 
+			PotForce_Modes<REAL> redPotForceRec = reducePotForce<REAL,PotForce_Modes<REAL>>(
+				buffers->h_potRec.getX(),
+				buffers->h_potRec.getY(),
+				buffers->h_potRec.getZ(),
+				buffers->h_potRec.getW(),
+				rec->numAtoms()
+			); // OK
 //			// Debug
 //			REAL x = redPotForce.pos.x;
 //			REAL y = redPotForce.pos.y;
@@ -311,7 +318,7 @@ auto CPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 				enGrad.modesRec[mode]=redPotForce.modesRec[mode];
 			}
 			enGrad._6D.E = redPotForce.E;
-			enGrad._6D.pos = redPotForce.pos;
+			enGrad._6D.pos = redPotForce.pos - redPotForceRec.pos;
 
 			enGrad._6D.ang = reduceTorque(
 					lig->xPos(),

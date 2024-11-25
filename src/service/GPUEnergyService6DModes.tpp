@@ -138,15 +138,20 @@ public:
 		d_trafoRec = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(3,atomBufferSize));
 	}
 
-	void allocateBufferDOF( size_t const& numDOFs, size_t const& dofSize) {
+	void allocateBufferDOF( size_t const& numDOFs, size_t const& dofSizeRec, size_t const& dofSizeLig ) {
 		for (int i = 0; i < 3; ++i) {
 			d_dof[i]    = std::move(WorkerBuffer<dof_t,DeviceAllocator<dof_t>>(1,numDOFs));
 		}
 		for (int i = 0; i < 2; ++i) {
-			d_res[i]    = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(1,(dofSize)*numDOFs));
-			h_res[i]    = std::move(WorkerBuffer<REAL, HostPinnedAllocator<REAL>>(1,(dofSize)*numDOFs));
+			d_resRec[i]    = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(1,(dofSizeRec)*numDOFs));
+			h_resRec[i]    = std::move(WorkerBuffer<REAL, HostPinnedAllocator<REAL>>(1,(dofSizeRec)*numDOFs));
+		}
+		for (int i = 0; i < 2; ++i) {
+			d_resLig[i]    = std::move(WorkerBuffer<REAL, DeviceAllocator<REAL>>(1,(dofSizeLig)*numDOFs));
+			h_resLig[i]    = std::move(WorkerBuffer<REAL, HostPinnedAllocator<REAL>>(1,(dofSizeLig)*numDOFs));
 		}
 	}
+
 
 
 	size_t bufferSizeLig() const {
@@ -167,7 +172,7 @@ public:
 		stagesMngt.push(resc);
 	}
 
-	void resizeBuffersIfRequired(size_t const& numDOFs, size_t const& numAtomsRec, size_t const& numAtomsLig, size_t const& dofSize) {
+	void resizeBuffersIfRequired(size_t const& numDOFs, size_t const& numAtomsRec, size_t const& numAtomsLig, size_t const& dofSizeRec , size_t const& dofSizeLig) {
 		if (numDOFs*numAtomsLig > bufferSizeLig()) {
 			allocateBufferLig(numDOFs, numAtomsLig);
 		}
@@ -175,19 +180,17 @@ public:
 			allocateBufferRec(numDOFs, numAtomsRec);
 		}
 		if (numDOFs > bufferSizeDOF()) {
-			allocateBufferDOF(numDOFs, dofSize);
+			allocateBufferDOF(numDOFs, dofSizeRec, dofSizeLig);
 		}
 	}
 
 	void swapBuffers() {
 		std::swap(pipeIdx[0], pipeIdx[1]);
-		int 	  tmp = pipeIdxDof[2];
+		int 	  tmp = pipeIdxDof[3];
+		pipeIdxDof[3] = pipeIdxDof[2];
 		pipeIdxDof[2] = pipeIdxDof[1];
 		pipeIdxDof[1] = pipeIdxDof[0];
 		pipeIdxDof[0] = tmp;
-
-
-
 	}
 
 	bool pipelineEmpty() const {
@@ -202,6 +205,25 @@ public:
 		for (unsigned i = 0; i < numStages; ++i) {
 			predicates[pipeIdx[0]][i] = false;
 		}
+	}
+
+	unsigned getMaxBlockSize(int dofSize){
+		int id;
+		int blockSizeReduce = 0;
+		cudaVerify(cudaGetDevice(&id));
+		cudaDeviceProp deviceProp;
+		cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
+		size_t sharedMem = deviceProp.sharedMemPerBlock;
+		size_t pow2;
+
+		if (blockSizeReduce == 0) {
+			pow2 = 16;
+			while (pow2* dofSize*sizeof(REAL) < sharedMem) {
+				pow2 *= 2;
+			}
+			blockSizeReduce = pow2 / 2;
+		}
+		return blockSizeReduce;
 	}
 
 	void S0_copyH2D() {
@@ -226,21 +248,9 @@ public:
 	}
 
 	void configureDevice() {
-
-		if (blockSizeReduce == 0) {
-			int id;
-			cudaVerify(cudaGetDevice(&id));
-			cudaDeviceProp deviceProp;
-			cudaVerify(cudaGetDeviceProperties(&deviceProp, id));
-			size_t sharedMem = deviceProp.sharedMemPerBlock;
-			size_t pow2 = 16;
-			while (pow2* (Common_Modes::numModesLig + Common_Modes::numModesRec + 13)*sizeof(REAL) < sharedMem) {
-				pow2 *= 2;
-			}
-
-			blockSizeReduce = pow2 / 2;
-		}
-
+		const int dofSize {13};
+		blockSizeReduceRec = getMaxBlockSize(dofSize + Common_Modes::numModesRec);
+		blockSizeReduceLig = getMaxBlockSize(dofSize + Common_Modes::numModesLig);
 	}
 
 	void S1_transform_potForce() {
@@ -260,53 +270,33 @@ public:
 			/* Perform cuda kernel calls */
 			size_t gridSizeLig = ( numElLig + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
 			size_t gridSizeRec = ( numElRec + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
-			size_t gridSize = ( max(numElRec, numElLig) + BLSZ_TRAFO - 1) / BLSZ_TRAFO;
+
 
 			/* Device: Wait for completion of copyH2D of DOFs to complete */
 			cudaVerify(cudaStreamWaitEvent(streams[2], events[0], 0));
 
-//			d_DOF2Pos(
-//					BLSZ_TRAFO,
-//					gridSize,
-//					streams[2],
-//					stageResc.lig->xPos,
-//					stageResc.lig->yPos,
-//					stageResc.lig->zPos,
-//					d_dof[pipeIdx[1]].get(0),
-//					stageResc.lig->numAtoms,
-//					it->size(),
-//					d_trafoLig.getX(),
-//					d_trafoLig.getY(),
-//					d_trafoLig.getZ()); //OK
-
-			d_DOFPos(
+			 d_DOFPos<REAL, 0, true>(
 				BLSZ_TRAFO,
-				gridSize,
+				gridSizeRec,
 				streams[2],
-				stageResc.rec->xPos,
-				stageResc.rec->yPos,
-				stageResc.rec->zPos,
-				stageResc.lig->xPos,
-				stageResc.lig->yPos,
-				stageResc.lig->zPos,
-				stageResc.rec->xModes,
-				stageResc.rec->yModes,
-				stageResc.rec->zModes,
-				stageResc.lig->xModes,
-				stageResc.lig->yModes,
-				stageResc.lig->zModes,
+				stageResc.rec,
 				d_dof[pipeIdxDof[1]].get(0),
-				stageResc.rec->numAtoms,
-				stageResc.lig->numAtoms,
-				stageResc.rec->numModes,
-				stageResc.lig->numModes,
 				it->size(),
 				d_defoRec.getX(),
 				d_defoRec.getY(),
 				d_defoRec.getZ(),
 				d_trafoRec.getX(),
 				d_trafoRec.getY(),
-				d_trafoRec.getZ(),
+				d_trafoRec.getZ()
+				);
+
+			 d_DOFPos<REAL, 1, true>(
+				BLSZ_TRAFO,
+				gridSizeLig,
+				streams[2],
+				stageResc.lig,
+				d_dof[pipeIdxDof[1]].get(0),
+				it->size(),
 				d_defoLig.getX(),
 				d_defoLig.getY(),
 				d_defoLig.getZ(),
@@ -488,26 +478,33 @@ public:
 			cudaVerify(cudaStreamWaitEvent(streams[3], events[3+pipeIdx[0]], 0));
 
 
-			deviceReduce(
-				blockSizeReduce,
+			deviceReduce<REAL, 0, true>(
+				blockSizeReduceRec,
 				it->size(),
-				stageResc.rec->numAtoms,	stageResc.lig->numAtoms,
-				stageResc.rec->numModes, 	stageResc.lig->numModes,
+				stageResc.rec,
 				d_dof[pipeIdxDof[2]].get(0),
-				stageResc.rec->xModes, 	stageResc.rec->yModes, stageResc.rec->zModes,
-				stageResc.lig->xModes, stageResc.lig->yModes, stageResc.lig->zModes,
-				stageResc.lig->xPos, stageResc.lig->yPos, stageResc.lig->zPos,
+				stageResc.rec->xPos, stageResc.rec->yPos, stageResc.rec->zPos,
 				d_potRec[pipeIdx[0]].getX(), d_potRec[pipeIdx[0]].getY(), d_potRec[pipeIdx[0]].getZ(),
-				d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
-				d_potLig[pipeIdx[0]].getW(),
-				d_res[pipeIdx[0]].get(0),
+				d_potRec[pipeIdx[0]].getW(),
+				d_resRec[pipeIdx[0]].get(0),
 				streams[3]);
 
-			cudaDeviceSynchronize();
-			unsigned numDofs = it->size();
-			WorkerBuffer<REAL> h_potLig(1,23*numDofs);
-			size_t cpySize = h_potLig.bufferSize()*sizeof(REAL);
-			cudaMemcpy(h_potLig.get(0),d_res[pipeIdx[0]].get(0), cpySize, cudaMemcpyDeviceToHost);
+			deviceReduce<REAL, 1, true>(
+				blockSizeReduceLig,
+				it->size(),
+				stageResc.lig,
+				d_dof[pipeIdxDof[2]].get(0),
+				stageResc.lig->xPos, stageResc.lig->yPos, stageResc.lig->zPos,
+				d_potLig[pipeIdx[0]].getX(), d_potLig[pipeIdx[0]].getY(), d_potLig[pipeIdx[0]].getZ(),
+				d_potLig[pipeIdx[0]].getW(),
+				d_resLig[pipeIdx[0]].get(0),
+				streams[3]);
+
+//			cudaDeviceSynchronize();
+//			unsigned numDofs = it->size();
+//			WorkerBuffer<REAL> h_potLig(1,23*numDofs);
+//			size_t cpySize = h_potLig.bufferSize()*sizeof(REAL);
+//			cudaMemcpy(h_potLig.get(0),d_res[pipeIdx[0]].get(0), cpySize, cudaMemcpyDeviceToHost);
 
 //			for(size_t i = 0; i < numDofs; ++i) {
 ////			for(size_t i = 0; i < 20; ++i) {
@@ -544,7 +541,9 @@ public:
 			cudaVerify(cudaStreamWaitEvent(streams[1], events[5 + pipeIdx[1]], 0));
 
 			/* copy results to host */
-			cudaVerify(cudaMemcpyAsync(h_res[pipeIdx[1]].get(0), d_res[pipeIdx[1]].get(0), dofSize*it->size()*sizeof(REAL),
+			cudaVerify(cudaMemcpyAsync(h_resRec[pipeIdx[1]].get(0), d_resRec[pipeIdx[1]].get(0), dofSizeRec*it->size()*sizeof(REAL),
+					cudaMemcpyDeviceToHost, streams[1]));
+			cudaVerify(cudaMemcpyAsync(h_resLig[pipeIdx[1]].get(0), d_resLig[pipeIdx[1]].get(0), dofSizeLig*it->size()*sizeof(REAL),
 					cudaMemcpyDeviceToHost, streams[1]));
 
 			/* Device: Signal event when transfere has completed */
@@ -567,14 +566,19 @@ public:
 			cudaVerify(cudaEventSynchronize(events[1]));
 
 			nvtxRangePushA("Host");
-			h_finalReduce(
+			h_finalReduce< REAL, 1, true>(
 				it->size(),
+				stageResc.lig,
 				it->inputBuffer(),
-				stageResc.rec->modeForce,
-				stageResc.lig->modeForce,
-				stageResc.rec->numModes,
-				stageResc.lig->numModes,
-				h_res[pipeIdx[0]].get(0),
+				h_resLig[pipeIdx[0]].get(0),
+				it->resultBuffer());
+				nvtxRangePop();
+
+			h_finalReduce< REAL, 0, true>(
+				it->size(),
+				stageResc.rec,
+				it->inputBuffer(),
+				h_resRec[pipeIdx[0]].get(0),
 				it->resultBuffer());
 			nvtxRangePop();
 
@@ -596,13 +600,17 @@ public:
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_trafoLig;
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_potRec[2];
 	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_potLig[2];
-	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_res[2];
-	WorkerBuffer<REAL, HostPinnedAllocator<REAL>> h_res[2];
+	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_resRec[2];
+	WorkerBuffer<REAL, HostPinnedAllocator<REAL>> h_resRec[2];
+	WorkerBuffer<REAL, DeviceAllocator<REAL>> d_resLig[2];
+	WorkerBuffer<REAL, HostPinnedAllocator<REAL>> h_resLig[2];
 
 	static constexpr size_t BLSZ_TRAFO = 128;
 	static constexpr size_t BLSZ_INTRPL = 128;
-	size_t dofSize = 13 + 5 + 5;
-	size_t blockSizeReduce = 0;
+	size_t dofSizeRec = 13 + Common_Modes::numModesRec;
+	size_t dofSizeLig = 13 + Common_Modes::numModesLig;
+	size_t blockSizeReduceRec = 0;
+	size_t blockSizeReduceLig = 0;
 	static constexpr unsigned numStages = 5;
 
 	bool predicates[2][numStages];
@@ -654,9 +662,10 @@ auto GPUEnergyService6DModes<REAL>::createItemProcessor() -> itemProcessor_t {
 
 			const unsigned& numAtomsLig = dI.lig->numAtoms;
 			const unsigned& numAtomsRec = dI.rec->numAtoms;
-			const unsigned& dofSize = 23 + dI.lig->numModes + dI.rec->numModes;
+			const unsigned& dofSizeLig = 13 + dI.lig->numModes;
+			const unsigned& dofSizeRec = 13 +  dI.rec->numModes;
 			p->addItemAndLigandSize(dI);
-			p->resizeBuffersIfRequired(itemSize, numAtomsRec, numAtomsLig, dofSize);
+			p->resizeBuffersIfRequired(itemSize, numAtomsRec, numAtomsLig, dofSizeRec, dofSizeLig);
 		} else {
 			p->stagesMngt.rotate();
 		}
